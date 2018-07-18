@@ -21,9 +21,9 @@ before_script:
   - mkdir -p $ANDROID_HOME/licenses
   - echo $android_sdk_license > $ANDROID_HOME/licenses/android-sdk-license
 script:
-  - ./gradlew playkitvr:build
+  - ./gradlew mediaproviders:build
 after_failure:
-  - cat playkitvr/build/reports/lint-results.xml
+  - cat mediaproviders/build/reports/lint-results.xml
 after_success:
   - ./travis-push-to-bintray.sh
 notifications:
