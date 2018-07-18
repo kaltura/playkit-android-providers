@@ -32,6 +32,6 @@ notifications:
       - noam.tamim@kaltura.com
       - gilad.nadav@kaltura.com
       - Anton.Afanasiev@kaltura.com
-    on_success: change
+    on_success: always
     on_failure: always
 
