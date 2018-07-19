@@ -43,13 +43,13 @@
   },
   "mp4": {
     "duration": 102000,
-    "id": "1_1h1vsv3z",
+    "id": "0_rccv43zr",
     "name": "MP4: Kaltura Video Solutions for Media Companies",
     "sources": [
       {
-        "id": "1_1h1vsv3z_mp4",
+        "id": "0_rccv43zr_mp4",
         "mimeType": "video/mp4",
-        "url": "http://cdnapi.kaltura.com/p/2209591/sp/0/playManifest/entryId/1_1h1vsv3z/format/url/protocol/http/a.mp4"
+        "url": "http://qa-apache-php7.dev.kaltura.com/p/1091/sp/1091/playManifest/entryId/0_rccv43zr/flavorIds/0_qm8yk6bg,0_5artpfqc,0_ee3vdk7h,0_jkit9w6a,0_8qt13atw,0_rgajlpf4/deliveryProfileId/261/protocol/http/format/url/name/a.mp4"
       }
     ]
   },
