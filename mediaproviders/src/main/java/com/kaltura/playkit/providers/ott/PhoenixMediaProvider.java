@@ -517,6 +517,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     private boolean is360Supported(Map<String, String> metadata) {
+        if (metadata.containsKey("tags") &&  "360".equals(metadata.get("tags"))) {
+            return true;
+        }
+
         if (!metadata.containsKey("360")) {
             return false;
         }
@@ -556,6 +560,24 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             metadata.put("description", kalturaMediaAsset.getDescription());
         }
         return metadata;
+    }
+
+    @NonNull
+    private Map<String, List<String>> createOttTags(KalturaMediaAsset kalturaMediaAsset) {
+        Map<String, List<String>> ottTagsMap = new HashMap<>();
+
+        JsonObject tags = kalturaMediaAsset.getTags();
+
+        if (tags != null) {
+            for (Map.Entry<String, JsonElement> entry : tags.entrySet()) {
+                List<String> metadata = new ArrayList<>();
+                for (JsonElement jsonElement : entry.getValue().getAsJsonObject().get("objects").getAsJsonArray()) {
+                    metadata.add(jsonElement.getAsJsonObject().get("value").getAsString());
+                }
+                ottTagsMap.put(entry.getKey(), metadata);
+            }
+        }
+        return ottTagsMap;
     }
 
     private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
