@@ -517,11 +517,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     private boolean is360Supported(Map<String, String> metadata) {
-        if (!metadata.containsKey("360")) {
-            return false;
+        if ("360".equals(metadata.get("tags"))) {
+            return true;
         }
-
-        return Boolean.valueOf(metadata.get("360"));
+        return false;
     }
 
     @NonNull
@@ -557,7 +556,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
         return metadata;
     }
-
+    
     private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
         //error = ErrorElement.LoadError.message("failed to get multirequest responses on load request for asset "+mediaAsset.assetId);
         ErrorElement error;
