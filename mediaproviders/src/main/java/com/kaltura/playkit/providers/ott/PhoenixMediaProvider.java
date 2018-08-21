@@ -115,6 +115,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         public String protocol;
 
+        public boolean forceVRMode;
+
         public MediaAsset() {
         }
 
@@ -218,6 +220,18 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      */
     public PhoenixMediaProvider setProtocol(@NonNull @HttpProtocol String protocol) {
         this.mediaAsset.protocol = protocol;
+        return this;
+    }
+
+    /**
+     * OPTIONAL
+     *
+     * Sets the requested media to be played as 360/VR videoo
+     * The default is false.
+     * @return - instance of PhoenixMediaProvider
+     */
+    public PhoenixMediaProvider setForceVRMode() {
+        this.mediaAsset.forceVRMode = true;
         return this;
     }
 
@@ -517,7 +531,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     private boolean is360Supported(Map<String, String> metadata) {
-        if ("360".equals(metadata.get("tags"))) {
+        if ("360".equals(metadata.get("tags")) || mediaAsset.forceVRMode) {
             return true;
         }
         return false;

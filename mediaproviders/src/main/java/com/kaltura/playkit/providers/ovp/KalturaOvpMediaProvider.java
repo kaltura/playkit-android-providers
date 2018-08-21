@@ -74,7 +74,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private String entryId;
     private String uiConfId;
     private String referrer;
-
+    private boolean forceVRMode;
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
 
@@ -158,6 +158,18 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
      */
     public KalturaOvpMediaProvider setUiConfId(String uiConfId) {
         this.uiConfId = uiConfId;
+        return this;
+    }
+
+    /**
+     * OPTIONAL
+     *
+     * Sets the requested media to be played as 360/VR videoo
+     * The default is false.
+     * @return - instance of KalturaOvpMediaProvider
+     */
+    public KalturaOvpMediaProvider setForceVRModesetForceVRMode() {
+        forceVRMode = true;
         return this;
     }
 
@@ -305,7 +317,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
 
                             if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
-                                mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
+                                mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId, forceVRMode,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
                                 if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
@@ -343,12 +355,14 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * creates {@link PKMediaEntry} from entry's data and contextData
          *
          * @param baseUrl - base url
-         * @param entry - {@link KalturaMediaEntry}
-         * @param playbackContext - {@link KalturaPlaybackContext}
+         * @param ks - {@link KalturaMediaEntry}
+         * @param uiConfId - {@link KalturaMediaEntry}
+         * @param forceVRMode  - apply this video as 360/VR Media VRPKMediaEntry
+         * @param entry - {@link KalturaPlaybackContext}
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
          * source - if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
-        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry,
+        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, boolean forceVRMode, KalturaMediaEntry entry,
                                                  KalturaPlaybackContext playbackContext, KalturaMetadataListResponse metadataList) throws InvalidParameterException {
 
             ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
@@ -363,7 +377,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             Map<String, String> metadata = parseMetadata(metadataList);
             populateMetadata(metadata, entry);
-            PKMediaEntry mediaEntry = initPKMediaEntry(entry.getTags());
+            PKMediaEntry mediaEntry = initPKMediaEntry(entry.getTags(), forceVRMode);
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
                     .setDuration(entry.getMsDuration())
@@ -390,11 +404,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
         }
 
-        private static PKMediaEntry initPKMediaEntry(String tags) {
-            //If there is '360' tag -> Create VRPKMediaEntry with default VRSettings
-            if(tags != null
-                    && !tags.isEmpty()
-                    && Pattern.compile("\\b360\\b").matcher(tags).find()){
+        private static PKMediaEntry initPKMediaEntry(String tags, boolean forceVRMode) {
+            if(is360Supported(tags, forceVRMode)){
                 return new VRPKMediaEntry()
                         .setVRParams(new VRSettings());
             }
@@ -578,6 +589,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
 
+    }
+
+    private static boolean is360Supported(String tags, boolean forceVRMode) {
+        //If there is '360' tag -> Create VRPKMediaEntry with default VRSettings
+        return forceVRMode || (tags != null
+                && !tags.isEmpty()
+                && Pattern.compile("\\b360\\b").matcher(tags).find());
     }
 
     public static class MediaTypeConverter {
