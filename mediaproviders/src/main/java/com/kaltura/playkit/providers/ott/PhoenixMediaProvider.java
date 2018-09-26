@@ -304,8 +304,24 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             }
 
             if (mediaAsset.assetReferenceType == null) {
-                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
+                if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media) {
+                    mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
+                } else {
+                    error = ErrorElement.BadRequestError.addMessage(": Missing required parameter [assetReferenceType]");
+                    return  error;
+                }
+            } else {
+                if ((mediaAsset.assetType == APIDefines.KalturaAssetType.Epg || mediaAsset.assetType == APIDefines.KalturaAssetType.Recording) &&
+                        mediaAsset.assetReferenceType == APIDefines.AssetReferenceType.Media) {
+                    error = ErrorElement.BadRequestError.addMessage(": Incompatible AssetReferenceType Media for Epg/Recording Asset");
+                    return error;
+                }
+                if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media &&  mediaAsset.assetReferenceType != APIDefines.AssetReferenceType.Media) {
+                    error = ErrorElement.BadRequestError.addMessage(": Incompatible AssetReferenceType " +  mediaAsset.assetReferenceType + " for Media Asset");
+                    return error;
+                }
             }
+
             if (mediaAsset.contextType == null) {
                 mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
             }
@@ -579,7 +595,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
         return metadata;
     }
-    
+
     private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
         //error = ErrorElement.LoadError.message("failed to get multirequest responses on load request for asset "+mediaAsset.assetId);
         ErrorElement error;
