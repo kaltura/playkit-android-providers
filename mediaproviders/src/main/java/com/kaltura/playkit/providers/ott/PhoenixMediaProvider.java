@@ -107,6 +107,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         public APIDefines.KalturaAssetType assetType;
 
+        public APIDefines.AssetReferenceType assetReferenceType;
+
         public APIDefines.PlaybackContextType contextType;
 
         public List<String> formats;
@@ -182,6 +184,18 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      */
     public PhoenixMediaProvider setAssetId(@NonNull String assetId) {
         this.mediaAsset.assetId = assetId;
+        return this;
+    }
+
+    /**
+     * ESSENTIAL in EPG!! defines the playing  AssetReferenceType especially in case of epg
+     * Defaults to - {@link APIDefines.KalturaAssetType#Media}
+     *
+     * @param assetReferenceType - can be one of the following types {@link APIDefines.AssetReferenceType}
+     * @return - instance of PhoenixMediaProvider
+     */
+    public PhoenixMediaProvider setAssetReferenceType(@NonNull APIDefines.AssetReferenceType assetReferenceType) {
+        this.mediaAsset.assetReferenceType = assetReferenceType;
         return this;
     }
 
@@ -288,6 +302,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (mediaAsset.assetType == null) {
                 mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
             }
+
+            if (mediaAsset.assetReferenceType == null) {
+                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
+            }
             if (mediaAsset.contextType == null) {
                 mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
             }
@@ -340,7 +358,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         private RequestBuilder getMediaAssetRequest(String baseUrl, String ks, MediaAsset mediaAsset) {
-            return AssetService.get(baseUrl, ks, mediaAsset.assetId, APIDefines.AssetReferenceType.Media);
+            return AssetService.get(baseUrl, ks, mediaAsset.assetId, mediaAsset.assetReferenceType);
         }
 
         private RequestBuilder getRemoteRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
