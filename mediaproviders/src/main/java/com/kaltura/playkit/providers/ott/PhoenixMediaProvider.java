@@ -298,28 +298,19 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         } else {
 
-            //set Defaults if not provided:
+            //set defaults if not provided:
             if (mediaAsset.assetType == null) {
                 mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
             }
 
+            // If AssetType is Media, AssetReferenceType must be Media too
+            if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media) {
+                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
+            }
+
             if (mediaAsset.assetReferenceType == null) {
-                if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media) {
-                    mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
-                } else {
-                    error = ErrorElement.BadRequestError.addMessage(": Missing required parameter [assetReferenceType]");
-                    return  error;
-                }
-            } else {
-                if ((mediaAsset.assetType == APIDefines.KalturaAssetType.Epg || mediaAsset.assetType == APIDefines.KalturaAssetType.Recording) &&
-                        mediaAsset.assetReferenceType == APIDefines.AssetReferenceType.Media) {
-                    error = ErrorElement.BadRequestError.addMessage(": Incompatible AssetReferenceType Media for Epg/Recording Asset");
-                    return error;
-                }
-                if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media &&  mediaAsset.assetReferenceType != APIDefines.AssetReferenceType.Media) {
-                    error = ErrorElement.BadRequestError.addMessage(": Incompatible AssetReferenceType " +  mediaAsset.assetReferenceType + " for Media Asset");
-                    return error;
-                }
+                error = ErrorElement.BadRequestError.addMessage(": Missing required parameter [assetReferenceType]");
+                return  error;
             }
 
             if (mediaAsset.contextType == null) {
