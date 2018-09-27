@@ -291,34 +291,29 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      */
     @Override
     protected ErrorElement validateParams() {
-        ErrorElement error = null;
 
         if (TextUtils.isEmpty(this.mediaAsset.assetId)) {
-            error = ErrorElement.BadRequestError.addMessage(": Missing required parameter [assetId]");
-
-        } else {
-
-            //set defaults if not provided:
-            if (mediaAsset.assetType == null) {
-                mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
-            }
-
-            // If AssetType is Media, AssetReferenceType must be Media too
-            if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media) {
-                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
-            }
-
-            if (mediaAsset.assetReferenceType == null) {
-                error = ErrorElement.BadRequestError.addMessage(": Missing required parameter [assetReferenceType]");
-                return  error;
-            }
-
-            if (mediaAsset.contextType == null) {
-                mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
-            }
+            return ErrorElement.BadRequestError.addMessage("Missing required parameter [assetId]");
         }
 
-        return error;
+        if (mediaAsset.assetType == null) {
+            mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
+        }
+
+        if (mediaAsset.assetReferenceType == null) {
+            if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media) {
+                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
+            } else if (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg) {
+                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg;
+            }
+            // Or leave it as null.
+        }
+
+        if (mediaAsset.contextType == null) {
+            mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
+        }
+
+        return null;
     }
 
 
@@ -370,18 +365,25 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         private RequestBuilder getRemoteRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
 
+            String multiReqKs;
+
+            MultiRequestBuilder builder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
+                    .tag("asset-play-data-multireq");
+
             if (TextUtils.isEmpty(ks)) {
-                MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
-                        .tag("asset-play-data-multireq");
-                String multiReqKs = "{1:result:ks}";
-                return multiRequestBuilder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null),
-                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
+                multiReqKs = "{1:result:ks}";
+                builder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null));
             } else {
-                MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
-                        .tag("asset-play-data-multireq");
-                String multiReqKs = ks;
-                return multiRequestBuilder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
+                multiReqKs = ks;
             }
+
+            builder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset));
+
+            if (mediaAsset.assetReferenceType != null) {
+                builder.add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
+            }
+
+            return builder;
         }
 
         /**
@@ -423,7 +425,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         private String getApiBaseUrl() {
-            return sessionProvider.baseUrl();
+            final String url = sessionProvider.baseUrl();
+            return url.endsWith("/") ? url : url + "/";
         }
 
         /**
