@@ -423,7 +423,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         private String getApiBaseUrl() {
-            return sessionProvider.baseUrl();
+            final String url = sessionProvider.baseUrl();
+            return url.endsWith("/") ? url : url + "/";
         }
 
         /**
