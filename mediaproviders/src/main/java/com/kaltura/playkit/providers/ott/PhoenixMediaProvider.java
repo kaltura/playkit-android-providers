@@ -296,21 +296,34 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             return ErrorElement.BadRequestError.addMessage("Missing required parameter [assetId]");
         }
 
+        if (mediaAsset.contextType == null) {
+            mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
+        }
+
         if (mediaAsset.assetType == null) {
-            mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
+            switch (mediaAsset.contextType) {
+                case Playback:
+                case Trailer:
+                    mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
+                    break;
+
+                case StartOver:
+                case Catchup:
+                    mediaAsset.assetType = APIDefines.KalturaAssetType.Epg;
+                    break;
+            }
         }
 
         if (mediaAsset.assetReferenceType == null) {
-            if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media) {
-                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
-            } else if (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg) {
-                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg;
+            switch (mediaAsset.assetType) {
+                case Media:
+                    mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
+                    break;
+                case Epg:
+                    mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg;
+                    break;
             }
             // Or leave it as null.
-        }
-
-        if (mediaAsset.contextType == null) {
-            mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
         }
 
         return null;
