@@ -291,34 +291,42 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      */
     @Override
     protected ErrorElement validateParams() {
-        ErrorElement error = null;
 
         if (TextUtils.isEmpty(this.mediaAsset.assetId)) {
-            error = ErrorElement.BadRequestError.addMessage(": Missing required parameter [assetId]");
+            return ErrorElement.BadRequestError.addMessage("Missing required parameter [assetId]");
+        }
 
-        } else {
+        if (mediaAsset.contextType == null) {
+            mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
+        }
 
-            //set defaults if not provided:
-            if (mediaAsset.assetType == null) {
-                mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
-            }
+        if (mediaAsset.assetType == null) {
+            switch (mediaAsset.contextType) {
+                case Playback:
+                case Trailer:
+                    mediaAsset.assetType = APIDefines.KalturaAssetType.Media;
+                    break;
 
-            // If AssetType is Media, AssetReferenceType must be Media too
-            if (mediaAsset.assetType == APIDefines.KalturaAssetType.Media) {
-                mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
-            }
-
-            if (mediaAsset.assetReferenceType == null) {
-                error = ErrorElement.BadRequestError.addMessage(": Missing required parameter [assetReferenceType]");
-                return  error;
-            }
-
-            if (mediaAsset.contextType == null) {
-                mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
+                case StartOver:
+                case Catchup:
+                    mediaAsset.assetType = APIDefines.KalturaAssetType.Epg;
+                    break;
             }
         }
 
-        return error;
+        if (mediaAsset.assetReferenceType == null) {
+            switch (mediaAsset.assetType) {
+                case Media:
+                    mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media;
+                    break;
+                case Epg:
+                    mediaAsset.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg;
+                    break;
+            }
+            // Or leave it as null.
+        }
+
+        return null;
     }
 
 
@@ -370,18 +378,25 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         private RequestBuilder getRemoteRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
 
+            String multiReqKs;
+
+            MultiRequestBuilder builder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
+                    .tag("asset-play-data-multireq");
+
             if (TextUtils.isEmpty(ks)) {
-                MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
-                        .tag("asset-play-data-multireq");
-                String multiReqKs = "{1:result:ks}";
-                return multiRequestBuilder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null),
-                        getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
+                multiReqKs = "{1:result:ks}";
+                builder.add(OttUserService.anonymousLogin(baseUrl, sessionProvider.partnerId(), null));
             } else {
-                MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) PhoenixService.getMultirequest(baseUrl, ks)
-                        .tag("asset-play-data-multireq");
-                String multiReqKs = ks;
-                return multiRequestBuilder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset)).add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
+                multiReqKs = ks;
             }
+
+            builder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset));
+
+            if (mediaAsset.assetReferenceType != null) {
+                builder.add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
+            }
+
+            return builder;
         }
 
         /**
@@ -423,7 +438,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         private String getApiBaseUrl() {
-            return sessionProvider.baseUrl();
+            final String url = sessionProvider.baseUrl();
+            return url.endsWith("/") ? url : url + "/";
         }
 
         /**
@@ -557,15 +573,17 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 if (object.getValue().isJsonArray()) {
                     JsonArray objectsArray = object.getValue().getAsJsonArray();
                     for (int i = 0; i < objectsArray.size(); i++) {
-                        metadata.put(entry.getKey(), objectsArray.get(i).getAsJsonObject().get("value").getAsString());
+                        metadata.put(entry.getKey(), safeGetValue(objectsArray.get(i)));
                     }
                 }
             }
         }
 
         JsonObject metas = kalturaMediaAsset.getMetas();
-        for (Map.Entry<String, JsonElement> entry : metas.entrySet()) {
-            metadata.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsString());
+        if (metas != null) {
+            for (Map.Entry<String, JsonElement> entry : metas.entrySet()) {
+                metadata.put(entry.getKey(), safeGetValue(entry.getValue()));
+            }
         }
 
         for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
@@ -585,6 +603,15 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             metadata.put("dvrStatus", "0");
         }
         return metadata;
+    }
+
+    private String safeGetValue(JsonElement value) {
+        if (value == null || value.isJsonNull() || !value.isJsonObject()) {
+            return null;
+        }
+
+        final JsonElement valueElement = value.getAsJsonObject().get("value");
+        return (valueElement != null && !valueElement.isJsonNull()) ? valueElement.getAsString() : null;
     }
 
     private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
