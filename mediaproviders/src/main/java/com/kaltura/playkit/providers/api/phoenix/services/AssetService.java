@@ -32,9 +32,6 @@ public class AssetService extends PhoenixService {
         params.addProperty("ks", ks);
         params.addProperty("id", assetId);
         params.addProperty("assetReferenceType", referenceType.value);
-        params.addProperty("type", referenceType.value); // sometimes request expect type as property sometimes assetReferenceType
-        // needed to make sure response will retrieve the media file no matter if apiVersion property supplied or not
-        params.addProperty("with","[{\"type\": \"files\"}]");
 
         return new PhoenixRequestBuilder()
                 .service("asset")
