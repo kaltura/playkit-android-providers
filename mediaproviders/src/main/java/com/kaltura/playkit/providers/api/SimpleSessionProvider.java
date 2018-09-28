@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.providers.api.ovp;
+package com.kaltura.playkit.providers.api;
 
 import android.text.TextUtils;
 
@@ -23,19 +23,8 @@ import com.kaltura.netkit.utils.SessionProvider;
  * This class does not attempt to manage a session. The application is expected to provide a valid KS, which it
  * can update as required by calling {@link #setKs(String)}.
  * For some use cases, the KS can be null (anonymous media playback, if allowed by access-control).
- * <p>
- * Basic usage with a { KalturaOvpMediaProvider}:
- * <pre>
- * {@code
- *      new KalturaOvpMediaProvider()
- *          .setSessionProvider(new SimpleOvpSessionProvider("https://cdnapisec.kaltura.com", 1851571, null))
- *          .setEntryId("0_pl5lbfo0")
- *          .load(completion);
- * }
- * </pre>
- * </p>
  */
-public class SimpleOvpSessionProvider implements SessionProvider {
+public class SimpleSessionProvider implements SessionProvider {
 
     private String baseUrl;
     private int partnerId;
@@ -48,7 +37,7 @@ public class SimpleOvpSessionProvider implements SessionProvider {
      * @param partnerId     Kaltura partner id.
      * @param ks            Kaltura Session token.
      */
-    public SimpleOvpSessionProvider(String baseUrl, int partnerId, String ks) {
+    public SimpleSessionProvider(String baseUrl, int partnerId, String ks) {
         // Ensure baseUrl, partnerId are not empty.
         if (TextUtils.isEmpty(baseUrl)) {
             throw new IllegalArgumentException("Missing baseUrl");
