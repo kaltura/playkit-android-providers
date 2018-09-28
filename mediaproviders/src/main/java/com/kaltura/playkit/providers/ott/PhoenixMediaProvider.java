@@ -573,7 +573,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 if (object.getValue().isJsonArray()) {
                     JsonArray objectsArray = object.getValue().getAsJsonArray();
                     for (int i = 0; i < objectsArray.size(); i++) {
-                        metadata.put(entry.getKey(), objectsArray.get(i).getAsJsonObject().get("value").getAsString());
+                        metadata.put(entry.getKey(), safeGetValue(objectsArray.get(i)));
                     }
                 }
             }
@@ -581,7 +581,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         JsonObject metas = kalturaMediaAsset.getMetas();
         for (Map.Entry<String, JsonElement> entry : metas.entrySet()) {
-            metadata.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsString());
+            metadata.put(entry.getKey(), safeGetValue(entry.getValue()));
         }
 
         for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
@@ -601,6 +601,16 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             metadata.put("dvrStatus", "0");
         }
         return metadata;
+    }
+
+    private String safeGetValue(JsonElement value) {
+        if (!value.isJsonObject()) {
+            return null;
+        }
+
+        final JsonElement valueElement = value.getAsJsonObject().get("value");
+
+        return valueElement != null ? valueElement.getAsString() : null;
     }
 
     private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
