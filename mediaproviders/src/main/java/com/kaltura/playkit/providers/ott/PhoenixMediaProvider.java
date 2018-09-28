@@ -580,8 +580,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         JsonObject metas = kalturaMediaAsset.getMetas();
-        for (Map.Entry<String, JsonElement> entry : metas.entrySet()) {
-            metadata.put(entry.getKey(), safeGetValue(entry.getValue()));
+        if (metas != null) {
+            for (Map.Entry<String, JsonElement> entry : metas.entrySet()) {
+                metadata.put(entry.getKey(), safeGetValue(entry.getValue()));
+            }
         }
 
         for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
