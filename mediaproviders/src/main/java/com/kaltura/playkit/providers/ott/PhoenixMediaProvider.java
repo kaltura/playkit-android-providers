@@ -606,13 +606,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     private String safeGetValue(JsonElement value) {
-        if (!value.isJsonObject()) {
+        if (value == null || value.isJsonNull() || !value.isJsonObject()) {
             return null;
         }
 
         final JsonElement valueElement = value.getAsJsonObject().get("value");
-
-        return valueElement != null ? valueElement.getAsString() : null;
+        return (valueElement != null && !valueElement.isJsonNull()) ? valueElement.getAsString() : null;
     }
 
     private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
