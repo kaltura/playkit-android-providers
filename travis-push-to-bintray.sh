@@ -33,5 +33,8 @@ then
     DRY_RUN=true
 fi
 
+# Assuming a successful build, create javadoc jar, sources jar, pom
+./gradlew $LIB:publishReleasePublicationToMavenLocal
+
 # Upload
-./gradlew mediaproviders:bintrayUpload -PdryRun=$DRY_RUN -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY
+./gradlew $LIB:bintrayUpload -PdryRun=$DRY_RUN -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY
