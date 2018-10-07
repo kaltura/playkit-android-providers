@@ -7,6 +7,7 @@
 # Run locally:
 # TRAVIS_TAG=v0.1.2 BINTRAY_USER=username BINTRAY_KEY=fjkhsdfka3289r82rkfe ./travis-push-to-bintray.sh
 
+LIB=mediaproviders
 
 DRY_RUN=false
 
@@ -33,5 +34,8 @@ then
     DRY_RUN=true
 fi
 
+# Assuming a successful build, create javadoc jar, sources jar, pom
+./gradlew $LIB:publishReleasePublicationToMavenLocal
+
 # Upload
-./gradlew mediaproviders:bintrayUpload -PdryRun=$DRY_RUN -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY
+./gradlew $LIB:bintrayUpload -PdryRun=$DRY_RUN -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY

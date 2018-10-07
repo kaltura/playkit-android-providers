@@ -252,7 +252,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
                 (distanceFromLive <= DISTANCE_FROM_LIVE_THRESHOLD) ? KLiveStatsEvent.LIVE.value : KLiveStatsEvent.DVR.value,
                 eventIndex++, bufferTime,
                 lastReportedBitrate,
-                sessionId, mediaConfig.getStartPosition(),
+                sessionId, (mediaConfig.getStartPosition() != null) ? mediaConfig.getStartPosition() : 0,
                 pluginConfig.getEntryId(),
                 isLive,
                 PlayKitManager.CLIENT_TAG,
