@@ -91,7 +91,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";
 
-    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLinearMediaAsset"; //Might be changed to: "KalturaLiveAsset".
+    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLiveAsset"; //Might be needed to support in KalturaProgramAsset for EPG
 
     private static final boolean EnableEmptyKs = true;
 
