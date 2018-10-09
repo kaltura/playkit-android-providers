@@ -467,6 +467,10 @@ public class KalturaStatsPlugin extends PKPlugin {
      * @param eventType - Enum stating Kaltura state events
      */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
+        if (pluginConfig == null || pluginConfig.getEntryId() == null) {
+            log.w("Can not send analytics event. Mandatory field entryId is missing");
+            return;
+        }
         String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;
