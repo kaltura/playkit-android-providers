@@ -260,7 +260,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-        log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent" + eventType);
+        log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType);
         if (eventType != PhoenixActionType.STOP) {
             if (player.getCurrentPosition() > 0) {
                 lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
