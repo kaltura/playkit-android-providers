@@ -246,7 +246,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 if (player.getCurrentPosition() >= 0) {
                     lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
                 }
-                if ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD) {
+                if (player.getDuration() > 0 && ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD)) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                     isMediaFinished = true;
                 }
