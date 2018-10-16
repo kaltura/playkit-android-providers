@@ -140,7 +140,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         log.d("PhoenixAnalyticsPlugin onApplicationPaused");
         if (player != null) {
             long playerPosOnPause = player.getCurrentPosition();
-            if (playerPosOnPause > 0){
+            if (playerPosOnPause > 0) {
                 lastKnownPlayerPosition = playerPosOnPause / Consts.MILLISECONDS_MULTIPLIER;
             }
         }
