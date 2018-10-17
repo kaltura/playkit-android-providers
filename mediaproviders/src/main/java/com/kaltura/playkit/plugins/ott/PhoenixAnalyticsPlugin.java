@@ -138,6 +138,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onApplicationPaused() {
         log.d("PhoenixAnalyticsPlugin onApplicationPaused");
+        if (player != null) {
+            long playerPosOnPause = player.getCurrentPosition();
+            if (playerPosOnPause > 0) {
+                lastKnownPlayerPosition = playerPosOnPause / Consts.MILLISECONDS_MULTIPLIER;
+            }
+        }
         cancelTimer();
     }
 
