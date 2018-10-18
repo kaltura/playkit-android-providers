@@ -28,12 +28,12 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.providers.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
 
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
@@ -49,8 +49,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     RequestQueue requestsExecutor;
 
     String fileId;
+    String currentMediaId = "UnKnown";
     String baseUrl;
     long lastKnownPlayerPosition = 0;
+    boolean isAdPlaying;
 
     private String ks;
     private int partnerId;
@@ -105,7 +107,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.timer = new Timer();
         setConfigMembers(config);
         if (baseUrl != null && !baseUrl.isEmpty() && partnerId > 0) {
-            messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
+            messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAYING, PlayerEvent.Type.PLAYHEAD_UPDATED, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED, AdEvent.Type.CONTENT_PAUSE_REQUESTED, AdEvent.Type.CONTENT_RESUME_REQUESTED);
         } else {
             log.e("Error, base url/partner - incorrect");
         }
@@ -138,6 +140,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onApplicationPaused() {
         log.d("PhoenixAnalyticsPlugin onApplicationPaused");
+        if (player != null) {
+            long playerPosOnPause = player.getCurrentPosition();
+            if (playerPosOnPause > 0 && !isAdPlaying) {
+                lastKnownPlayerPosition = playerPosOnPause / Consts.MILLISECONDS_MULTIPLIER;
+            }
+        }
         cancelTimer();
     }
 
@@ -157,13 +165,37 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
+            if (event instanceof AdEvent) {
+                log.d("Ad Event = " + ((AdEvent) event).type.name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
+                switch (((AdEvent) event).type) {
+                    case CONTENT_PAUSE_REQUESTED:
+                        isAdPlaying = true;
+                        break;
+                    case CONTENT_RESUME_REQUESTED:
+                        isAdPlaying = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
             if (event instanceof PlayerEvent) {
-                log.d("Player Event = " + ((PlayerEvent) event).type.name() + " , lastKnownPlayerPosition = " + lastKnownPlayerPosition);
+                if (event.eventType() != PlayerEvent.Type.PLAYHEAD_UPDATED) {
+                    log.d("Player Event = " + ((PlayerEvent) event).type.name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
+                }
                 switch (((PlayerEvent) event).type) {
+                    case PLAYHEAD_UPDATED:
+                        if (!isAdPlaying) {
+                            PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
+                            if (playheadUpdated != null && playheadUpdated.position > 0) {
+                                lastKnownPlayerPosition = playheadUpdated.position / Consts.MILLISECONDS_MULTIPLIER;
+                            }
+                        }
+                        break;
                     case STOPPED:
                         if (isMediaFinished) {
                             return;
                         }
+                        isAdPlaying = false;
                         sendAnalyticsEvent(PhoenixActionType.STOP);
                         resetTimer();
                         break;
@@ -176,12 +208,19 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         resetTimer();
                         sendAnalyticsEvent(PhoenixActionType.ERROR);
                         break;
-                    case LOADED_METADATA:
-                        sendAnalyticsEvent(PhoenixActionType.LOAD);
-                        break;
                     case SOURCE_SELECTED:
                         PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
                         fileId = sourceSelected.source.getId();
+
+                        if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
+                            currentMediaId = mediaConfig.getMediaEntry().getId();
+                        }
+                        if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
+                            lastKnownPlayerPosition = mediaConfig.getStartPosition();
+                        } else {
+                            lastKnownPlayerPosition = 0;
+                        }
+                        sendAnalyticsEvent(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
                         if (isMediaFinished) {
@@ -205,6 +244,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             startMediaHitInterval();
                             intervalOn = true;
                         }
+                        break;
+                    case PLAYING:
+                        isAdPlaying = false;
                         break;
                     case SEEKED:
                     case REPLAY:
@@ -243,7 +285,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
-                if (player.getCurrentPosition() >= 0) {
+                if (player.getCurrentPosition() > 0 && !isAdPlaying) {
                     lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
                 }
                 if (player.getDuration() > 0 && ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD)) {
@@ -260,7 +302,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-        log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType);
+        log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPLaying " + isAdPlaying);
+        if (isAdPlaying) {
+            return;
+        }
         if (eventType != PhoenixActionType.STOP) {
             if (player.getCurrentPosition() > 0) {
                 lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
@@ -271,7 +316,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             return;
         }
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                "media", mediaConfig.getMediaEntry().getId(), eventType.name(), lastKnownPlayerPosition, fileId);
+                "media", currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

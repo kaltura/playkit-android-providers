@@ -525,7 +525,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                                     kalturaPlaybackContext.getSources(), is360Content);
                             mediaEntry.setMetadata(metadata);
                             mediaEntry.setName(kalturaMediaAsset.getName());
-                            if (isLiveMediaEntry(kalturaMediaAsset)) {
+                            if (isDvrLiveMedia()) {
+                                mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.DvrLive);
+                            } else if (isLiveMediaEntry(kalturaMediaAsset)) {
                                 mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
                             } else {
                                 mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Vod);
@@ -554,6 +556,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             PKLog.w(TAG, loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
+        }
+
+        private boolean isDvrLiveMedia() {
+            return mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver;
         }
     }
 
@@ -596,11 +602,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
         if (kalturaMediaAsset.getDescription() != null) {
             metadata.put("description", kalturaMediaAsset.getDescription());
-        }
-        if (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver) {
-            metadata.put("dvrStatus", "1");
-        } else if (isLiveMediaEntry(kalturaMediaAsset)) {
-            metadata.put("dvrStatus", "0");
         }
         return metadata;
     }
