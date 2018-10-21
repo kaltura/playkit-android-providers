@@ -235,7 +235,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         if (!intervalOn) {
                             startMediaHitInterval();
-                            intervalOn = true;
                         }
                         break;
                     case PLAYING:
