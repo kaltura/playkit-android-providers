@@ -151,7 +151,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onApplicationResumed() {
         log.d("PhoenixAnalyticsPlugin onApplicationResumed");
-        startMediaHitInterval();
+        if (!isAdPlaying) {
+            startMediaHitInterval();
+        }
     }
 
     @Override
