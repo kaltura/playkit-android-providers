@@ -59,7 +59,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean intervalOn = false;
     private boolean isFirstPlay = true;
     private boolean isMediaFinished = false;
-    private boolean timerWasCancelled = false;
 
     enum PhoenixActionType {
         HIT,
@@ -159,7 +158,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     public void onDestroy() {
         log.d("onDestroy");
         cancelTimer();
-        timerWasCancelled = true;
     }
 
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
@@ -215,11 +213,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
                             currentMediaId = mediaConfig.getMediaEntry().getId();
                         }
-                        if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
-                            lastKnownPlayerPosition = mediaConfig.getStartPosition();
-                        } else {
-                            lastKnownPlayerPosition = 0;
-                        }
+                        lastKnownPlayerPosition = 0;
                         sendAnalyticsEvent(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
@@ -228,7 +222,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         sendAnalyticsEvent(PhoenixActionType.PAUSE);
                         resetTimer();
-                        intervalOn = false;
                         break;
                     case PLAY:
                         if (isMediaFinished) {
@@ -240,7 +233,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         } else {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
                         }
-                        if (!intervalOn || !timerWasCancelled) {
+                        if (!intervalOn) {
                             startMediaHitInterval();
                             intervalOn = true;
                         }
@@ -265,6 +258,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             timer.cancel();
             timer = null;
         }
+        intervalOn = false;
     }
 
     private void resetTimer() {
@@ -280,7 +274,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         if (timer == null) {
             timer = new Timer();
         }
-
+        intervalOn = true;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
