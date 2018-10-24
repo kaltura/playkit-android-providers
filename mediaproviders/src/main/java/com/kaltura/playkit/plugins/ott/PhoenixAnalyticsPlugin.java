@@ -216,6 +216,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             currentMediaId = mediaConfig.getMediaEntry().getId();
                         }
                         lastKnownPlayerPosition = 0;
+                        if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
+                            lastKnownPlayerPosition = mediaConfig.getStartPosition();
+                        }
                         sendAnalyticsEvent(PhoenixActionType.LOAD);
                         break;
                     case PAUSE:
