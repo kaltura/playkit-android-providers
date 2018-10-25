@@ -233,16 +233,19 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             return;
                         }
                         if (isFirstPlay) {
-                            isFirstPlay = false;
                             sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
-                        } else {
-                            sendAnalyticsEvent(PhoenixActionType.PLAY);
+                            sendAnalyticsEvent(PhoenixActionType.HIT);
                         }
                         if (!intervalOn) {
                             startMediaHitInterval();
                         }
                         break;
                     case PLAYING:
+                        if (!isFirstPlay) {
+                            sendAnalyticsEvent(PhoenixActionType.PLAY);
+                        } else {
+                            isFirstPlay = false;
+                        }
                         isAdPlaying = false;
                         break;
                     case SEEKED:
@@ -291,7 +294,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     isMediaFinished = true;
                 }
             }
-        }, 0, mediaHitInterval); // Get media hit interval from plugin config
+        }, mediaHitInterval, mediaHitInterval); // Get media hit interval from plugin config
     }
 
     /**
