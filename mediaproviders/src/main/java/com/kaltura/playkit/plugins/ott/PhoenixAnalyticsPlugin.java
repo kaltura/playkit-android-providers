@@ -28,6 +28,7 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.providers.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
@@ -56,6 +57,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private String ks;
     private int partnerId;
+    PlayerEvent.Type togglePlayPauseState;
     private boolean intervalOn = false;
     private boolean isFirstPlay = true;
     private boolean isMediaFinished = false;
@@ -225,7 +227,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         if (isMediaFinished) {
                             return;
                         }
-                        sendAnalyticsEvent(PhoenixActionType.PAUSE);
+                        if (togglePlayPauseState != PlayerEvent.Type.PAUSE) {
+                            sendAnalyticsEvent(PhoenixActionType.PAUSE);
+                            togglePlayPauseState = PlayerEvent.Type.PAUSE;
+                        }
                         resetTimer();
                         break;
                     case PLAY:
@@ -241,8 +246,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         break;
                     case PLAYING:
-                        if (!isFirstPlay) {
+                        if (!isFirstPlay && togglePlayPauseState != PlayerEvent.Type.PLAY) {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
+                            togglePlayPauseState = PlayerEvent.Type.PLAY;
                         } else {
                             isFirstPlay = false;
                         }
@@ -303,7 +309,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-        log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying);
         if (isAdPlaying) {
             return;
         }
@@ -316,6 +321,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             log.e("Error mediaConfig is not valid");
             return;
         }
+        if (eventType == PhoenixActionType.FINISH) {
+            lastKnownPlayerPosition = player.getDuration();
+        }
+        log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying + " position = " + lastKnownPlayerPosition);
+
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
                 "media", currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
 
