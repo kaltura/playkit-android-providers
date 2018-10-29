@@ -228,7 +228,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         if (isMediaFinished) {
                             return;
                         }
-                        if (playEventWasFired == Boolean.TRUE) {
+                        if (playEventWasFired != Boolean.FALSE) {
                             sendAnalyticsEvent(PhoenixActionType.PAUSE);
                             playEventWasFired = Boolean.FALSE;
                         }
