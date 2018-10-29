@@ -57,7 +57,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private String ks;
     private int partnerId;
-    private Boolean playEventWasFired;
+    private boolean playEventWasFired;
     private boolean intervalOn = false;
     private boolean isFirstPlay = true;
     private boolean isMediaFinished = false;
@@ -126,7 +126,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
         isFirstPlay = true;
-        playEventWasFired = null;
+        playEventWasFired = false;
         isMediaFinished = false;
     }
 
@@ -228,9 +228,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         if (isMediaFinished) {
                             return;
                         }
-                        if (playEventWasFired != Boolean.FALSE) {
+                        if (playEventWasFired) {
                             sendAnalyticsEvent(PhoenixActionType.PAUSE);
-                            playEventWasFired = Boolean.FALSE;
+                            playEventWasFired = false;
                         }
                         resetTimer();
                         break;
@@ -239,6 +239,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             return;
                         }
                         if (isFirstPlay) {
+                            playEventWasFired = true;
                             sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
                             sendAnalyticsEvent(PhoenixActionType.HIT);
                         }
@@ -247,9 +248,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         break;
                     case PLAYING:
-                        if (!isFirstPlay && playEventWasFired != Boolean.TRUE) {
+                        if (!isFirstPlay && !playEventWasFired) {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
-                            playEventWasFired = Boolean.TRUE;
+                            playEventWasFired = true;
                         } else {
                             isFirstPlay = false;
                         }
