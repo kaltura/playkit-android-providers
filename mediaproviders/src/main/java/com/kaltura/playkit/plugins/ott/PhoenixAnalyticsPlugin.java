@@ -205,6 +205,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     case ENDED:
                         resetTimer();
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
+                        playEventWasFired = false;
                         isMediaFinished = true;
                         break;
                     case ERROR:
@@ -248,6 +249,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         break;
                     case PLAYING:
+                        isMediaFinished = false;
                         if (!isFirstPlay && !playEventWasFired) {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
                             playEventWasFired = true;
@@ -299,6 +301,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 }
                 if (player.getDuration() > 0 && ((float) lastKnownPlayerPosition / player.getDuration() > MEDIA_ENDED_THRESHOLD)) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
+                    playEventWasFired = false;
                     isMediaFinished = true;
                 }
             }
