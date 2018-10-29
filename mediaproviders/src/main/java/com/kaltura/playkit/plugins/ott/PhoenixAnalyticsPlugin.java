@@ -57,7 +57,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private String ks;
     private int partnerId;
-    PlayerEvent.Type togglePlayPauseState;
+    private Boolean playEventWasFired;
     private boolean intervalOn = false;
     private boolean isFirstPlay = true;
     private boolean isMediaFinished = false;
@@ -126,6 +126,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     protected void onUpdateMedia(PKMediaConfig mediaConfig) {
         this.mediaConfig = mediaConfig;
         isFirstPlay = true;
+        playEventWasFired = null;
         isMediaFinished = false;
     }
 
@@ -227,9 +228,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         if (isMediaFinished) {
                             return;
                         }
-                        if (togglePlayPauseState != PlayerEvent.Type.PAUSE) {
+                        if (playEventWasFired == Boolean.TRUE) {
                             sendAnalyticsEvent(PhoenixActionType.PAUSE);
-                            togglePlayPauseState = PlayerEvent.Type.PAUSE;
+                            playEventWasFired = Boolean.FALSE;
                         }
                         resetTimer();
                         break;
@@ -246,9 +247,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         }
                         break;
                     case PLAYING:
-                        if (!isFirstPlay && togglePlayPauseState != PlayerEvent.Type.PLAY) {
+                        if (!isFirstPlay && playEventWasFired != Boolean.TRUE) {
                             sendAnalyticsEvent(PhoenixActionType.PLAY);
-                            togglePlayPauseState = PlayerEvent.Type.PLAY;
+                            playEventWasFired = Boolean.TRUE;
                         } else {
                             isFirstPlay = false;
                         }
