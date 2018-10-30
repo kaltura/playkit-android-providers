@@ -22,27 +22,33 @@ import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
 public class BookmarkService extends PhoenixService {
 
-    public static PhoenixRequestBuilder actionAdd(String baseUrl, int partnerId, String ks, String type, String assetId, String actionType, long position, String fileId) {
+    public static PhoenixRequestBuilder actionAdd(String baseUrl, int partnerId, String ks, String type, String assetId, String actionType, long position, String fileId, String positionOwner, String userId, boolean finishedWatching) {
         return new PhoenixRequestBuilder()
                 .service("bookmark")
                 .action("add")
                 .method("POST")
                 .url(baseUrl)
                 .tag("bookmark-action-add")
-                .params(addBookmarkGetReqParams(ks, assetId,  type, actionType, position, fileId));
+                .params(addBookmarkGetReqParams(ks, assetId,  type, actionType, position, fileId, positionOwner, userId, finishedWatching));
     }
 
-    private static JsonObject addBookmarkGetReqParams(String ks, String assetId, String type, String actionType, long position, String fileId) {
+    private static JsonObject addBookmarkGetReqParams(String ks, String assetId, String type, String actionType, long position, String fileId, String positionOwner, String userId, boolean finishedWatching) {
         JsonObject playerData = new JsonObject();
         playerData.addProperty("objectType", "KalturaBookmarkPlayerData");
         playerData.addProperty("action", actionType);
         playerData.addProperty("fileId", fileId);
+        playerData.addProperty("averageBitrate", 0);
+        playerData.addProperty("currentBitrate", 0);
+        playerData.addProperty("totalBitrate", 0);
 
         JsonObject bookmark = new JsonObject();
         bookmark.addProperty("objectType", "KalturaBookmark");
         bookmark.addProperty("id", assetId);
         bookmark.addProperty("type", type);
         bookmark.addProperty("position", position);
+        bookmark.addProperty("finishedWatching", finishedWatching);
+        bookmark.addProperty("positionOwner", positionOwner);
+        bookmark.addProperty("userId", userId);
         bookmark.add("playerData", playerData);
 
         JsonObject getParams = new JsonObject();

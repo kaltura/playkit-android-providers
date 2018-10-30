@@ -13,6 +13,7 @@
 package com.kaltura.playkit.plugins.ott;
 
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 
 /**
  * Created by gilad.nadav on 22/06/2017.
@@ -23,20 +24,21 @@ public class PhoenixAnalyticsConfig {
     public static final String BASE_URL   = "baseUrl";
     public static final String KS         = "ks";
     public static final String TIMER_INTERVAL = "timerInterval";
+    public static final String KALTURA_ASSET_TYPE = "kalturaAssetType";
 
     private int partnerId;
     private String baseUrl;
     private String ks;
     private int timerInterval;
+    private APIDefines.KalturaAssetType kalturaAssetType = APIDefines.KalturaAssetType.Media;
 
-    public PhoenixAnalyticsConfig(int partnerId, String baseUrl, String ks, int timerInterval) {
+    public PhoenixAnalyticsConfig(int partnerId, String baseUrl, String ks, int timerInterval, APIDefines.KalturaAssetType kalturaAssetType) {
         this.partnerId = partnerId;
         this.baseUrl = baseUrl;
         this.ks = ks;
         this.timerInterval = timerInterval;
+        this.kalturaAssetType = kalturaAssetType;
     }
-
-
 
     public PhoenixAnalyticsConfig setPartnerId(int partnerId) {
         this.partnerId = partnerId;
@@ -59,6 +61,11 @@ public class PhoenixAnalyticsConfig {
         return this;
     }
 
+    public PhoenixAnalyticsConfig setKalturaAssetType(APIDefines.KalturaAssetType kalturaAssetType) {
+        this.kalturaAssetType = kalturaAssetType;
+        return this;
+    }
+
     public int getPartnerId() {
         return partnerId;
     }
@@ -76,12 +83,17 @@ public class PhoenixAnalyticsConfig {
         return timerInterval;
     }
 
+    public String getKalturaAssetType() {
+        return kalturaAssetType.value;
+    }
+
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(PARTNER_ID, partnerId);
         jsonObject.addProperty(BASE_URL, baseUrl);
         jsonObject.addProperty(KS, ks);
         jsonObject.addProperty(TIMER_INTERVAL, timerInterval);
+        jsonObject.addProperty(KALTURA_ASSET_TYPE, getKalturaAssetType());
 
         return jsonObject;
     }

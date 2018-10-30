@@ -30,6 +30,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -61,6 +62,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean intervalOn = false;
     private boolean isFirstPlay = true;
     private boolean isMediaFinished = false;
+    private String kalturaAssetType = "media";
 
     enum PhoenixActionType {
         HIT,
@@ -70,9 +72,17 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         FIRST_PLAY,
         SWOOSH,
         LOAD,
+        FULL_SCREEN,
+        SEND_TO_FRIEND,
+        FULL_SCREEN_EXIT,
         FINISH,
         BITRATE_CHANGE,
         ERROR
+    }
+
+    enum PositionOwner {
+        HOUSEHOLD,
+        USER
     }
 
     public static final Factory factory = new Factory() {
@@ -120,6 +130,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
         this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+        this.kalturaAssetType = pluginConfig.getKalturaAssetType();
     }
 
     @Override
@@ -332,7 +343,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying + " position = " + lastKnownPlayerPosition);
 
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                "media", currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
+                kalturaAssetType, currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId, PositionOwner.HOUSEHOLD.name(), "", isFinishedWatching(eventType));
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
@@ -345,6 +356,20 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    private boolean isFinishedWatching(PhoenixActionType actionType) {
+        switch(actionType) {
+            case FINISH:
+                return true;
+            case STOP:
+                if (player != null && player.getCurrentPosition() >= player.getDuration()) {
+                    return true;
+                }
+                return false;
+            default:
+                return false;
+        }
     }
 
     PKEvent.Listener getEventListener() {
@@ -362,8 +387,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             int partnerId = params.get("partnerId").getAsInt();
             int timerInterval = params.get("timerInterval").getAsInt();
             String ks = params.get("ks").getAsString();
+            String kalturaAssetType = (params.has("kalturaAssetType")) ? params.get("kalturaAssetType").getAsString() : "media";
 
-            return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
+            return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval, APIDefines.KalturaAssetType.valueOf(kalturaAssetType));
         }
         return null;
     }
