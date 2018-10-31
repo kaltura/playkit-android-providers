@@ -207,6 +207,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         sendAnalyticsEvent(PhoenixActionType.FINISH);
                         playEventWasFired = false;
                         isMediaFinished = true;
+                        isFirstPlay = true;
                         break;
                     case ERROR:
                         resetTimer();
@@ -303,6 +304,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                     playEventWasFired = false;
                     isMediaFinished = true;
+                    isFirstPlay = true;
                 }
             }
         }, mediaHitInterval, mediaHitInterval); // Get media hit interval from plugin config
