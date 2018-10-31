@@ -316,7 +316,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-        if (isAdPlaying) {
+        if (isAdPlaying && (eventType != PhoenixActionType.STOP && eventType != PhoenixActionType.FINISH)) {
+            log.d("Blocking AnalyticsEvent: " + eventType + " while ad is playing");
             return;
         }
         if (eventType != PhoenixActionType.STOP) {
