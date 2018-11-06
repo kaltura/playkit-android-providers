@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -265,11 +265,12 @@ public class KalturaStatsPlugin extends PKPlugin {
                         break;
                     case PLAYHEAD_UPDATED:
                         PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
-                        //log.d("playheadUpdated event  position = " + playheadUpdated.position + " duration = " + playheadUpdated.duration);
-                        if (playheadUpdated.duration != 0) {
-                            progress = Float.valueOf(playheadUpdated.position / playheadUpdated.duration);
-                            maybeSentPlayerReachedEvent();
+                        if (playheadUpdated.position >= 0 && playheadUpdated.duration > 0) {
+                            progress = (float) playheadUpdated.position / playheadUpdated.duration;
+                        } else {
+                            progress = 0f;
                         }
+                        maybeSentPlayerReachedEvent();
                         break;
                     case DURATION_CHANGE:
                         long currDuration = ((PlayerEvent.DurationChanged) event).duration;
