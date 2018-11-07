@@ -427,7 +427,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     public void maybeSentPlayerReachedEvent() {
-        log.d("progress = " + progress + " seekPercent = " + seekPercent);
+        //log.d("progress = " + progress + " seekPercent = " + seekPercent);
         if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
             sendPlayReached25();
         } else if (!playReached50 && progress >= 0.5 && seekPercent < 0.75) {
