@@ -65,7 +65,7 @@ public class OvpResultAdapter implements JsonDeserializer<BaseResult> {
                 }
             }
         } else {
-            baseResult = KalturaOvpParser.getRuntimeGson(typeOfT.getClass()).fromJson(json, typeOfT);;
+            baseResult = KalturaOvpParser.getRuntimeGson(typeOfT.getClass()).fromJson(json, typeOfT);
         }
         return baseResult;
     }
