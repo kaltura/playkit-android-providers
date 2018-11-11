@@ -116,6 +116,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private void setConfigMembers(Object config) {
         PhoenixAnalyticsConfig pluginConfig = parseConfig(config);
+        if (pluginConfig == null) {
+            log.e("Error, pluginConfig == null");
+            return;
+        }
         this.baseUrl = pluginConfig.getBaseUrl();
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
