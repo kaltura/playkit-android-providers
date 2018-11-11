@@ -28,7 +28,6 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.providers.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;

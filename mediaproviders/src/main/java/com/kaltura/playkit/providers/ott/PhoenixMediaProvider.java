@@ -564,10 +564,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     private boolean is360Supported(Map<String, String> metadata) {
-        if ("360".equals(metadata.get("tags"))) {
-            return true;
-        }
-        return false;
+        return ("360".equals(metadata.get("tags")));
     }
 
     @NonNull

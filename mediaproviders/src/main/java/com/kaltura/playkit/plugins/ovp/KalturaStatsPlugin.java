@@ -36,8 +36,6 @@ import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.providers.api.ovp.services.StatsService;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.TimerTask;
-
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYBACK_INFO_UPDATED;
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
 

@@ -3,9 +3,7 @@ package com.kaltura.playkit.mediaproviders.plugins.ott;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.LogEvent;
 import com.kaltura.playkit.MessageBus;
-import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
@@ -15,7 +13,6 @@ import com.kaltura.playkit.mediaproviders.plugins.MockPlayer;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.TVPAPIAnalyticsPlugin;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +20,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 
 import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 /**
  * Created by zivilan on 12/12/2016.
