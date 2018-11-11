@@ -11,6 +11,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.mediaproviders.plugins.MockPlayer;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.TVPAPIAnalyticsPlugin;
 
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
-import plugins.MockPlayer;
 
 /**
  * Created by zivilan on 12/12/2016.
