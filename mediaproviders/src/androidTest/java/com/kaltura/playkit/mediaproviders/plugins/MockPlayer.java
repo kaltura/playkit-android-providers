@@ -44,6 +44,11 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings setMpgaAudioFormatEnabled(boolean mpgaAudioFormatEnabled) {
+                return this;
+            }
+
+            @Override
             public Settings useTextureView(boolean useTextureView) {
                 return this;
             }

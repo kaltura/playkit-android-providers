@@ -29,6 +29,7 @@ import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -807,6 +808,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                                 }
 
                             } catch (IOException ex) {
+                                ex.printStackTrace();
                             } finally {
                                 bufferedReader.close();
                             }

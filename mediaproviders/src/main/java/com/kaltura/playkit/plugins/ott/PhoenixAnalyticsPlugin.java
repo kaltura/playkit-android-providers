@@ -28,7 +28,6 @@ import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.providers.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
@@ -116,6 +115,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private void setConfigMembers(Object config) {
         PhoenixAnalyticsConfig pluginConfig = parseConfig(config);
+        if (pluginConfig == null) {
+            log.e("Error, pluginConfig == null");
+            return;
+        }
         this.baseUrl = pluginConfig.getBaseUrl();
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();

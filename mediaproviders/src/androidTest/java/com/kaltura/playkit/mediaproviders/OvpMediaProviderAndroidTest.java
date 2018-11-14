@@ -584,6 +584,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
                                 }
 
                             } catch (IOException ex) {
+                                ex.printStackTrace();
                             } finally {
                                 bufferedReader.close();
                             }

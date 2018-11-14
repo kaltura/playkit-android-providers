@@ -29,7 +29,6 @@ import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.providers.api.ovp.model.FlavorAssetsFilter;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryContextDataResult;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryType;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaFlavorAsset;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadata;
