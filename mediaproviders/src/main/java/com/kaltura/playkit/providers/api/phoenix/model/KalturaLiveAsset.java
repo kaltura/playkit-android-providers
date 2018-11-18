@@ -10,19 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.providers.api.phoenix;
+package com.kaltura.playkit.providers.api.phoenix.model;
 
-import com.kaltura.playkit.PlayKitManager;
-
-/**
- * @hide
- */
-
-public class PhoenixConfigs {
-
-    //public static String ApiPrefix = "api_v3/";
-
-    public static String ClientTag = PlayKitManager.CLIENT_TAG;
-    public static String ApiVersion = "5.0.3.18074";
-
+public class KalturaLiveAsset extends KalturaMediaAsset {
 }

@@ -91,7 +91,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final String TAG = "PhoenixMediaProvider";
 
-    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLinearMediaAsset"; //Might be changed to: "KalturaLiveAsset".
+    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLiveAsset"; //Might be needed to support in KalturaProgramAsset for EPG
 
     private static final boolean EnableEmptyKs = true;
 
@@ -539,7 +539,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                                     kalturaPlaybackContext.getSources(), is360Content);
                             mediaEntry.setMetadata(metadata);
                             mediaEntry.setName(kalturaMediaAsset.getName());
-                            if (isLiveMediaEntry(kalturaMediaAsset)) {
+                            if (isDvrLiveMedia()) {
+                                mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.DvrLive);
+                            } else if (isLiveMediaEntry(kalturaMediaAsset)) {
                                 mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
                             } else {
                                 mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Vod);
@@ -569,13 +571,14 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             notifyCompletion();
 
         }
+
+        private boolean isDvrLiveMedia() {
+            return mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver;
+        }
     }
 
     private boolean is360Supported(Map<String, String> metadata) {
-        if ("360".equals(metadata.get("tags")) || mediaAsset.forceVRMode) {
-            return true;
-        }
-        return false;
+        return ("360".equals(metadata.get("tags")));
     }
 
     @NonNull
@@ -610,11 +613,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
         if (kalturaMediaAsset.getDescription() != null) {
             metadata.put("description", kalturaMediaAsset.getDescription());
-        }
-        if (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver) {
-            metadata.put("dvrStatus", "1");
-        } else if (isLiveMediaEntry(kalturaMediaAsset)) {
-            metadata.put("dvrStatus", "0");
         }
         return metadata;
     }

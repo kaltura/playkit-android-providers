@@ -29,7 +29,6 @@ import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.providers.api.ovp.model.FlavorAssetsFilter;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryContextDataResult;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryType;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaFlavorAsset;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadata;
@@ -383,7 +382,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     .setDuration(entry.getMsDuration())
                     .setMetadata(metadata)
                     .setName(entry.getName())
-                    .setMediaType(MediaTypeConverter.toMediaEntryType(entry.getType()));
+                    .setMediaType(MediaTypeConverter.toMediaEntryType(entry));
         }
 
         private static void populateMetadata(Map<String, String> metadata, KalturaMediaEntry entry) {
@@ -398,9 +397,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
             if (entry.hasThumbnail()) {
                 metadata.put("thumbnailUrl", entry.getThumbnailUrl());
-            }
-            if (entry.hasDvrStatus()) {
-                metadata.put("dvrStatus", String.valueOf(entry.getDvrStatus()));
             }
         }
 
@@ -600,8 +596,22 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     public static class MediaTypeConverter {
 
-        public static PKMediaEntry.MediaEntryType toMediaEntryType(KalturaEntryType type) {
-            switch (type) {
+        public static PKMediaEntry.MediaEntryType toMediaEntryType(KalturaMediaEntry entry) {
+            if (entry == null) {
+                return PKMediaEntry.MediaEntryType.Unknown;
+            }
+
+            if (entry.hasDvrStatus()) {
+                if (entry.hasDvrStatus() && entry.getDvrStatus() != null) {
+                    if(entry.getDvrStatus() == 1) {
+                        return PKMediaEntry.MediaEntryType.DvrLive;
+                    } else if (entry.getDvrStatus() == 0) {
+                        return PKMediaEntry.MediaEntryType.Live;
+                    }
+                }
+            }
+
+            switch (entry.getType()) {
                 case MEDIA_CLIP:
                     return PKMediaEntry.MediaEntryType.Vod;
                 case LIVE_STREAM:

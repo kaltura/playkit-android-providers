@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -36,8 +36,6 @@ import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.providers.api.ovp.services.StatsService;
 import com.kaltura.playkit.utils.Consts;
 
-import java.util.TimerTask;
-
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYBACK_INFO_UPDATED;
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
 
@@ -56,9 +54,9 @@ public class KalturaStatsPlugin extends PKPlugin {
     private MessageBus messageBus;
     private RequestQueue requestsExecutor;
     private int timerInterval;
-    private java.util.Timer timer = new java.util.Timer();
 
     private float seekPercent = 0;
+    float progress;
     private boolean playReached25 = false;
     private boolean playReached50 = false;
     private boolean playReached75 = false;
@@ -160,9 +158,6 @@ public class KalturaStatsPlugin extends PKPlugin {
     public void onDestroy() {
         log.d("onDestroy");
         intervalOn = false;
-        if (timer != null) {
-            cancelTimer();
-        }
     }
 
     @Override
@@ -189,12 +184,10 @@ public class KalturaStatsPlugin extends PKPlugin {
 
     @Override
     protected void onApplicationPaused() {
-        cancelTimer();
     }
 
     @Override
     protected void onApplicationResumed() {
-        startTimerInterval();
     }
 
     private void onEvent(PlayerEvent.StateChanged event) {
@@ -215,7 +208,6 @@ public class KalturaStatsPlugin extends PKPlugin {
                 }
                 if (!intervalOn) {
                     intervalOn = true;
-                    startTimerInterval();
                 }
                 sendWidgetLoaded();
                 break;
@@ -229,7 +221,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     private PKEvent.Listener mEventListener = new PKEvent.Listener() {
         @Override
         public void onEvent(PKEvent event) {
-            if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != PLAYHEAD_UPDATED && event.eventType() != PLAYBACK_INFO_UPDATED) {
+            if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != AdEvent.Type.AD_PROGRESS && event.eventType() != PLAYHEAD_UPDATED && event.eventType() != PLAYBACK_INFO_UPDATED) {
                 log.d("New PKEvent = " + event.eventType().name());
             }
 
@@ -247,7 +239,6 @@ public class KalturaStatsPlugin extends PKPlugin {
                         break;
                     case ERROR:
                         sendAnalyticsEvent(KStatsEvent.ERROR);
-                        cancelTimer();
                         break;
                     case PLAY:
                         break;
@@ -270,6 +261,15 @@ public class KalturaStatsPlugin extends PKPlugin {
                     case REPLAY:
                         sendAnalyticsEvent(KStatsEvent.REPLAY);
                         break;
+                    case PLAYHEAD_UPDATED:
+                        PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
+                        if (playheadUpdated.position >= 0 && playheadUpdated.duration > 0) {
+                            progress = (float) playheadUpdated.position / playheadUpdated.duration;
+                        } else {
+                            progress = 0f;
+                        }
+                        maybeSentPlayerReachedEvent();
+                        break;
                     case DURATION_CHANGE:
                         long currDuration = ((PlayerEvent.DurationChanged) event).duration;
                         if (currDuration >= 0) {
@@ -281,7 +281,6 @@ public class KalturaStatsPlugin extends PKPlugin {
                         sendPlayReached50();
                         sendPlayReached75();
                         sendPlayReached100();
-                        cancelTimer();
                         break;
                     default:
                         break;
@@ -323,14 +322,6 @@ public class KalturaStatsPlugin extends PKPlugin {
             playReached25 = true;
         }
     }
-
-    private void cancelTimer() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
-    }
-
 
     public void onEvent(AdEvent event) {
         switch (event.type) {
@@ -396,7 +387,6 @@ public class KalturaStatsPlugin extends PKPlugin {
                 break;
             case ERROR:
                 sendAnalyticsEvent(KStatsEvent.ERROR);
-                cancelTimer();
                 break;
             default:
                 break;
@@ -434,39 +424,29 @@ public class KalturaStatsPlugin extends PKPlugin {
         isFirstPlay = true;
     }
 
-    /**
-     * Time interval handling play reached events
-     */
-    private void startTimerInterval() {
-        if (timer == null) {
-            timer = new java.util.Timer();
+    public void maybeSentPlayerReachedEvent() {
+        //log.d("progress = " + progress + " seekPercent = " + seekPercent);
+        if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
+            sendPlayReached25();
+        } else if (!playReached50 && progress >= 0.5 && seekPercent < 0.75) {
+            sendPlayReached25();
+            sendPlayReached50();
+        } else if (!playReached75 && progress >= 0.75 && seekPercent < 1) {
+            sendPlayReached25();
+            sendPlayReached50();
+            sendPlayReached75();
         }
-
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                float progress = ((float) player.getCurrentPosition() / player.getDuration());
-                log.d("progress = " + progress + " seekPercent = " + seekPercent);
-                if (!playReached25 && progress >= 0.25 && seekPercent < 0.5) {
-                    sendPlayReached25();
-                } else if (!playReached50 && progress >= 0.5 && seekPercent < 0.75) {
-                    sendPlayReached25();
-                    sendPlayReached50();
-                } else if (!playReached75 && progress >= 0.75 && seekPercent < 1) {
-                    sendPlayReached25();
-                    sendPlayReached50();
-                    sendPlayReached75();
-                }
-            }
-        }, 0, timerInterval);
     }
-
     /**
      * Send stats event to Kaltura stats DB
      *
      * @param eventType - Enum stating Kaltura state events
      */
     private void sendAnalyticsEvent(final KStatsEvent eventType) {
+        if (pluginConfig == null || pluginConfig.getEntryId() == null) {
+            log.w("Can not send analytics event. Mandatory field entryId is missing");
+            return;
+        }
         String sessionId = (player.getSessionId() != null) ? player.getSessionId() : "";
 
         long duration = player.getDuration() == Consts.TIME_UNSET ? -1 : player.getDuration() / Consts.MILLISECONDS_MULTIPLIER;

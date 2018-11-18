@@ -10,6 +10,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.utils.Consts;
 
@@ -43,6 +44,11 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings setMpgaAudioFormatEnabled(boolean mpgaAudioFormatEnabled) {
+                return this;
+            }
+
+            @Override
             public Settings useTextureView(boolean useTextureView) {
                 return this;
             }
@@ -59,6 +65,11 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings setAdAutoPlayOnResume(boolean autoPlayOnResume) {
+                return this;
+            }
+
+            @Override
+            public Settings setPlayerBuffers(LoadControlBuffers loadControlBuffers) {
                 return this;
             }
 
@@ -90,17 +101,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public void prepareNext(@NonNull PKMediaConfig mediaConfig) {
-
-    }
-
-    @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
-
-    }
-
-    @Override
-    public void skip() {
 
     }
 
@@ -175,12 +176,27 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+    public PKEvent.Listener addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
+        return null;
+    }
+
+    @Override
+    public void removeEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
 
     }
 
     @Override
-    public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
+    public PKEvent.Listener addStateChangeListener(@NonNull PKEvent.Listener listener) {
+        return null;
+    }
+
+    @Override
+    public void removeStateChangeListener(@NonNull PKEvent.Listener listener) {
+
+    }
+
+    @Override
+    public void removeListener(@NonNull PKEvent.Listener listener) {
 
     }
 

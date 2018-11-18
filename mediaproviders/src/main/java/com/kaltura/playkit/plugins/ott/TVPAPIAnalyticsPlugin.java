@@ -25,6 +25,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.providers.api.tvpapi.services.MediaMarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -67,7 +68,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         this.timer = new Timer();
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         if (baseUrl != null && !baseUrl.isEmpty() &&  initObject != null) {
-            messageBus.listen(getEventListener(), PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.LOADED_METADATA, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED);
+            messageBus.listen(getEventListener(), PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAYING, PlayerEvent.Type.PLAYHEAD_UPDATED, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED, AdEvent.Type.CONTENT_PAUSE_REQUESTED, AdEvent.Type.CONTENT_RESUME_REQUESTED);
         } else {
             log.e("Error, base url/initObj - incorrect");
         }
@@ -104,20 +105,18 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     protected void sendAnalyticsEvent(final PhoenixActionType eventType){
         String method = eventType == PhoenixActionType.HIT ? "MediaHit": "MediaMark";
         String action = eventType.name().toLowerCase(Locale.ENGLISH);
+        log.d("TVPAPIAnalyticsPlugin sendAnalyticsEvent " + eventType + ", method = " + method + ", action = " + action);
 
         if (initObject == null) {
             return;
         }
 
-        if (eventType != PhoenixActionType.STOP) {
-            lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
-        }
         if (mediaConfig == null || mediaConfig.getMediaEntry() == null || mediaConfig.getMediaEntry().getId() == null) {
             log.e("Error mediaConfig is not valid");
             return;
         }
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEvent(baseUrl + "m=" + method, initObject, action,
-                mediaConfig.getMediaEntry().getId(), this.fileId, lastKnownPlayerPosition);
+                currentMediaId, fileId, lastKnownPlayerPosition);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override

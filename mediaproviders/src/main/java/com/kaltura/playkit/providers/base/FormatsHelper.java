@@ -57,7 +57,7 @@ public class FormatsHelper {
 //TODO: add supported schemes
 
     static{
-        SupportedFormats = new HashMap<StreamFormat, PKMediaFormat>();
+        SupportedFormats = new HashMap<>();
         SupportedFormats.put(StreamFormat.MpegDash, PKMediaFormat.dash);
         SupportedFormats.put(StreamFormat.AppleHttp, PKMediaFormat.hls);
         SupportedFormats.put(StreamFormat.Url, PKMediaFormat.mp4);
