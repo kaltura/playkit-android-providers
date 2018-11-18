@@ -61,8 +61,15 @@ public class PhoenixAnalyticsEvent implements PKEvent {
 
     public static class BookmarkErrorEvent extends ErrorEvent {
 
-        public BookmarkErrorEvent(Type errorType, int errorCode, String errorMessage) {
-            super(errorType, errorCode, errorMessage);
+        public BookmarkErrorEvent(int errorCode, String errorMessage) {
+            super(Type.BOOKMARK_ERROR, errorCode, errorMessage);
+        }
+    }
+
+    public static class ConcurrencyErrorEvent extends ErrorEvent {
+
+        public ConcurrencyErrorEvent(int errorCode, String errorMessage) {
+            super(Type.CONCURRENCY_ERROR, errorCode, errorMessage);
         }
     }
 

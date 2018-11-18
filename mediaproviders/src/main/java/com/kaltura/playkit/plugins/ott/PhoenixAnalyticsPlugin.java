@@ -390,7 +390,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             if (TextUtils.equals(errorCode, CONCURRENCY_ERROR_COODE)) {
                                 sendConcurrencyErrorEvent(eventType);
                             } else {
-                                messageBus.post(new PhoenixAnalyticsEvent.ErrorEvent(PhoenixAnalyticsEvent.Type.BOOKMARK_ERROR, Integer.parseInt(errorCode), errorMessage));
+                                messageBus.post(new PhoenixAnalyticsEvent.BookmarkErrorEvent(Integer.parseInt(errorCode), errorMessage));
                             }
                         }
                     }
@@ -403,7 +403,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private void sendConcurrencyErrorEvent(PhoenixActionType eventType) {
         messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-        messageBus.post(new PhoenixAnalyticsEvent.ErrorEvent(PhoenixAnalyticsEvent.Type.CONCURRENCY_ERROR, Integer.parseInt(CONCURRENCY_ERROR_COODE), PhoenixAnalyticsEvent.Type.CONCURRENCY_ERROR.name()));
+        messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_COODE), PhoenixAnalyticsEvent.Type.CONCURRENCY_ERROR.name()));
     }
 
     PKEvent.Listener getEventListener() {
