@@ -13,7 +13,9 @@
 package com.kaltura.playkit.plugins.ott;
 
 import android.content.Context;
+import android.text.TextUtils;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -29,6 +31,7 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.providers.api.KalturaAPIException;
 import com.kaltura.playkit.providers.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -52,6 +55,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     String currentMediaId = "UnKnown";
     String baseUrl;
     long lastKnownPlayerPosition = 0;
+    Gson gson = new Gson();
     boolean isAdPlaying;
 
     private String ks;
@@ -343,14 +347,46 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
             public void onComplete(ResponseElement response) {
-                if (response.isSuccess() && response.getError() != null && response.getError().getCode().equals("4001")) {
-                    messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                log.d("onComplete send event: " + eventType );
+                if (response.isSuccess() && response.getError() != null) {
+                    if (response.getError().getCode().equals("4001")) {
+                        sendConcurrencyErrorEvent(eventType);
+                    } else {
+                        sendGenericErrorEvent(response, eventType);
+                    }
+                } else if (response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains("KalturaAPIException")) {
+                    sendAPIExceptionErrorEvent(response);
+                    messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString() + " Failed"));
+                } else {
                     messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
-                    log.d("onComplete send event: " + eventType);
                 }
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    private void sendGenericErrorEvent(ResponseElement response, PhoenixActionType eventType) {
+        messageBus.post(new PhoenixAnalyticsEvent.ErrorEvent(PhoenixAnalyticsEvent.Type.ERROR, Integer.valueOf(response.getError().getCode()), response.getError().getMessage()));
+        messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString() + " Failed"));
+    }
+
+    private void sendAPIExceptionErrorEvent(ResponseElement response) {
+        KalturaAPIException kalturaAPIException = gson.fromJson(response.getResponse(), KalturaAPIException.class);
+        if (kalturaAPIException.result != null && kalturaAPIException.result.error != null) {
+            if (TextUtils.equals(kalturaAPIException.result.error.getCode(), "1")) {
+                messageBus.post(new PhoenixAnalyticsEvent.ErrorEvent(PhoenixAnalyticsEvent.Type.BOOKMARK_ERROR, Integer.valueOf(kalturaAPIException.result.error.getCode()), kalturaAPIException.result.error.getMessage()));
+            } else if (TextUtils.equals(kalturaAPIException.result.error.getCode(), "500015")) {
+                messageBus.post(new PhoenixAnalyticsEvent.ErrorEvent(PhoenixAnalyticsEvent.Type.INVALID_KS_ERROR, Integer.valueOf(kalturaAPIException.result.error.getCode()), kalturaAPIException.result.error.getMessage()));
+            } else {
+                messageBus.post(new PhoenixAnalyticsEvent.ErrorEvent(PhoenixAnalyticsEvent.Type.ERROR, Integer.valueOf(kalturaAPIException.result.error.getCode()), kalturaAPIException.result.error.getMessage()));
+            }
+        }
+    }
+
+    private void sendConcurrencyErrorEvent(PhoenixActionType eventType) {
+        messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+        messageBus.post(new PhoenixAnalyticsEvent.ErrorEvent(PhoenixAnalyticsEvent.Type.CONCURRENCY_ERROR, 4001, PhoenixAnalyticsEvent.Type.CONCURRENCY_ERROR.name()));
+        messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString() + " Failed"));
     }
 
     PKEvent.Listener getEventListener() {
