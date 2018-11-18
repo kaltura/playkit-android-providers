@@ -29,7 +29,6 @@ public class PhoenixAnalyticsEvent implements PKEvent {
         REPORT_SENT,
         CONCURRENCY_ERROR,
         BOOKMARK_ERROR,
-        INVALID_KS_ERROR,
         ERROR
     }
 

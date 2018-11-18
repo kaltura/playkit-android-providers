@@ -12,19 +12,11 @@
 
 package com.kaltura.playkit.providers.api;
 
+import com.kaltura.netkit.connect.response.BaseResult;
+
 /**
  * @hide
  */
 
-public class KalturaAPIException {
-    public double executionTime;
-    public KalturaAPIExceptionResult result;
-
-    public double getExecutionTime() {
-        return executionTime;
-    }
-
-    public KalturaAPIExceptionResult getResult() {
-        return result;
-    }
+public class KalturaAPIException extends BaseResult {
 }
