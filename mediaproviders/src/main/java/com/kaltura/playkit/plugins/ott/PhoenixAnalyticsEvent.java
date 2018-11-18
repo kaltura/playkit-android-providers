@@ -40,11 +40,6 @@ public class PhoenixAnalyticsEvent implements PKEvent {
             super(Type.REPORT_SENT);
             this.reportedEventName = reportedEventName;
         }
-
-        @Override
-        public Enum eventType() {
-            return Type.REPORT_SENT;
-        }
     }
 
     public static class ErrorEvent extends PhoenixAnalyticsEvent {
