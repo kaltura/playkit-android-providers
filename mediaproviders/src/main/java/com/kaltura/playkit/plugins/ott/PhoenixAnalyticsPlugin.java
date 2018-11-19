@@ -349,6 +349,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void onComplete(ResponseElement response) {
                 log.d("onComplete send event: " + eventType);
+                if (response == null) {
+                    return;
+                }
+
                 if (response.getError() != null) { // in case of error from Derver side
                     sendGenericErrorEvent(response, eventType);
                 } else {
@@ -387,7 +391,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             String errorMessage = error.getString("message");
 
                             if (TextUtils.equals(errorCode, CONCURRENCY_ERROR_COODE)) {
-                                sendConcurrencyErrorEvent(eventType);
+                                sendConcurrencyErrorEvent(errorMessage);
                             } else {
                                 messageBus.post(new PhoenixAnalyticsEvent.BookmarkErrorEvent(Integer.parseInt(errorCode), errorMessage));
                             }
@@ -400,9 +404,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     }
 
-    private void sendConcurrencyErrorEvent(PhoenixActionType eventType) {
+    private void sendConcurrencyErrorEvent(String errorMessage) {
         messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-        messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_COODE), PhoenixAnalyticsEvent.Type.CONCURRENCY_ERROR.name()));
+        messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_COODE), errorMessage));
     }
 
     PKEvent.Listener getEventListener() {
