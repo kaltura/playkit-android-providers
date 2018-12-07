@@ -326,7 +326,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
 
         if (TextUtils.isEmpty(this.ks)) {
-            log.d("Error KS is not valid");
+            log.w("Blocking AnalyticsEvent KS is not valid");
             return;
         }
 
