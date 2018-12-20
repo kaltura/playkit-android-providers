@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.providers.api.ovp;
 
+import android.text.TextUtils;
+
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.RestrictionError;
 
@@ -22,10 +24,17 @@ import com.kaltura.netkit.utils.RestrictionError;
 public class KalturaOvpErrorHelper {
 
     public static ErrorElement getErrorElement(String code, String message){
+
+        final String NO_FILES_FOUND = "NoFilesFound";
+
+        if (TextUtils.isEmpty(code)) {
+            code = NO_FILES_FOUND;
+        }
+
         switch (code){
             /*case "SCHEDULED_RESTRICTED":
             case "COUNTRY_RESTRICTED":*/
-            case "NoFilesFound":
+            case NO_FILES_FOUND:
                 return ErrorElement.NotFound.message("Content can't be played due to lack of sources");
 
             default:

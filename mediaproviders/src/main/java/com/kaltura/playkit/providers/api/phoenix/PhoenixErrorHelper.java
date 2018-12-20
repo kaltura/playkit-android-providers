@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.providers.api.phoenix;
 
+import android.text.TextUtils;
+
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.RestrictionError;
 
@@ -52,7 +54,16 @@ public class PhoenixErrorHelper {
      * @return
      */
     private static ErrorElement getDefinedErrorElement(String code, String message) {
+
+        if (code == null) {
+            code = "Unavailable";
+            if (TextUtils.isEmpty(message)) {
+                message = "unknown error";
+            }
+        }
+
         switch (code){
+            case "Unavailable":
             case "2016":
                 return new ErrorElement(message, code);
 
@@ -88,7 +99,7 @@ public class PhoenixErrorHelper {
                 return new RestrictionError("restricted due to concurrency limitation", RestrictionError.Restriction.ConcurrencyLimitation);
 
             case "2001":
-                return new RestrictionError("restricted due to suspended account ", RestrictionError.Restriction.Suspended);
+                return new RestrictionError("restricted due to suspended account", RestrictionError.Restriction.Suspended);
 
             default:
                 return null;
