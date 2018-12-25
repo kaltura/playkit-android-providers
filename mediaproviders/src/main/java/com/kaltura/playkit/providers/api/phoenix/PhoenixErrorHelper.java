@@ -23,6 +23,9 @@ import com.kaltura.netkit.utils.RestrictionError;
 
 public class PhoenixErrorHelper {
 
+    public static final String ERROR_CODE_UNAVILABLE = "Unavailable";
+    public static final String ERROR_MESSAGE_UNAVILABLE = "unknown error";
+
     /**
      * in case specific error codes should be parsed to predefined errors.
      * @param code
@@ -56,14 +59,15 @@ public class PhoenixErrorHelper {
     private static ErrorElement getDefinedErrorElement(String code, String message) {
 
         if (code == null) {
-            code = "Unavailable";
-            if (TextUtils.isEmpty(message)) {
-                message = "unknown error";
-            }
+            code = ERROR_CODE_UNAVILABLE;
+        }
+
+        if (TextUtils.isEmpty(message)) {
+            message = ERROR_MESSAGE_UNAVILABLE;
         }
 
         switch (code){
-            case "Unavailable":
+            case ERROR_CODE_UNAVILABLE:
             case "2016":
                 return new ErrorElement(message, code);
 
