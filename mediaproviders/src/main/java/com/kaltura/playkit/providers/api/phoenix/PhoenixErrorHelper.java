@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.providers.api.phoenix;
 
+import android.text.TextUtils;
+
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.RestrictionError;
 
@@ -20,6 +22,9 @@ import com.kaltura.netkit.utils.RestrictionError;
  */
 
 public class PhoenixErrorHelper {
+
+    public static final String ERROR_CODE_UNAVILABLE = "Unavailable";
+    public static final String ERROR_MESSAGE_UNAVILABLE = "unknown error";
 
     /**
      * in case specific error codes should be parsed to predefined errors.
@@ -52,7 +57,17 @@ public class PhoenixErrorHelper {
      * @return
      */
     private static ErrorElement getDefinedErrorElement(String code, String message) {
+
+        if (code == null) {
+            code = ERROR_CODE_UNAVILABLE;
+        }
+
+        if (TextUtils.isEmpty(message)) {
+            message = ERROR_MESSAGE_UNAVILABLE;
+        }
+
         switch (code){
+            case ERROR_CODE_UNAVILABLE:
             case "2016":
                 return new ErrorElement(message, code);
 
