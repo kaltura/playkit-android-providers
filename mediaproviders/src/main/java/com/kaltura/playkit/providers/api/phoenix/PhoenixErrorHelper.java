@@ -67,7 +67,7 @@ public class PhoenixErrorHelper {
         }
 
         switch (code){
-            case "Unavailable":
+            case ERROR_CODE_UNAVILABLE:
             case "2016":
                 return new ErrorElement(message, code);
 
