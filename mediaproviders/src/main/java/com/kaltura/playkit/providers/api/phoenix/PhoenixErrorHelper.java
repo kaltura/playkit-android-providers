@@ -59,15 +59,15 @@ public class PhoenixErrorHelper {
     private static ErrorElement getDefinedErrorElement(String code, String message) {
 
         if (code == null) {
-            code = "Unavailable";
+            code = ERROR_CODE_UNAVILABLE;
         }
 
         if (TextUtils.isEmpty(message)) {
-            message = "unknown error";
+            message = ERROR_MESSAGE_UNAVILABLE;
         }
 
         switch (code){
-            case "Unavailable":
+            case ERROR_CODE_UNAVILABLE:
             case "2016":
                 return new ErrorElement(message, code);
 
