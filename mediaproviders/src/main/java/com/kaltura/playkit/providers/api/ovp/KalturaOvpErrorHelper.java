@@ -31,6 +31,10 @@ public class KalturaOvpErrorHelper {
             code = NO_FILES_FOUND;
         }
 
+        if (TextUtils.isEmpty(message)) {
+            message = "unknown error";
+        }
+
         switch (code){
             /*case "SCHEDULED_RESTRICTED":
             case "COUNTRY_RESTRICTED":*/
