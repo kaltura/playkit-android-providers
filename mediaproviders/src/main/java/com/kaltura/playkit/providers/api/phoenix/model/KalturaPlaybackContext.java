@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.providers.api.phoenix.model;
 
+import android.text.TextUtils;
+
 import com.kaltura.netkit.utils.ErrorElement;
 
 
@@ -36,11 +38,15 @@ public class KalturaPlaybackContext extends BasePlaybackContext {
 
     @Override
     protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {
-        switch (message.getCode()){
-            case "OK":
+
+        if (message != null) {
+            if (message.getCode() != null && TextUtils.equals("OK", message.getCode())) {
                 return null;
-            default:
+            } else {
                 return PhoenixErrorHelper.getErrorElement(message.getCode(), message.getMessage());
+            }
+        } else {
+            return PhoenixErrorHelper.getErrorElement(PhoenixErrorHelper.ERROR_CODE_UNAVILABLE, PhoenixErrorHelper.ERROR_MESSAGE_UNAVILABLE);
         }
     }
 }

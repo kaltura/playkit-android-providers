@@ -23,6 +23,7 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -222,6 +223,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                         break;
                     case ERROR:
                         resetTimer();
+                        PKError error = ((PlayerEvent.Error) event).error;
+                        if (error != null && !error.isFatal()) {
+                            log.v("Error eventType = " + error.errorType + " severity = " + error.severity + " errorMessage = " + error.message);
+                            return;
+                        }
                         sendAnalyticsEvent(PhoenixActionType.ERROR);
                         break;
                     case SOURCE_SELECTED:
@@ -358,7 +364,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     return;
                 }
 
-                if (response.getError() != null) { // in case of error from Derver side
+                if (response.getError() != null) { // in case of error from server side
                     sendGenericErrorEvent(response, eventType);
                 } else {
                     if (response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains("KalturaAPIException")) {

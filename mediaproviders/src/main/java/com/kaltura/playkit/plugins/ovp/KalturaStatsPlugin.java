@@ -23,6 +23,7 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -238,6 +239,11 @@ public class KalturaStatsPlugin extends PKPlugin {
                         KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
                         break;
                     case ERROR:
+                        PKError error = ((PlayerEvent.Error) event).error;
+                        if (error != null && !error.isFatal()) {
+                            log.v("Error eventType = " + error.errorType + " severity = " + error.severity + " errorMessage = " + error.message);
+                            return;
+                        }
                         sendAnalyticsEvent(KStatsEvent.ERROR);
                         break;
                     case PLAY:
