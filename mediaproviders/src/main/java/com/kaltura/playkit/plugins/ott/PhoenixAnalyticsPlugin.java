@@ -200,10 +200,20 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     case PLAYHEAD_UPDATED:
                         if (!isAdPlaying) {
                             PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
-                            if (playheadUpdated != null && playheadUpdated.position > 0) {
-                                lastKnownPlayerPosition = playheadUpdated.position / Consts.MILLISECONDS_MULTIPLIER;
-                                lastKnownPlayerDuration = playheadUpdated.duration / Consts.MILLISECONDS_MULTIPLIER;
+                            if (playheadUpdated != null) {
+                                if (playheadUpdated.position > 0) {
+                                    lastKnownPlayerPosition = playheadUpdated.position / Consts.MILLISECONDS_MULTIPLIER;
+                                }
+                                if(playheadUpdated.duration > 0) {
+                                    lastKnownPlayerDuration = playheadUpdated.duration / Consts.MILLISECONDS_MULTIPLIER;
+                                }
                             }
+                        }
+                        break;
+                    case DURATION_CHANGE:
+                        PlayerEvent.DurationChanged durationChanged = (PlayerEvent.DurationChanged) event;
+                        if (durationChanged != null) {
+                            lastKnownPlayerDuration = durationChanged.duration /  Consts.MILLISECONDS_MULTIPLIER;
                         }
                         break;
                     case STOPPED:
@@ -314,10 +324,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
-//                if (player.getCurrentPosition() > 0 && !isAdPlaying) {
-//                    lastKnownPlayerPosition = player.getCurrentPosition() / Consts.MILLISECONDS_MULTIPLIER;
-//                }
-                if (lastKnownPlayerPosition > 0 && ((float) lastKnownPlayerPosition / lastKnownPlayerDuration > MEDIA_ENDED_THRESHOLD)) {
+                if (lastKnownPlayerDuration > 0 && ((float) lastKnownPlayerPosition / lastKnownPlayerDuration > MEDIA_ENDED_THRESHOLD)) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                     playEventWasFired = false;
                     isMediaFinished = true;
