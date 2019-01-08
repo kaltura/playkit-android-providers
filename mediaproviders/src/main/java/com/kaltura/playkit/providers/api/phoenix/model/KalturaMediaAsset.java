@@ -23,6 +23,7 @@ import java.util.List;
 public class KalturaMediaAsset extends BaseResult {
 
     private int id;
+    private String entryId;
     private int type;
 
     private long endDate;
@@ -41,6 +42,10 @@ public class KalturaMediaAsset extends BaseResult {
 
     public int getId() {
         return id;
+    }
+
+    public String getEntryId() {
+        return entryId;
     }
 
     public int getType() {
