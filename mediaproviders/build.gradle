@@ -40,7 +40,8 @@ dependencies {
     //implementation project(":netkit")
     //implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
     //implementation project(":playkit")
-    implementation 'com.kaltura.playkit:playkit:3.7.1'
+    //implementation 'com.kaltura.playkit:playkit:3.7.1'
+    implementation project(":playkit")
 
 
     testImplementation 'junit:junit:4.12'
