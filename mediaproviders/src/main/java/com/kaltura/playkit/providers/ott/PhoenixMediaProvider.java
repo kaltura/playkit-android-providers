@@ -69,6 +69,7 @@ import com.kaltura.playkit.providers.base.BEMediaProvider;
 import com.kaltura.playkit.providers.base.BEResponseListener;
 import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.utils.Consts;
 
 
 /**
@@ -688,7 +689,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     maxDuration = Math.max(playbackSource.getDuration(), maxDuration);
                 }
             }
-            return mediaEntry.setDuration(maxDuration).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
+            return mediaEntry.setDuration(maxDuration * Consts.MILLISECONDS_MULTIPLIER).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
         }
 
         //TODO: check why we get all sources while we asked for 4 specific formats
