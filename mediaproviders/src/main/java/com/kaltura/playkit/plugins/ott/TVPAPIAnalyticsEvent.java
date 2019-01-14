@@ -21,7 +21,7 @@ import com.kaltura.playkit.PKEvent;
 public class TVPAPIAnalyticsEvent implements PKEvent {
 
     public static final Class<TVPAPIAnalyticsReport> tvpapiAnalyticsReport = TVPAPIAnalyticsReport.class;
-    
+
     public enum Type {
         REPORT_SENT
     }
@@ -34,8 +34,7 @@ public class TVPAPIAnalyticsEvent implements PKEvent {
             this.reportedEventName = reportedEventName;
         }
     }
-
-
+    
     @Override
     public Enum eventType() {
         return Type.REPORT_SENT;
