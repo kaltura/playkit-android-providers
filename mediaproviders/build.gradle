@@ -42,7 +42,7 @@ dependencies {
     //implementation project(":playkit")
     //implementation 'com.kaltura.playkit:playkit:3.7.1'
     //implementation project(":playkit")
-    implementation 'com.kaltura:playkit-android:93d24168ea50c469276ae0bef24cf36f42f612ba'
+    implementation 'com.kaltura:playkit-android:163e80ee9dd4872da56574cafc68b25dc9b50d2d'
 
 
     testImplementation 'junit:junit:4.12'
