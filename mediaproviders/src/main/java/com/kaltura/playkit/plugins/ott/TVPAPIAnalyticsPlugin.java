@@ -24,8 +24,6 @@ import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.providers.api.tvpapi.services.MediaMarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -65,10 +63,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         this.player = player;
         this.context = context;
         this.messageBus = messageBus;
+
         this.timer = new Timer();
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         if (baseUrl != null && !baseUrl.isEmpty() &&  initObject != null) {
-            messageBus.listen(getEventListener(), PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAYING, PlayerEvent.Type.PLAYHEAD_UPDATED, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED, AdEvent.Type.CONTENT_PAUSE_REQUESTED, AdEvent.Type.CONTENT_RESUME_REQUESTED);
+            addListeners();
         } else {
             log.e("Error, base url/initObj - incorrect");
         }
@@ -88,12 +87,14 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         }
     }
 
+
+
     @Override
     protected void onUpdateConfig(Object config) {
         setPluginMembers(config);
         if (baseUrl == null || baseUrl.isEmpty() || initObject == null) {
             cancelTimer();
-            messageBus.remove(getEventListener(),(Enum[]) PlayerEvent.Type.values());
+            messageBus.removeListeners(this);
         }
     }
 

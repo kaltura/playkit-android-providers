@@ -80,7 +80,7 @@ public class PhoenixAnalyticsConfig {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(PARTNER_ID, partnerId);
         jsonObject.addProperty(BASE_URL, baseUrl);
-        jsonObject.addProperty(KS, ks);
+        jsonObject.addProperty(KS, ks == null ? "" : ks);
         jsonObject.addProperty(TIMER_INTERVAL, timerInterval);
 
         return jsonObject;
