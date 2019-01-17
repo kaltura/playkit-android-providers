@@ -20,7 +20,7 @@ import com.kaltura.playkit.PKEvent;
 
 public class TVPAPIAnalyticsEvent implements PKEvent {
 
-    public static final Class<TVPAPIAnalyticsReport> tvpapiAnalyticsReport = TVPAPIAnalyticsReport.class;
+    public static final Class<TVPAPIAnalyticsReport> reportSent = TVPAPIAnalyticsReport.class;
 
     public enum Type {
         REPORT_SENT

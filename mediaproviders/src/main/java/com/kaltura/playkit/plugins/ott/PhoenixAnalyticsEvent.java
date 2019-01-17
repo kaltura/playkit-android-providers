@@ -23,7 +23,7 @@ public class PhoenixAnalyticsEvent implements PKEvent {
 
     public final PhoenixAnalyticsEvent.Type type;
     public static final Class<ErrorEvent> error = ErrorEvent.class;
-    public static final Class<PhoenixAnalyticsReport> phoenixAnalyticsReport = PhoenixAnalyticsReport.class;
+    public static final Class<PhoenixAnalyticsReport> reportSent = PhoenixAnalyticsReport.class;
     public static final Class<BookmarkErrorEvent> bookmarkErrorEvent = BookmarkErrorEvent.class;
     public static final Class<ConcurrencyErrorEvent> concurrencyErrorEvent = ConcurrencyErrorEvent.class;
 
