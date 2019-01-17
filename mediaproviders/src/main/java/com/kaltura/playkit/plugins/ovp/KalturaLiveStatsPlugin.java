@@ -23,7 +23,6 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
-import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKPlugin;
@@ -108,7 +107,38 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         this.messageBus = messageBus;
         this.pluginConfig = parseConfig(config);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.messageBus.listen(mEventListener, PlayerEvent.Type.STATE_CHANGED, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAY, PlayerEvent.Type.TRACKS_AVAILABLE, PlayerEvent.Type.SOURCE_SELECTED, PlayerEvent.Type.VIDEO_TRACK_CHANGED);
+
+        this.messageBus.addListener(this, PlayerEvent.stateChanged, event -> {
+            onStateChangedEvent(event);
+        });
+
+        this.messageBus.addListener(this, PlayerEvent.play, event -> {
+            startLiveEvents();
+        });
+
+        this.messageBus.addListener(this, PlayerEvent.pause, event -> {
+            stopLiveEvents();
+        });
+
+        this.messageBus.addListener(this, PlayerEvent.playbackInfoUpdated, event -> {
+            PlaybackInfo currentPlaybackInfo = event.playbackInfo;
+            lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
+            log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + player.isLive());
+        });
+
+        this.messageBus.addListener(this, PlayerEvent.sourceSelected, event -> {
+            switch (event.source.getMediaFormat()) {
+                case hls:
+                    playbackProtocol = "hls";
+                    break;
+                case dash:
+                    playbackProtocol = "mpegdash";
+                    break;
+                default:
+                    playbackProtocol = "NA";
+                    break;
+            }
+        });
     }
 
     @Override
@@ -139,47 +169,7 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         startTimerInterval();
     }
 
-    private PKEvent.Listener mEventListener = new PKEvent.Listener() {
-        @Override
-        public void onEvent(PKEvent event) {
-            if (event instanceof PlayerEvent) {
-                switch (((PlayerEvent) event).type) {
-                    case STATE_CHANGED:
-                        KalturaLiveStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
-                        break;
-                    case PLAY:
-                        startLiveEvents();
-                        break;
-                    case PAUSE:
-                        stopLiveEvents();
-                        break;
-                    case PLAYBACK_INFO_UPDATED:
-                        PlaybackInfo currentPlaybackInfo = ((PlayerEvent.PlaybackInfoUpdated) event).playbackInfo;
-                        lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
-                        log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + player.isLive());
-                        break;
-                    case SOURCE_SELECTED:
-                        PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
-                        switch (sourceSelected.source.getMediaFormat()) {
-                            case hls:
-                                playbackProtocol = "hls";
-                                break;
-                            case dash:
-                                playbackProtocol = "mpegdash";
-                                break;
-                            default:
-                                playbackProtocol = "NA";
-                                break;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    };
-
-    public void onEvent(PlayerEvent.StateChanged event) {
+    public void onStateChangedEvent(PlayerEvent.StateChanged event) {
         switch (event.newState) {
             case READY:
                 if (isBuffering) {
