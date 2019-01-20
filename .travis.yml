@@ -6,9 +6,8 @@ jdk:
 android:
   components:
     - tools
-before_install:
-  - yes | sdkmanager "platforms;android-28"
-  - echo y | android update sdk -u -a -t build-tools-27.0.3
+    - build-tools-27.0.3
+    - android-28
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
 script:
