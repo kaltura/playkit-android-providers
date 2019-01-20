@@ -4,6 +4,8 @@ sudo: required
 jdk:
   - oraclejdk8
 android:
+before_install:
+- yes | sdkmanager "platforms;android-28"
   components:
     - tools
 before_script:
