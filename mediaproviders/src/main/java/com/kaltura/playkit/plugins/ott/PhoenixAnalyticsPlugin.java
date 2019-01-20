@@ -126,7 +126,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     public void addListeners() {
-        this.messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
+        messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
             if (!isAdPlaying) {
                 if (event != null) {
                     if (event.position > 0) {
@@ -139,14 +139,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             }
         });
 
-        this.messageBus.addListener(this, PlayerEvent.durationChanged, event -> {
+        messageBus.addListener(this, PlayerEvent.durationChanged, event -> {
             printReceivedEvent(event);
             if (event != null) {
                 lastKnownPlayerDuration = event.duration / Consts.MILLISECONDS_MULTIPLIER;
             }
         });
 
-        this.messageBus.addListener(this, PlayerEvent.stopped, event -> {
+        messageBus.addListener(this, PlayerEvent.stopped, event -> {
             printReceivedEvent(event);
             if (isMediaFinished) {
                 return;
@@ -156,7 +156,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             resetTimer();
         });
 
-        this.messageBus.addListener(this, PlayerEvent.ended, event -> {
+        messageBus.addListener(this, PlayerEvent.ended, event -> {
             printReceivedEvent(event);
             resetTimer();
             sendAnalyticsEvent(PhoenixActionType.FINISH);
@@ -165,7 +165,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             isFirstPlay = true;
         });
 
-        this.messageBus.addListener(this, PlayerEvent.error, event -> {
+        messageBus.addListener(this, PlayerEvent.error, event -> {
             printReceivedEvent(event);
             resetTimer();
             PKError error = event.error;
@@ -176,7 +176,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             sendAnalyticsEvent(PhoenixActionType.ERROR);
         });
 
-        this.messageBus.addListener(this, PlayerEvent.sourceSelected, event -> {
+        messageBus.addListener(this, PlayerEvent.sourceSelected, event -> {
             printReceivedEvent(event);
             fileId = event.source.getId();
 
@@ -190,7 +190,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             sendAnalyticsEvent(PhoenixActionType.LOAD);
         });
 
-        this.messageBus.addListener(this, PlayerEvent.pause, event -> {
+        messageBus.addListener(this, PlayerEvent.pause, event -> {
             printReceivedEvent(event);
             if (isMediaFinished) {
                 return;
@@ -202,7 +202,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             resetTimer();
         });
 
-        this.messageBus.addListener(this, PlayerEvent.play, event -> {
+        messageBus.addListener(this, PlayerEvent.play, event -> {
             printReceivedEvent(event);
             if (isMediaFinished) {
                 return;
@@ -217,7 +217,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             }
         });
 
-        this.messageBus.addListener(this, PlayerEvent.playing, event -> {
+        messageBus.addListener(this, PlayerEvent.playing, event -> {
             printReceivedEvent(event);
             isMediaFinished = false;
             if (!isFirstPlay && !playEventWasFired) {
@@ -229,22 +229,22 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             isAdPlaying = false;
         });
 
-        this.messageBus.addListener(this, PlayerEvent.seeked, event -> {
+        messageBus.addListener(this, PlayerEvent.seeked, event -> {
             printReceivedEvent(event);
             isMediaFinished = false;
         });
 
-        this.messageBus.addListener(this, PlayerEvent.replay, event -> {
+        messageBus.addListener(this, PlayerEvent.replay, event -> {
             printReceivedEvent(event);
             isMediaFinished = false;
         });
 
-        this.messageBus.addListener(this, AdEvent.contentPauseRequested, event -> {
+        messageBus.addListener(this, AdEvent.contentPauseRequested, event -> {
             log.d("Ad Event = " + event.eventType().name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
             isAdPlaying = true;
         });
 
-        this.messageBus.addListener(this, AdEvent.contentResumeRequested, event -> {
+        messageBus.addListener(this, AdEvent.contentResumeRequested, event -> {
             log.d("Ad Event = " + event.eventType().name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
             isAdPlaying = false;
 
@@ -276,7 +276,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         setConfigMembers(config);
         if (baseUrl == null || baseUrl.isEmpty() || partnerId <= 0) {
             cancelTimer();
-            messageBus.removeListeners(this);
+            if (messageBus != null) {
+                messageBus.removeListeners(this);
+            }
         }
     }
 
@@ -303,6 +305,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     public void onDestroy() {
         log.d("onDestroy");
+        if (messageBus != null) {
+            messageBus.removeListeners(this);
+        }
         cancelTimer();
     }
 
