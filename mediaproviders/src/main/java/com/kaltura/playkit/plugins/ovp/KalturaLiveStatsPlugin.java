@@ -107,26 +107,29 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
         this.messageBus = messageBus;
         this.pluginConfig = parseConfig(config);
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        addListeners(player);
+    }
 
-        this.messageBus.addListener(this, PlayerEvent.stateChanged, event -> {
+    private void addListeners(Player player) {
+        messageBus.addListener(this, PlayerEvent.stateChanged, event -> {
             onStateChangedEvent(event);
         });
 
-        this.messageBus.addListener(this, PlayerEvent.play, event -> {
+        messageBus.addListener(this, PlayerEvent.play, event -> {
             startLiveEvents();
         });
 
-        this.messageBus.addListener(this, PlayerEvent.pause, event -> {
+        messageBus.addListener(this, PlayerEvent.pause, event -> {
             stopLiveEvents();
         });
 
-        this.messageBus.addListener(this, PlayerEvent.playbackInfoUpdated, event -> {
+        messageBus.addListener(this, PlayerEvent.playbackInfoUpdated, event -> {
             PlaybackInfo currentPlaybackInfo = event.playbackInfo;
             lastReportedBitrate = currentPlaybackInfo.getVideoBitrate();
             log.d("lastReportedBitrate = " + lastReportedBitrate + ", isLiveStream = " + player.isLive());
         });
 
-        this.messageBus.addListener(this, PlayerEvent.sourceSelected, event -> {
+        messageBus.addListener(this, PlayerEvent.sourceSelected, event -> {
             switch (event.source.getMediaFormat()) {
                 case hls:
                     playbackProtocol = "hls";
@@ -143,6 +146,9 @@ public class KalturaLiveStatsPlugin extends PKPlugin {
 
     @Override
     public void onDestroy() {
+        if (messageBus != null) {
+            messageBus.removeListeners(this);
+        }
         stopLiveEvents();
         eventIndex = 1;
     }

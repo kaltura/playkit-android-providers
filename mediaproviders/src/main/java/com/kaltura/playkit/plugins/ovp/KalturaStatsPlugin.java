@@ -146,7 +146,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     }
 
     private void addListeners() {
-        this.messageBus.addListener(this, PlayerEvent.metadataAvailable, event -> {
+        messageBus.addListener(this, PlayerEvent.metadataAvailable, event -> {
             printReceivedEvent(event);
             if (playerDurationUnset()) {
                 return;
@@ -154,12 +154,12 @@ public class KalturaStatsPlugin extends PKPlugin {
             sendMediaLoaded();
         });
 
-        this.messageBus.addListener(this, PlayerEvent.stateChanged, event -> {
+        messageBus.addListener(this, PlayerEvent.stateChanged, event -> {
             printReceivedEvent(event);
             onStateChangedEvent(event);
         });
 
-        this.messageBus.addListener(this, PlayerEvent.error, event -> {
+        messageBus.addListener(this, PlayerEvent.error, event -> {
             printReceivedEvent(event);
             PKError error = event.error;
             if (error != null && !error.isFatal()) {
@@ -169,11 +169,14 @@ public class KalturaStatsPlugin extends PKPlugin {
             sendAnalyticsEvent(KStatsEvent.ERROR);
         });
 
-        this.messageBus.addListener(this, PlayerEvent.play, event -> {
+        messageBus.addListener(this, PlayerEvent.play, event -> {
             printReceivedEvent(event);
+            if (playerDurationUnset()) {
+                return;
+            }
         });
 
-        this.messageBus.addListener(this, PlayerEvent.seeked, event -> {
+        messageBus.addListener(this, PlayerEvent.seeked, event -> {
             printReceivedEvent(event);
             if (playerDurationUnset()) {
                 return;
@@ -183,14 +186,14 @@ public class KalturaStatsPlugin extends PKPlugin {
             sendAnalyticsEvent(KStatsEvent.SEEK);
         });
 
-        this.messageBus.addListener(this, PlayerEvent.canPlay, event -> {
+        messageBus.addListener(this, PlayerEvent.canPlay, event -> {
+            printReceivedEvent(event);
             if (playerDurationUnset()) {
                 return;
             }
-            printReceivedEvent(event);
         });
 
-        this.messageBus.addListener(this, PlayerEvent.playing, event -> {
+        messageBus.addListener(this, PlayerEvent.playing, event -> {
             printReceivedEvent(event);
             if (playerDurationUnset()) {
                 return;
@@ -204,12 +207,12 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
 
-        this.messageBus.addListener(this, PlayerEvent.replay, event -> {
+        messageBus.addListener(this, PlayerEvent.replay, event -> {
             printReceivedEvent(event);
             sendAnalyticsEvent(KStatsEvent.REPLAY);
         });
 
-        this.messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
+        messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
             if (playerDurationUnset()) {
                 return;
             }
@@ -222,7 +225,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             maybeSentPlayerReachedEvent();
         });
 
-        this.messageBus.addListener(this, PlayerEvent.durationChanged, event -> {
+        messageBus.addListener(this, PlayerEvent.durationChanged, event -> {
             printReceivedEvent(event);
             if (playerDurationUnset()) {
                 return;
@@ -232,7 +235,8 @@ public class KalturaStatsPlugin extends PKPlugin {
                 durationValid = true;
             }
         });
-        this.messageBus.addListener(this, PlayerEvent.ended, event -> {
+
+        messageBus.addListener(this, PlayerEvent.ended, event -> {
             printReceivedEvent(event);
             if (playerDurationUnset()) {
                 return;
@@ -243,7 +247,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             sendPlayReached100();
         });
 
-        this.messageBus.addListener(this, AdEvent.started, event -> {
+        messageBus.addListener(this, AdEvent.started, event -> {
             printReceivedAdEvent(event);
             adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
             if (adInfo != null) {
@@ -257,7 +261,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
 
-        this.messageBus.addListener(this, AdEvent.firstQuartile, event -> {
+        messageBus.addListener(this, AdEvent.firstQuartile, event -> {
             printReceivedAdEvent(event);
             if (adInfo != null) {
                 if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
@@ -270,7 +274,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
 
-        this.messageBus.addListener(this, AdEvent.midpoint, event -> {
+        messageBus.addListener(this, AdEvent.midpoint, event -> {
             printReceivedAdEvent(event);
             if (adInfo != null) {
                 if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
@@ -283,7 +287,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
 
-        this.messageBus.addListener(this, AdEvent.thirdQuartile, event -> {
+        messageBus.addListener(this, AdEvent.thirdQuartile, event -> {
             printReceivedAdEvent(event);
             if (adInfo != null) {
                 if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
@@ -296,7 +300,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
 
-        this.messageBus.addListener(this, AdEvent.adClickedEvent, event -> {
+        messageBus.addListener(this, AdEvent.adClickedEvent, event -> {
             printReceivedAdEvent(event);
             if (adInfo != null) {
                 if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
@@ -309,7 +313,7 @@ public class KalturaStatsPlugin extends PKPlugin {
             }
         });
 
-        this.messageBus.addListener(this, AdEvent.error, event -> {
+        messageBus.addListener(this, AdEvent.error, event -> {
             printReceivedAdEvent(event);
             sendAnalyticsEvent(KStatsEvent.ERROR);
         });
@@ -332,6 +336,9 @@ public class KalturaStatsPlugin extends PKPlugin {
     @Override
     public void onDestroy() {
         log.d("onDestroy");
+        if (messageBus != null) {
+            messageBus.removeListeners(this);
+        }
         intervalOn = false;
     }
 
