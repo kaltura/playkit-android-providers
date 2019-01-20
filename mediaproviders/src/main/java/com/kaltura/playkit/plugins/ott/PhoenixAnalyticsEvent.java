@@ -18,9 +18,14 @@ import com.kaltura.playkit.PKEvent;
  * Created by anton.afanasiev on 27/03/2017.
  */
 
+
 public class PhoenixAnalyticsEvent implements PKEvent {
 
     public final PhoenixAnalyticsEvent.Type type;
+    public static final Class<ErrorEvent> error = ErrorEvent.class;
+    public static final Class<BookmarkErrorEvent> bookmarkError = BookmarkErrorEvent.class;
+    public static final Class<ConcurrencyErrorEvent> concurrencyError = ConcurrencyErrorEvent.class;
+    public static final Class<PhoenixAnalyticsReport> reportSent = PhoenixAnalyticsReport.class;
 
     public PhoenixAnalyticsEvent(PhoenixAnalyticsEvent.Type type) {
         this.type = type;

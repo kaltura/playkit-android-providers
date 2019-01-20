@@ -20,6 +20,8 @@ import com.kaltura.playkit.PKEvent;
 
 public class KalturaStatsEvent implements PKEvent{
 
+    public static final Class<KalturaStatsReport> reportSent = KalturaStatsReport.class;
+
     public enum Type {
         REPORT_SENT
     }

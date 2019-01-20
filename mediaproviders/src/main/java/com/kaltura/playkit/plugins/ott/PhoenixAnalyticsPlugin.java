@@ -104,6 +104,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     };
 
+    private void printReceivedEvent(PKEvent event) {
+        log.d("Player Event = " + event.eventType().name());
+    }
+
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         log.d("onLoad");
@@ -115,10 +119,136 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.timer = new Timer();
         setConfigMembers(config);
         if (baseUrl != null && !baseUrl.isEmpty() && partnerId > 0) {
-            messageBus.listen(mEventListener, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.PLAYING, PlayerEvent.Type.PLAYHEAD_UPDATED, PlayerEvent.Type.ENDED, PlayerEvent.Type.ERROR, PlayerEvent.Type.STOPPED, PlayerEvent.Type.REPLAY, PlayerEvent.Type.SEEKED, PlayerEvent.Type.SOURCE_SELECTED, AdEvent.Type.CONTENT_PAUSE_REQUESTED, AdEvent.Type.CONTENT_RESUME_REQUESTED);
+            addListeners();
         } else {
             log.e("Error, base url/partner - incorrect");
         }
+    }
+
+    public void addListeners() {
+        messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
+            if (!isAdPlaying) {
+                if (event != null) {
+                    if (event.position > 0) {
+                        lastKnownPlayerPosition = event.position / Consts.MILLISECONDS_MULTIPLIER;
+                    }
+                    if(event.duration > 0) {
+                        lastKnownPlayerDuration = event.duration / Consts.MILLISECONDS_MULTIPLIER;
+                    }
+                }
+            }
+        });
+
+        messageBus.addListener(this, PlayerEvent.durationChanged, event -> {
+            printReceivedEvent(event);
+            if (event != null) {
+                lastKnownPlayerDuration = event.duration / Consts.MILLISECONDS_MULTIPLIER;
+            }
+        });
+
+        messageBus.addListener(this, PlayerEvent.stopped, event -> {
+            printReceivedEvent(event);
+            if (isMediaFinished) {
+                return;
+            }
+            isAdPlaying = false;
+            sendAnalyticsEvent(PhoenixActionType.STOP);
+            resetTimer();
+        });
+
+        messageBus.addListener(this, PlayerEvent.ended, event -> {
+            printReceivedEvent(event);
+            resetTimer();
+            sendAnalyticsEvent(PhoenixActionType.FINISH);
+            playEventWasFired = false;
+            isMediaFinished = true;
+            isFirstPlay = true;
+        });
+
+        messageBus.addListener(this, PlayerEvent.error, event -> {
+            printReceivedEvent(event);
+            resetTimer();
+            PKError error = event.error;
+            if (error != null && !error.isFatal()) {
+                log.v("Error eventType = " + error.errorType + " severity = " + error.severity + " errorMessage = " + error.message);
+                return;
+            }
+            sendAnalyticsEvent(PhoenixActionType.ERROR);
+        });
+
+        messageBus.addListener(this, PlayerEvent.sourceSelected, event -> {
+            printReceivedEvent(event);
+            fileId = event.source.getId();
+
+            if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
+                currentMediaId = mediaConfig.getMediaEntry().getId();
+            }
+            lastKnownPlayerPosition = 0;
+            if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
+                lastKnownPlayerPosition = mediaConfig.getStartPosition();
+            }
+            sendAnalyticsEvent(PhoenixActionType.LOAD);
+        });
+
+        messageBus.addListener(this, PlayerEvent.pause, event -> {
+            printReceivedEvent(event);
+            if (isMediaFinished) {
+                return;
+            }
+            if (playEventWasFired) {
+                sendAnalyticsEvent(PhoenixActionType.PAUSE);
+                playEventWasFired = false;
+            }
+            resetTimer();
+        });
+
+        messageBus.addListener(this, PlayerEvent.play, event -> {
+            printReceivedEvent(event);
+            if (isMediaFinished) {
+                return;
+            }
+            if (isFirstPlay) {
+                playEventWasFired = true;
+                sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
+                sendAnalyticsEvent(PhoenixActionType.HIT);
+            }
+            if (!intervalOn) {
+                startMediaHitInterval();
+            }
+        });
+
+        messageBus.addListener(this, PlayerEvent.playing, event -> {
+            printReceivedEvent(event);
+            isMediaFinished = false;
+            if (!isFirstPlay && !playEventWasFired) {
+                sendAnalyticsEvent(PhoenixActionType.PLAY);
+                playEventWasFired = true;
+            } else {
+                isFirstPlay = false;
+            }
+            isAdPlaying = false;
+        });
+
+        messageBus.addListener(this, PlayerEvent.seeked, event -> {
+            printReceivedEvent(event);
+            isMediaFinished = false;
+        });
+
+        messageBus.addListener(this, PlayerEvent.replay, event -> {
+            printReceivedEvent(event);
+            isMediaFinished = false;
+        });
+
+        messageBus.addListener(this, AdEvent.contentPauseRequested, event -> {
+            log.d("Ad Event = " + event.eventType().name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
+            isAdPlaying = true;
+        });
+
+        messageBus.addListener(this, AdEvent.contentResumeRequested, event -> {
+            log.d("Ad Event = " + event.eventType().name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
+            isAdPlaying = false;
+
+        });
     }
 
     private void setConfigMembers(Object config) {
@@ -146,7 +276,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         setConfigMembers(config);
         if (baseUrl == null || baseUrl.isEmpty() || partnerId <= 0) {
             cancelTimer();
-            messageBus.remove(mEventListener, (Enum[]) PlayerEvent.Type.values());
+            if (messageBus != null) {
+                messageBus.removeListeners(this);
+            }
         }
     }
 
@@ -173,130 +305,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     public void onDestroy() {
         log.d("onDestroy");
+        if (messageBus != null) {
+            messageBus.removeListeners(this);
+        }
         cancelTimer();
     }
-
-    private PKEvent.Listener mEventListener = new PKEvent.Listener() {
-        @Override
-        public void onEvent(PKEvent event) {
-            if (event instanceof AdEvent) {
-                log.d("Ad Event = " + ((AdEvent) event).type.name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
-                switch (((AdEvent) event).type) {
-                    case CONTENT_PAUSE_REQUESTED:
-                        isAdPlaying = true;
-                        break;
-                    case CONTENT_RESUME_REQUESTED:
-                        isAdPlaying = false;
-                        break;
-                    default:
-                        break;
-                }
-            }
-            if (event instanceof PlayerEvent) {
-                if (event.eventType() != PlayerEvent.Type.PLAYHEAD_UPDATED) {
-                    log.d("Player Event = " + ((PlayerEvent) event).type.name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
-                }
-                switch (((PlayerEvent) event).type) {
-                    case PLAYHEAD_UPDATED:
-                        if (!isAdPlaying) {
-                            PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
-                            if (playheadUpdated != null) {
-                                if (playheadUpdated.position > 0) {
-                                    lastKnownPlayerPosition = playheadUpdated.position / Consts.MILLISECONDS_MULTIPLIER;
-                                }
-                                if(playheadUpdated.duration > 0) {
-                                    lastKnownPlayerDuration = playheadUpdated.duration / Consts.MILLISECONDS_MULTIPLIER;
-                                }
-                            }
-                        }
-                        break;
-                    case DURATION_CHANGE:
-                        PlayerEvent.DurationChanged durationChanged = (PlayerEvent.DurationChanged) event;
-                        if (durationChanged != null) {
-                            lastKnownPlayerDuration = durationChanged.duration /  Consts.MILLISECONDS_MULTIPLIER;
-                        }
-                        break;
-                    case STOPPED:
-                        if (isMediaFinished) {
-                            return;
-                        }
-                        isAdPlaying = false;
-                        sendAnalyticsEvent(PhoenixActionType.STOP);
-                        resetTimer();
-                        break;
-                    case ENDED:
-                        resetTimer();
-                        sendAnalyticsEvent(PhoenixActionType.FINISH);
-                        playEventWasFired = false;
-                        isMediaFinished = true;
-                        isFirstPlay = true;
-                        break;
-                    case ERROR:
-                        resetTimer();
-                        PKError error = ((PlayerEvent.Error) event).error;
-                        if (error != null && !error.isFatal()) {
-                            log.v("Error eventType = " + error.errorType + " severity = " + error.severity + " errorMessage = " + error.message);
-                            return;
-                        }
-                        sendAnalyticsEvent(PhoenixActionType.ERROR);
-                        break;
-                    case SOURCE_SELECTED:
-                        PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
-                        fileId = sourceSelected.source.getId();
-
-                        if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
-                            currentMediaId = mediaConfig.getMediaEntry().getId();
-                        }
-                        lastKnownPlayerPosition = 0;
-                        if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
-                            lastKnownPlayerPosition = mediaConfig.getStartPosition();
-                        }
-                        sendAnalyticsEvent(PhoenixActionType.LOAD);
-                        break;
-                    case PAUSE:
-                        if (isMediaFinished) {
-                            return;
-                        }
-                        if (playEventWasFired) {
-                            sendAnalyticsEvent(PhoenixActionType.PAUSE);
-                            playEventWasFired = false;
-                        }
-                        resetTimer();
-                        break;
-                    case PLAY:
-                        if (isMediaFinished) {
-                            return;
-                        }
-                        if (isFirstPlay) {
-                            playEventWasFired = true;
-                            sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
-                            sendAnalyticsEvent(PhoenixActionType.HIT);
-                        }
-                        if (!intervalOn) {
-                            startMediaHitInterval();
-                        }
-                        break;
-                    case PLAYING:
-                        isMediaFinished = false;
-                        if (!isFirstPlay && !playEventWasFired) {
-                            sendAnalyticsEvent(PhoenixActionType.PLAY);
-                            playEventWasFired = true;
-                        } else {
-                            isFirstPlay = false;
-                        }
-                        isAdPlaying = false;
-                        break;
-                    case SEEKED:
-                    case REPLAY:
-                        //Receiving one of this events, mean that media position was reset.
-                        isMediaFinished = false;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    };
 
     void cancelTimer() {
         if (timer != null) {
@@ -427,11 +440,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_COODE), errorMessage));
     }
 
-    PKEvent.Listener getEventListener() {
-        return mEventListener;
-    }
-
-
     private static PhoenixAnalyticsConfig parseConfig(Object config) {
         if (config instanceof PhoenixAnalyticsConfig) {
             return ((PhoenixAnalyticsConfig) config);
@@ -441,8 +449,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             String baseUrl = params.get("baseUrl").getAsString();
             int partnerId = params.get("partnerId").getAsInt();
             int timerInterval = params.get("timerInterval").getAsInt();
-            String ks = params.get("ks").getAsString();
-
+            String ks = params.get("ks").isJsonNull() ? "" : params.get("ks").getAsString();
             return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
         }
         return null;

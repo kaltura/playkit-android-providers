@@ -19,6 +19,9 @@ import com.kaltura.playkit.PKEvent;
  */
 
 public class OttEvent implements PKEvent {
+
+    public static final Class<OttEvent> ottEvent = OttEvent.class;
+
     public final OttEventType type;
 
     public enum OttEventType

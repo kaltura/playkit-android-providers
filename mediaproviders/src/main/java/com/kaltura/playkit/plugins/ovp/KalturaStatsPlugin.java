@@ -37,9 +37,6 @@ import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.providers.api.ovp.services.StatsService;
 import com.kaltura.playkit.utils.Consts;
 
-import static com.kaltura.playkit.PlayerEvent.Type.PLAYBACK_INFO_UPDATED;
-import static com.kaltura.playkit.PlayerEvent.Type.PLAYHEAD_UPDATED;
-
 /**
  * Created by zivilan on 02/11/2016.
  */
@@ -137,15 +134,196 @@ public class KalturaStatsPlugin extends PKPlugin {
     @Override
     protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
         log.d("onLoad");
-        messageBus.listen(mEventListener, (Enum[]) PlayerEvent.Type.values());
-        messageBus.listen(mEventListener, (Enum[]) AdEvent.Type.values());
+
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.player = player;
         this.pluginConfig = parseConfig(config);
         setTimerInterval();
         this.messageBus = messageBus;
+        addListeners();
         this.context = context;
         log.d("onLoad finished");
+    }
+
+    private void addListeners() {
+        messageBus.addListener(this, PlayerEvent.metadataAvailable, event -> {
+            printReceivedEvent(event);
+            if (playerDurationUnset()) {
+                return;
+            }
+            sendMediaLoaded();
+        });
+
+        messageBus.addListener(this, PlayerEvent.stateChanged, event -> {
+            printReceivedEvent(event);
+            onStateChangedEvent(event);
+        });
+
+        messageBus.addListener(this, PlayerEvent.error, event -> {
+            printReceivedEvent(event);
+            PKError error = event.error;
+            if (error != null && !error.isFatal()) {
+                log.v("Error eventType = " + error.errorType + " severity = " + error.severity + " errorMessage = " + error.message);
+                return;
+            }
+            sendAnalyticsEvent(KStatsEvent.ERROR);
+        });
+
+        messageBus.addListener(this, PlayerEvent.play, event -> {
+            printReceivedEvent(event);
+            if (playerDurationUnset()) {
+                return;
+            }
+        });
+
+        messageBus.addListener(this, PlayerEvent.seeked, event -> {
+            printReceivedEvent(event);
+            if (playerDurationUnset()) {
+                return;
+            }
+            hasSeeked = true;
+            seekPercent = (float) player.getCurrentPosition() / player.getDuration();
+            sendAnalyticsEvent(KStatsEvent.SEEK);
+        });
+
+        messageBus.addListener(this, PlayerEvent.canPlay, event -> {
+            printReceivedEvent(event);
+            if (playerDurationUnset()) {
+                return;
+            }
+        });
+
+        messageBus.addListener(this, PlayerEvent.playing, event -> {
+            printReceivedEvent(event);
+            if (playerDurationUnset()) {
+                return;
+            }
+            if (isFirstPlay) {
+                sendWidgetLoaded();
+                sendMediaLoaded();
+                log.d("FIRST PLAYBACK sending KStatsEvent.PLAY");
+                sendAnalyticsEvent(KStatsEvent.PLAY);
+                isFirstPlay = false;
+            }
+        });
+
+        messageBus.addListener(this, PlayerEvent.replay, event -> {
+            printReceivedEvent(event);
+            sendAnalyticsEvent(KStatsEvent.REPLAY);
+        });
+
+        messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
+            if (playerDurationUnset()) {
+                return;
+            }
+            PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
+            if (playheadUpdated.position >= 0 && playheadUpdated.duration > 0) {
+                progress = (float) playheadUpdated.position / playheadUpdated.duration;
+            } else {
+                progress = 0f;
+            }
+            maybeSentPlayerReachedEvent();
+        });
+
+        messageBus.addListener(this, PlayerEvent.durationChanged, event -> {
+            printReceivedEvent(event);
+            if (playerDurationUnset()) {
+                return;
+            }
+            long currDuration = event.duration;
+            if (currDuration >= 0) {
+                durationValid = true;
+            }
+        });
+
+        messageBus.addListener(this, PlayerEvent.ended, event -> {
+            printReceivedEvent(event);
+            if (playerDurationUnset()) {
+                return;
+            }
+            sendPlayReached25();
+            sendPlayReached50();
+            sendPlayReached75();
+            sendPlayReached100();
+        });
+
+        messageBus.addListener(this, AdEvent.started, event -> {
+            printReceivedAdEvent(event);
+            adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
+            if (adInfo != null) {
+                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
+                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_STARTED);
+                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_STARTED);
+                }
+            }
+        });
+
+        messageBus.addListener(this, AdEvent.firstQuartile, event -> {
+            printReceivedAdEvent(event);
+            if (adInfo != null) {
+                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_25);
+                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_25);
+                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_25);
+                }
+            }
+        });
+
+        messageBus.addListener(this, AdEvent.midpoint, event -> {
+            printReceivedAdEvent(event);
+            if (adInfo != null) {
+                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_50);
+                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_50);
+                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_50);
+                }
+            }
+        });
+
+        messageBus.addListener(this, AdEvent.thirdQuartile, event -> {
+            printReceivedAdEvent(event);
+            if (adInfo != null) {
+                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_75);
+                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_75);
+                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_75);
+                }
+            }
+        });
+
+        messageBus.addListener(this, AdEvent.adClickedEvent, event -> {
+            printReceivedAdEvent(event);
+            if (adInfo != null) {
+                if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.PREROLL_CLICKED);
+                } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.MIDROLL_CLICKED);
+                } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
+                    sendAnalyticsEvent(KStatsEvent.POSTROLL_CLICKED);
+                }
+            }
+        });
+
+        messageBus.addListener(this, AdEvent.error, event -> {
+            printReceivedAdEvent(event);
+            sendAnalyticsEvent(KStatsEvent.ERROR);
+        });
+    }
+
+    private boolean playerDurationUnset() {
+        if (player == null ||  player.getDuration() < 0) {
+            return true;
+        }
+        return false;
     }
 
     private void setTimerInterval() {
@@ -158,6 +336,9 @@ public class KalturaStatsPlugin extends PKPlugin {
     @Override
     public void onDestroy() {
         log.d("onDestroy");
+        if (messageBus != null) {
+            messageBus.removeListeners(this);
+        }
         intervalOn = false;
     }
 
@@ -191,7 +372,7 @@ public class KalturaStatsPlugin extends PKPlugin {
     protected void onApplicationResumed() {
     }
 
-    private void onEvent(PlayerEvent.StateChanged event) {
+    private void onStateChangedEvent(PlayerEvent.StateChanged event) {
         log.d("New PlayerState = " + event.newState.name());
         switch (event.newState) {
             case IDLE:
@@ -219,83 +400,13 @@ public class KalturaStatsPlugin extends PKPlugin {
         }
     }
 
-    private PKEvent.Listener mEventListener = new PKEvent.Listener() {
-        @Override
-        public void onEvent(PKEvent event) {
-            if (event.eventType() != AdEvent.Type.PLAY_HEAD_CHANGED && event.eventType() != AdEvent.Type.AD_PROGRESS && event.eventType() != PLAYHEAD_UPDATED && event.eventType() != PLAYBACK_INFO_UPDATED) {
-                log.d("New PKEvent = " + event.eventType().name());
-            }
+    private void printReceivedEvent(PKEvent event) {
+        log.d("Player Event = " + event.eventType().name());
+    }
 
-            if (event instanceof PlayerEvent) {
-                if (player.getDuration() < 0) {
-                    return;
-                }
-
-                switch (((PlayerEvent) event).type) {
-                    case METADATA_AVAILABLE:
-                        sendMediaLoaded();
-                        break;
-                    case STATE_CHANGED:
-                        KalturaStatsPlugin.this.onEvent((PlayerEvent.StateChanged) event);
-                        break;
-                    case ERROR:
-                        PKError error = ((PlayerEvent.Error) event).error;
-                        if (error != null && !error.isFatal()) {
-                            log.v("Error eventType = " + error.errorType + " severity = " + error.severity + " errorMessage = " + error.message);
-                            return;
-                        }
-                        sendAnalyticsEvent(KStatsEvent.ERROR);
-                        break;
-                    case PLAY:
-                        break;
-                    case SEEKED:
-                        hasSeeked = true;
-                        seekPercent = (float) player.getCurrentPosition() / player.getDuration();
-                        sendAnalyticsEvent(KStatsEvent.SEEK);
-                        break;
-                    case CAN_PLAY:
-                        break;
-                    case PLAYING:
-                        if (isFirstPlay) {
-                            sendWidgetLoaded();
-                            sendMediaLoaded();
-                            log.d("FIRST PLAYBACK sending KStatsEvent.PLAY");
-                            sendAnalyticsEvent(KStatsEvent.PLAY);
-                            isFirstPlay = false;
-                        }
-                        break;
-                    case REPLAY:
-                        sendAnalyticsEvent(KStatsEvent.REPLAY);
-                        break;
-                    case PLAYHEAD_UPDATED:
-                        PlayerEvent.PlayheadUpdated playheadUpdated = (PlayerEvent.PlayheadUpdated) event;
-                        if (playheadUpdated.position >= 0 && playheadUpdated.duration > 0) {
-                            progress = (float) playheadUpdated.position / playheadUpdated.duration;
-                        } else {
-                            progress = 0f;
-                        }
-                        maybeSentPlayerReachedEvent();
-                        break;
-                    case DURATION_CHANGE:
-                        long currDuration = ((PlayerEvent.DurationChanged) event).duration;
-                        if (currDuration >= 0) {
-                            durationValid = true;
-                        }
-                        break;
-                    case ENDED:
-                        sendPlayReached25();
-                        sendPlayReached50();
-                        sendPlayReached75();
-                        sendPlayReached100();
-                        break;
-                    default:
-                        break;
-                }
-            } else if (event instanceof AdEvent) {
-                KalturaStatsPlugin.this.onEvent((AdEvent) event);
-            }
-        }
-    };
+    private void printReceivedAdEvent(PKEvent event) {
+        log.d("Ad Event = " + event.eventType().name());
+    }
 
     private void sendPlayReached100() {
         if (!playReached100) {
@@ -328,78 +439,6 @@ public class KalturaStatsPlugin extends PKPlugin {
             playReached25 = true;
         }
     }
-
-    public void onEvent(AdEvent event) {
-        switch (event.type) {
-            case STARTED:
-                adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.PREROLL_STARTED);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.MIDROLL_STARTED);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.POSTROLL_STARTED);
-                    }
-                }
-                break;
-            case PAUSED:
-            case RESUMED:
-            case COMPLETED:
-                break;
-            case FIRST_QUARTILE:
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.PREROLL_25);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.MIDROLL_25);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.POSTROLL_25);
-                    }
-                }
-                break;
-            case MIDPOINT:
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.PREROLL_50);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.MIDROLL_50);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.POSTROLL_50);
-                    }
-                }
-                break;
-            case THIRD_QUARTILE:
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.PREROLL_75);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.MIDROLL_75);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.POSTROLL_75);
-                    }
-                }
-                break;
-            case CLICKED:
-                if (adInfo != null) {
-                    if (AdPositionType.PRE_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.PREROLL_CLICKED);
-                    } else if (AdPositionType.MID_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.MIDROLL_CLICKED);
-                    } else if (AdPositionType.POST_ROLL.equals(adInfo.getAdPositionType())) {
-                        sendAnalyticsEvent(KStatsEvent.POSTROLL_CLICKED);
-                    }
-                }
-                break;
-            case ERROR:
-                sendAnalyticsEvent(KStatsEvent.ERROR);
-                break;
-            default:
-                break;
-        }
-        messageBus.post(new KalturaStatsEvent.KalturaStatsReport(event.eventType().toString()));
-    }
-
 
     private void sendWidgetLoaded() {
         if (!isWidgetLoaded && durationValid) {
