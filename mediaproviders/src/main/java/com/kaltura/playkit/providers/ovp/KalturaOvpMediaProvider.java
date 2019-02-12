@@ -59,10 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
@@ -403,25 +399,15 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {
             Map<String, String> metadata = new HashMap<>();
-
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder;
-            try {
-                builder = factory.newDocumentBuilder();
-            } catch (ParserConfigurationException e) {
-                throw new IllegalStateException("Failed to create DocumentBuilder", e);
-            }
-
             if (metadataList != null && metadataList.objects != null && metadataList.objects.size() > 0) {
                 for (KalturaMetadata metadataItem : metadataList.objects) {
-                    extractMetadata(builder, metadataItem.xml, metadata);
+                    extractMetadata(metadataItem.xml, metadata);
                 }
             }
-
             return metadata;
         }
 
-        private static void extractMetadata(DocumentBuilder builder, String xml, Map<String, String> metadataMap) {
+        private static void extractMetadata(String xml, Map<String, String> metadataMap) {
 
             XmlPullParserFactory xmlPullfactory = null;
             try {
