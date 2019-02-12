@@ -2,7 +2,6 @@ package com.kaltura.playkit.providers.ovp;
 
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -45,10 +44,9 @@ import com.kaltura.playkit.providers.base.BEMediaProvider;
 import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -68,6 +66,9 @@ import javax.xml.parsers.ParserConfigurationException;
 public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
+    private static final PKLog log = PKLog.get(TAG);
+
+
     public static final boolean CanBeEmpty = true;
 
     private String entryId;
@@ -186,14 +187,14 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             this.uiConfId = uiConfId;
             this.referrer = referrer;
 
-            PKLog.v(TAG, loadId + ": construct new Loader");
+            log.v(loadId + ": construct new Loader");
         }
 
         @Override
         protected ErrorElement validateKs(String ks) {
             if (TextUtils.isEmpty(ks)) {
                 if (CanBeEmpty) {
-                    PKLog.w(TAG, "provided ks is empty, Anonymous session will be used.");
+                    log.w("provided ks is empty, Anonymous session will be used.");
                 } else {
                     return ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
                 }
@@ -228,7 +229,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
-                            PKLog.v(TAG, loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
+                            log.v(loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
                             loadReq = null;
 
                             try {
@@ -241,7 +242,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             synchronized (syncObject) {
                 loadReq = requestQueue.queue(entryRequest.build());
-                PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
+                log.d(loadId + ": request queued for execution [" + loadReq + "]");
             }
 
             if (!isCanceled()) {
@@ -268,7 +269,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
 
             if (isCanceled()) {
-                PKLog.v(TAG, loadId + ": i am canceled, exit response parsing ");
+                log.v(loadId + ": i am canceled, exit response parsing ");
                 return;
             }
 
@@ -323,7 +324,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-            PKLog.v(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
+            log.v(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
 
 
             if (!isCanceled() && completion != null) {
@@ -421,25 +422,53 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
         private static void extractMetadata(DocumentBuilder builder, String xml, Map<String, String> metadataMap) {
-            InputSource is = new InputSource(new StringReader(xml));
-            Document doc;
-            try {
-                doc = builder.parse(is);
-            } catch (SAXException | IOException e) {
-                Log.e(TAG, "extractMetadata: XML parsing failed", e);
-                return;
-            }
 
-            Node rootElement = doc.getDocumentElement();
-            if ("metadata".equals(rootElement.getNodeName())) {
-                for (Node node = rootElement.getFirstChild(); node != null; node = node.getNextSibling()) {
-                    if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        Node text = node.getFirstChild();
-                        if (text != null) {
-                            metadataMap.put(node.getNodeName(), text.getNodeValue());
+            XmlPullParserFactory xmlPullfactory = null;
+            try {
+                xmlPullfactory = XmlPullParserFactory.newInstance();
+                xmlPullfactory.setNamespaceAware(true);
+
+                XmlPullParser xmlPullParser = xmlPullfactory.newPullParser();
+                xmlPullParser.setInput(new StringReader(xml));
+                int eventType = xmlPullParser.getEventType();
+
+                boolean metadataParseStarted = false;
+                String key = "";
+                String value = "";
+
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+
+                    if(eventType == XmlPullParser.START_DOCUMENT) {
+                        log.d("extractMetadata Start document");
+                    } else if(eventType == XmlPullParser.START_TAG) {
+                        if ("metadata".equals(xmlPullParser.getName())) {
+                            metadataParseStarted = true;
+                        } else {
+                            key = xmlPullParser.getName();
                         }
+                    } else if(eventType == XmlPullParser.END_TAG) {
+
+                        if ("metadata".equals(xmlPullParser.getName())) {
+                            metadataParseStarted = false;
+                        } else {
+                            if (metadataParseStarted) {
+                                log.d( "extractMetadata key/val = " + key + "/" + value);
+                                if (!TextUtils.isEmpty(key)) {
+                                    metadataMap.put(key, value);
+                                }
+                                key = "";
+                                value = "";
+                            }
+                        }
+                    } else if(eventType == XmlPullParser.TEXT) {
+                        value = xmlPullParser.getText();
                     }
+                    eventType = xmlPullParser.next();
                 }
+                log.d("extractMetadata End document");
+            } catch (XmlPullParserException | IOException e) {
+                log.e("extractMetadata: XML parsing failed", e);
+                return;
             }
         }
 
@@ -478,7 +507,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         baseProtocol = new URL(baseUrl).getProtocol();
 
                     } catch (MalformedURLException e) {
-                        PKLog.e(TAG, "Provided base url is wrong");
+                        log.e("Provided base url is wrong");
                         baseProtocol = OvpConfigs.DefaultHttpProtocol;
                     }
 
@@ -514,7 +543,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 }
 
                 if (playUrl == null) {
-                    PKLog.w(TAG, "failed to create play url from source, discarding source:" + (entry.getId() + "_" + playbackSource.getDeliveryProfileId()) + ", " + playbackSource.getFormat());
+                    log.w( "failed to create play url from source, discarding source:" + (entry.getId() + "_" + playbackSource.getDeliveryProfileId()) + ", " + playbackSource.getFormat());
                     continue;
                 }
 
