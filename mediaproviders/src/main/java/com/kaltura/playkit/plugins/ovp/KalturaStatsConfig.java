@@ -137,7 +137,7 @@ public class KalturaStatsConfig {
         return hasKanalony;
     }
 
-    public JsonObject toJSONObject() {
+    public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty(PARTNER_ID, partnerId);
         jsonObject.addProperty(UICONF_ID, uiconfId);
