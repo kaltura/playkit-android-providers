@@ -19,6 +19,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKSubtitleFormat;
+import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
@@ -32,6 +34,7 @@ import com.kaltura.playkit.providers.api.ovp.model.KalturaFlavorAsset;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadata;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadataListResponse;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackCaption;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackContext;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackSource;
 import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
@@ -66,6 +69,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
 
     public static final boolean CanBeEmpty = true;
+    private static boolean useApiCaptions = false;
 
     private String entryId;
     private String uiConfId;
@@ -154,6 +158,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
      */
     public KalturaOvpMediaProvider setUiConfId(String uiConfId) {
         this.uiConfId = uiConfId;
+        return this;
+    }
+
+    public KalturaOvpMediaProvider setUseApiCaptions(boolean useApiCaptions) {
+        KalturaOvpMediaProvider.useApiCaptions = useApiCaptions;
         return this;
     }
 
@@ -361,11 +370,38 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             populateMetadata(metadata, entry);
             PKMediaEntry mediaEntry = initPKMediaEntry(entry.getTags());
 
+            if (useApiCaptions && playbackContext.getPlaybackCaptions() != null && !playbackContext.getPlaybackCaptions().isEmpty()) {
+                mediaEntry.setExternalSubtitleList(createExternalSubtitles(playbackContext));
+            }
+
             return mediaEntry.setId(entry.getId()).setSources(sources)
                     .setDuration(entry.getMsDuration())
                     .setMetadata(metadata)
                     .setName(entry.getName())
                     .setMediaType(MediaTypeConverter.toMediaEntryType(entry));
+        }
+
+        private static List<PKExternalSubtitle> createExternalSubtitles(KalturaPlaybackContext playbackContext) {
+            List<PKExternalSubtitle> subtitleList = new ArrayList<>();
+            List<KalturaPlaybackCaption> playbackCaptionList = playbackContext.getPlaybackCaptions();
+
+            for (KalturaPlaybackCaption kalturaPlaybackCaption : playbackCaptionList) {
+
+                String subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
+
+                PKExternalSubtitle pkExternalSubtitle = new PKExternalSubtitle()
+                        .setUrl(subtitleURL)
+                        .setMimeType(PKSubtitleFormat.valueOfUrl(subtitleURL))
+                        .setLabel(kalturaPlaybackCaption.getLabel())
+                        .setLanguage(kalturaPlaybackCaption.getLanguage());
+
+                if (kalturaPlaybackCaption.isDefault()) {
+                    pkExternalSubtitle.setDefault();
+                }
+
+                subtitleList.add(pkExternalSubtitle);
+            }
+            return subtitleList;
         }
 
         private static void populateMetadata(Map<String, String> metadata, KalturaMediaEntry entry) {
