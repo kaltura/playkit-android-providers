@@ -69,11 +69,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
 
     public static final boolean CanBeEmpty = true;
-    private static boolean useApiCaptions = false;
 
     private String entryId;
     private String uiConfId;
     private String referrer;
+    private boolean useApiCaptions;
 
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
@@ -162,7 +162,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     }
 
     public KalturaOvpMediaProvider setUseApiCaptions(boolean useApiCaptions) {
-        KalturaOvpMediaProvider.useApiCaptions = useApiCaptions;
+        this.useApiCaptions = useApiCaptions;
         return this;
     }
 
@@ -310,7 +310,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
 
                             if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
-                                mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
+                                mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId, useApiCaptions,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
                                 if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
@@ -331,15 +331,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             log.v(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
 
-
             if (!isCanceled() && completion != null) {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
             notifyCompletion();
-
         }
-
     }
 
     private static class ProviderParser {
@@ -353,7 +350,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
          * source - if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
-        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry,
+        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, boolean useApiCaptions, KalturaMediaEntry entry,
                                                  KalturaPlaybackContext playbackContext, KalturaMetadataListResponse metadataList) throws InvalidParameterException {
 
             ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
