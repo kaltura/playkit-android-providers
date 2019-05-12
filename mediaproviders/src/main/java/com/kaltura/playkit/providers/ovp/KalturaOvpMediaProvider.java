@@ -29,6 +29,7 @@ import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.providers.api.ovp.model.FlavorAssetsFilter;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaBaseEntryListResponse;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaCaptionType;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryContextDataResult;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaFlavorAsset;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
@@ -387,11 +388,32 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             for (KalturaPlaybackCaption kalturaPlaybackCaption : playbackCaptionList) {
                 if (isValidPlaybackCaption(kalturaPlaybackCaption)) {
-                    String subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
+                    PKSubtitleFormat subtitleFormat = null;
+
+                    String subtitleURL = kalturaPlaybackCaption.getUrl();
+                    if (subtitleURL != null) {
+                        if (KalturaCaptionType.srt.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
+                            subtitleFormat = PKSubtitleFormat.srt;
+                        } else if (KalturaCaptionType.webvtt.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
+                            subtitleFormat = PKSubtitleFormat.vtt;
+                        }
+                    } else {
+                        subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
+                        if (subtitleURL == null) {
+                            continue;
+                        }
+                        if (KalturaCaptionType.dfxp.getCaptionType().equals(kalturaPlaybackCaption.getFormat()) ||
+                                KalturaCaptionType.cap.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
+                            subtitleFormat = PKSubtitleFormat.vtt;
+                        } else {
+                            continue;
+                        }
+                    }
+
 
                     PKExternalSubtitle pkExternalSubtitle = new PKExternalSubtitle()
                             .setUrl(subtitleURL)
-                            .setMimeType(PKSubtitleFormat.valueOfUrl(subtitleURL))
+                            .setMimeType(subtitleFormat)
                             .setLabel(kalturaPlaybackCaption.getLabel())
                             .setLanguage(kalturaPlaybackCaption.getLanguageCode());
 
@@ -405,7 +427,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
         private static boolean isValidPlaybackCaption(KalturaPlaybackCaption kalturaPlaybackCaption) {
-            if (TextUtils.isEmpty(kalturaPlaybackCaption.getWebVttUrl()) ||
+            if (TextUtils.isEmpty(kalturaPlaybackCaption.getWebVttUrl()) && TextUtils.isEmpty(kalturaPlaybackCaption.getUrl()) ||
+                    TextUtils.isEmpty(kalturaPlaybackCaption.getFormat()) ||
                     TextUtils.isEmpty(kalturaPlaybackCaption.getLabel()) ||
                     TextUtils.isEmpty(kalturaPlaybackCaption.getLanguageCode())) {
                 return false;
