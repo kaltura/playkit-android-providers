@@ -388,15 +388,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             for (KalturaPlaybackCaption kalturaPlaybackCaption : playbackCaptionList) {
                 if (isValidPlaybackCaption(kalturaPlaybackCaption)) {
-                    PKSubtitleFormat subtitleFormat = null;
-
+                    PKSubtitleFormat subtitleFormat;
                     String subtitleURL = kalturaPlaybackCaption.getUrl();
-                    if (subtitleURL != null) {
-                        if (KalturaCaptionType.srt.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
-                            subtitleFormat = PKSubtitleFormat.srt;
-                        } else if (KalturaCaptionType.webvtt.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
-                            subtitleFormat = PKSubtitleFormat.vtt;
-                        }
+                    if (KalturaCaptionType.srt.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
+                        subtitleFormat = PKSubtitleFormat.srt;
+                    } else if (KalturaCaptionType.webvtt.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
+                        subtitleFormat = PKSubtitleFormat.vtt;
                     } else {
                         subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
                         if (subtitleURL == null) {
@@ -409,7 +406,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                             continue;
                         }
                     }
-
 
                     PKExternalSubtitle pkExternalSubtitle = new PKExternalSubtitle()
                             .setUrl(subtitleURL)
@@ -427,7 +423,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
         private static boolean isValidPlaybackCaption(KalturaPlaybackCaption kalturaPlaybackCaption) {
-            if (TextUtils.isEmpty(kalturaPlaybackCaption.getWebVttUrl()) && TextUtils.isEmpty(kalturaPlaybackCaption.getUrl()) ||
+            if (TextUtils.isEmpty(kalturaPlaybackCaption.getUrl()) ||
                     TextUtils.isEmpty(kalturaPlaybackCaption.getFormat()) ||
                     TextUtils.isEmpty(kalturaPlaybackCaption.getLabel()) ||
                     TextUtils.isEmpty(kalturaPlaybackCaption.getLanguageCode())) {
