@@ -1,19 +1,18 @@
 package com.kaltura.playkit.providers.api.ovp.model;
 
 public enum KalturaCaptionType {
-    srt("1"),
-    dfxp("2"),
-    webvtt("3"),
-    cap("4");
+    srt,
+    dfxp,
+    webvtt,
+    cap;
 
-
-    private final String captionType;
-
-    private KalturaCaptionType(String captionType) {
-        this.captionType = captionType;
-    }
-
-    public String getCaptionType() {
-        return captionType;
+    public static KalturaCaptionType fromCaptionFormatString(String captionFormat) {
+        switch (captionFormat) {
+            case "1": return srt;
+            case "2": return dfxp;
+            case "3": return webvtt;
+            case "4": return cap;
+            default: return null;
+        }
     }
 }

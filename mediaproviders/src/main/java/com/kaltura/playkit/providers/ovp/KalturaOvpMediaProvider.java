@@ -390,17 +390,18 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (isValidPlaybackCaption(kalturaPlaybackCaption)) {
                     PKSubtitleFormat subtitleFormat;
                     String subtitleURL = kalturaPlaybackCaption.getUrl();
-                    if (KalturaCaptionType.srt.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
+                    if (KalturaCaptionType.srt.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {
                         subtitleFormat = PKSubtitleFormat.srt;
-                    } else if (KalturaCaptionType.webvtt.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
+                    } else if (KalturaCaptionType.webvtt.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {
+
                         subtitleFormat = PKSubtitleFormat.vtt;
                     } else {
                         subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
                         if (subtitleURL == null) {
                             continue;
                         }
-                        if (KalturaCaptionType.dfxp.getCaptionType().equals(kalturaPlaybackCaption.getFormat()) ||
-                                KalturaCaptionType.cap.getCaptionType().equals(kalturaPlaybackCaption.getFormat())) {
+                        if (KalturaCaptionType.dfxp.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat())) ||
+                                KalturaCaptionType.cap.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {
                             subtitleFormat = PKSubtitleFormat.vtt;
                         } else {
                             continue;
