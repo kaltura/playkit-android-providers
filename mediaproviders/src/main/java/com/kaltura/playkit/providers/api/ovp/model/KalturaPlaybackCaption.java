@@ -20,6 +20,7 @@ public class KalturaPlaybackCaption {
     private String webVttUrl;
     private String url;
     private boolean isDefault;
+    private String languageCode;
 
     public String getLabel() {
         return label;
@@ -44,6 +45,10 @@ public class KalturaPlaybackCaption {
     public boolean isDefault() {
         return isDefault;
     }
+
+    public String getLanguageCode() {
+        return languageCode;
+    }
 }
 
 //"playbackCaptions": [{
@@ -53,5 +58,6 @@ public class KalturaPlaybackCaption {
 //        "webVttUrl": "https:\/\/cdnsecakmi.kaltura.com\/api_v3\/index.php\/service\/caption_captionasset\/action\/serveWebVTT\/captionAssetId\/theEntryId\/segmentIndex\/-1\/version\/2\/captions.vtt",
 //        "url": "https:\/\/cdnsecakmi.kaltura.com\/api_v3\/index.php\/service\/caption_captionAsset\/action\/serve\/captionAssetId\/theEntryId\/v\/2",
 //        "isDefault": false,
+//        "languageCode": "en",
 //        "objectType": "KalturaCaptionPlaybackPluginData"
 //        }],

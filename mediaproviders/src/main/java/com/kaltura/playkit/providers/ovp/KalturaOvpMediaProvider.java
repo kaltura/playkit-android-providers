@@ -368,7 +368,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             PKMediaEntry mediaEntry = initPKMediaEntry(entry.getTags());
 
             if (useApiCaptions && playbackContext.getPlaybackCaptions() != null && !playbackContext.getPlaybackCaptions().isEmpty()) {
-                mediaEntry.setExternalSubtitleList(createExternalSubtitles(playbackContext));
+                List<PKExternalSubtitle> subtitleList = createExternalSubtitles(playbackContext);
+                if (!subtitleList.isEmpty()) {
+                    mediaEntry.setExternalSubtitleList(subtitleList);
+                }
             }
 
             return mediaEntry.setId(entry.getId()).setSources(sources)
@@ -383,22 +386,32 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             List<KalturaPlaybackCaption> playbackCaptionList = playbackContext.getPlaybackCaptions();
 
             for (KalturaPlaybackCaption kalturaPlaybackCaption : playbackCaptionList) {
+                if (isValidPlaybackCaption(kalturaPlaybackCaption)) {
+                    String subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
 
-                String subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
+                    PKExternalSubtitle pkExternalSubtitle = new PKExternalSubtitle()
+                            .setUrl(subtitleURL)
+                            .setMimeType(PKSubtitleFormat.valueOfUrl(subtitleURL))
+                            .setLabel(kalturaPlaybackCaption.getLabel())
+                            .setLanguage(kalturaPlaybackCaption.getLanguageCode());
 
-                PKExternalSubtitle pkExternalSubtitle = new PKExternalSubtitle()
-                        .setUrl(subtitleURL)
-                        .setMimeType(PKSubtitleFormat.valueOfUrl(subtitleURL))
-                        .setLabel(kalturaPlaybackCaption.getLabel())
-                        .setLanguage(kalturaPlaybackCaption.getLanguage());
-
-                if (kalturaPlaybackCaption.isDefault()) {
-                    pkExternalSubtitle.setDefault();
+                    if (kalturaPlaybackCaption.isDefault()) {
+                        pkExternalSubtitle.setDefault();
+                    }
+                    subtitleList.add(pkExternalSubtitle);
                 }
-
-                subtitleList.add(pkExternalSubtitle);
             }
             return subtitleList;
+        }
+
+        private static boolean isValidPlaybackCaption(KalturaPlaybackCaption kalturaPlaybackCaption) {
+            if (TextUtils.isEmpty(kalturaPlaybackCaption.getWebVttUrl()) ||
+                    TextUtils.isEmpty(kalturaPlaybackCaption.getLabel()) ||
+                    TextUtils.isEmpty(kalturaPlaybackCaption.getLanguageCode())) {
+                return false;
+
+            }
+            return true;
         }
 
         private static void populateMetadata(Map<String, String> metadata, KalturaMediaEntry entry) {
