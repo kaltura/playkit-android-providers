@@ -50,14 +50,3 @@ public class KalturaPlaybackCaption {
         return languageCode;
     }
 }
-
-//"playbackCaptions": [{
-//        "label": "English",
-//        "format": "1",
-//        "language": "English",
-//        "webVttUrl": "https:\/\/cdnsecakmi.kaltura.com\/api_v3\/index.php\/service\/caption_captionasset\/action\/serveWebVTT\/captionAssetId\/theEntryId\/segmentIndex\/-1\/version\/2\/captions.vtt",
-//        "url": "https:\/\/cdnsecakmi.kaltura.com\/api_v3\/index.php\/service\/caption_captionAsset\/action\/serve\/captionAssetId\/theEntryId\/v\/2",
-//        "isDefault": false,
-//        "languageCode": "en",
-//        "objectType": "KalturaCaptionPlaybackPluginData"
-//        }],
