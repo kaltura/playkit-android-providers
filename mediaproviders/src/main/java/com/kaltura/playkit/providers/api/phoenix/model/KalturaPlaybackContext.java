@@ -29,13 +29,15 @@ import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 public class KalturaPlaybackContext extends BasePlaybackContext {
 
     private ArrayList<KalturaPlaybackSource> sources;
-
+    private ArrayList<KalturaPlaybackCaption> playbackCaptions;
 
     public ArrayList<KalturaPlaybackSource> getSources() {
         return sources;
     }
 
-
+    public ArrayList<KalturaPlaybackCaption> getPlaybackCaptions() {
+        return playbackCaptions;
+    }
     @Override
     protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {
 

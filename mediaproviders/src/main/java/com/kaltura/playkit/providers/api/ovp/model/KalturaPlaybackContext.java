@@ -28,6 +28,7 @@ public class KalturaPlaybackContext extends BasePlaybackContext {
 
     private ArrayList<KalturaPlaybackSource> sources;
     private ArrayList<KalturaFlavorAsset> flavorAssets;
+    private ArrayList<KalturaPlaybackCaption> playbackCaptions;
 
     public KalturaPlaybackContext() {
     }
@@ -38,6 +39,10 @@ public class KalturaPlaybackContext extends BasePlaybackContext {
 
     public ArrayList<KalturaFlavorAsset> getFlavorAssets() {
         return flavorAssets;
+    }
+
+    public ArrayList<KalturaPlaybackCaption> getPlaybackCaptions() {
+        return playbackCaptions;
     }
 
     @Override

@@ -19,6 +19,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKSubtitleFormat;
+import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
@@ -32,6 +34,7 @@ import com.kaltura.playkit.providers.api.ovp.model.KalturaFlavorAsset;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadata;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadataListResponse;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackCaption;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackContext;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackSource;
 import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
@@ -70,6 +73,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private String entryId;
     private String uiConfId;
     private String referrer;
+    private boolean useApiCaptions;
 
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
@@ -154,6 +158,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
      */
     public KalturaOvpMediaProvider setUiConfId(String uiConfId) {
         this.uiConfId = uiConfId;
+        return this;
+    }
+
+    public KalturaOvpMediaProvider setUseApiCaptions(boolean useApiCaptions) {
+        this.useApiCaptions = useApiCaptions;
         return this;
     }
 
@@ -301,7 +310,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                             KalturaMetadataListResponse metadataList = (KalturaMetadataListResponse) responses.get(metadataResponseIdx);
 
                             if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
-                                mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId,
+                                mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId, useApiCaptions,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
                                 if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
@@ -322,15 +331,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             log.v(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
 
-
             if (!isCanceled() && completion != null) {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
             notifyCompletion();
-
         }
-
     }
 
     private static class ProviderParser {
@@ -344,7 +350,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * @return (in case of restriction on maxbitrate, filtering should be done by considering the flavors provided to the
          * source - if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
-        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, KalturaMediaEntry entry,
+        public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, boolean useApiCaptions, KalturaMediaEntry entry,
                                                  KalturaPlaybackContext playbackContext, KalturaMetadataListResponse metadataList) throws InvalidParameterException {
 
             ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
@@ -361,11 +367,51 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             populateMetadata(metadata, entry);
             PKMediaEntry mediaEntry = initPKMediaEntry(entry.getTags());
 
+            if (useApiCaptions && playbackContext.getPlaybackCaptions() != null && !playbackContext.getPlaybackCaptions().isEmpty()) {
+                List<PKExternalSubtitle> subtitleList = createExternalSubtitles(playbackContext);
+                if (!subtitleList.isEmpty()) {
+                    mediaEntry.setExternalSubtitleList(subtitleList);
+                }
+            }
+
             return mediaEntry.setId(entry.getId()).setSources(sources)
                     .setDuration(entry.getMsDuration())
                     .setMetadata(metadata)
                     .setName(entry.getName())
                     .setMediaType(MediaTypeConverter.toMediaEntryType(entry));
+        }
+
+        private static List<PKExternalSubtitle> createExternalSubtitles(KalturaPlaybackContext playbackContext) {
+            List<PKExternalSubtitle> subtitleList = new ArrayList<>();
+            List<KalturaPlaybackCaption> playbackCaptionList = playbackContext.getPlaybackCaptions();
+
+            for (KalturaPlaybackCaption kalturaPlaybackCaption : playbackCaptionList) {
+                if (isValidPlaybackCaption(kalturaPlaybackCaption)) {
+                    String subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
+
+                    PKExternalSubtitle pkExternalSubtitle = new PKExternalSubtitle()
+                            .setUrl(subtitleURL)
+                            .setMimeType(PKSubtitleFormat.valueOfUrl(subtitleURL))
+                            .setLabel(kalturaPlaybackCaption.getLabel())
+                            .setLanguage(kalturaPlaybackCaption.getLanguageCode());
+
+                    if (kalturaPlaybackCaption.isDefault()) {
+                        pkExternalSubtitle.setDefault();
+                    }
+                    subtitleList.add(pkExternalSubtitle);
+                }
+            }
+            return subtitleList;
+        }
+
+        private static boolean isValidPlaybackCaption(KalturaPlaybackCaption kalturaPlaybackCaption) {
+            if (TextUtils.isEmpty(kalturaPlaybackCaption.getWebVttUrl()) ||
+                    TextUtils.isEmpty(kalturaPlaybackCaption.getLabel()) ||
+                    TextUtils.isEmpty(kalturaPlaybackCaption.getLanguageCode())) {
+                return false;
+
+            }
+            return true;
         }
 
         private static void populateMetadata(Map<String, String> metadata, KalturaMediaEntry entry) {
