@@ -390,10 +390,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (isValidPlaybackCaption(kalturaPlaybackCaption)) {
                     PKSubtitleFormat subtitleFormat;
                     String subtitleURL = kalturaPlaybackCaption.getUrl();
+                    
                     if (KalturaCaptionType.srt.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {
                         subtitleFormat = PKSubtitleFormat.srt;
                     } else if (KalturaCaptionType.webvtt.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {
-
                         subtitleFormat = PKSubtitleFormat.vtt;
                     } else {
                         subtitleURL = kalturaPlaybackCaption.getWebVttUrl();
