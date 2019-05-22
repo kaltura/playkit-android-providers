@@ -13,7 +13,7 @@
 package com.kaltura.playkit.providers.mock;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

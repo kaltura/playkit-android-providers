@@ -1,7 +1,8 @@
 package com.kaltura.playkit.providers.ovp;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.RequestQueue;
