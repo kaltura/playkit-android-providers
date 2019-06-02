@@ -642,7 +642,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         public static PKMediaEntry getMedia(String assetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources, boolean is360Content) {
             PKMediaEntry mediaEntry = is360Content
                     //360 entry init with default VRSettings.
-                    ? new VRPKMediaEntry().setVRParams(new VRSettings())
+                    ? new VRPKMediaEntry()
                     //Regular entry
                     : new PKMediaEntry();
 

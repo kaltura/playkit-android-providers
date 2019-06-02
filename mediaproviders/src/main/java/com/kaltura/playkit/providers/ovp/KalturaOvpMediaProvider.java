@@ -454,8 +454,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if(tags != null
                     && !tags.isEmpty()
                     && Pattern.compile("\\b360\\b").matcher(tags).find()){
-                return new VRPKMediaEntry()
-                        .setVRParams(new VRSettings());
+                return new VRPKMediaEntry();
             }
 
             //Otherwise create regular PKMediaEntry
