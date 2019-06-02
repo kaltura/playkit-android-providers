@@ -22,7 +22,6 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKSubtitleFormat;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.vr.VRPKMediaEntry;
-import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
