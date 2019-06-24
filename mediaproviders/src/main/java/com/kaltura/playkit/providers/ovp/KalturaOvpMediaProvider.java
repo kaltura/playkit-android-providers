@@ -210,15 +210,18 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
                     .tag("entry-info-multireq");
 
-            if (TextUtils.isEmpty(ks)) {
-                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, partnerId));
+            String baseEntryServiceEntryId = "{1:result:objects:0:id}";
 
+            boolean isAnonymusKS = TextUtils.isEmpty(ks);
+            if (isAnonymusKS) {
+                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, partnerId));
                 ks = "{1:result:ks}";
+                baseEntryServiceEntryId = "{2:result:objects:0:id}";
             }
 
             return multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, entryId),
-                    BaseEntryService.getPlaybackContext(baseUrl, ks, entryId, referrer),
-                    MetaDataService.list(baseUrl, ks, entryId));
+                    BaseEntryService.getPlaybackContext(baseUrl, ks, baseEntryServiceEntryId, referrer),
+                    MetaDataService.list(baseUrl, ks, baseEntryServiceEntryId));
         }
 
         /**
