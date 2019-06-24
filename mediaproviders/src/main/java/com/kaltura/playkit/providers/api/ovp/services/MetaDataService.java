@@ -23,9 +23,9 @@ public class MetaDataService extends OvpService {
 
     public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {
         JsonObject filter = new JsonObject();
-        filter.addProperty("objectType","KalturaMetadataFilter");
-        filter.addProperty("objectIdEqual",entryId);
-        filter.addProperty("metadataObjectTypeEqual","1");
+        filter.addProperty("objectType", "KalturaMetadataFilter");
+        filter.addProperty("objectIdEqual", entryId);
+        filter.addProperty("metadataObjectTypeEqual", "1");
 
         JsonObject params = new JsonObject();
         params.add("filter", filter);
