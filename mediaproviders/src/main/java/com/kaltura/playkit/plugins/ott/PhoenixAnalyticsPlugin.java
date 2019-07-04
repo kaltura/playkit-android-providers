@@ -85,7 +85,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     public static final Factory factory = new Factory() {
         @Override
         public String getName() {
-            return "PhoenixAnalytics";
+            return "ottAnalytics";
         }
 
         @Override
@@ -354,6 +354,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
 
+        if (TextUtils.isEmpty(this.baseUrl)) {
+            log.w("Blocking AnalyticsEvent baseUrl is not valid");
+            return;
+        }
+
         if (TextUtils.isEmpty(this.ks)) {
             log.w("Blocking AnalyticsEvent KS is not valid");
             return;
@@ -446,10 +451,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         } else if (config instanceof JsonObject) {
             JsonObject params = (JsonObject) config;
-            String baseUrl = params.get("baseUrl").getAsString();
-            int partnerId = params.get("partnerId").getAsInt();
-            int timerInterval = params.get("timerInterval").getAsInt();
-            String ks = params.get("ks").isJsonNull() ? "" : params.get("ks").getAsString();
+            String baseUrl = "";
+            if (params.has("serviceUrl")) {
+                baseUrl = params.get("serviceUrl").getAsString();
+            } else if (params.has("baseUrl")) {
+                baseUrl = params.get("baseUrl").getAsString();
+            }
+            int partnerId = (params.has("partnerId") && !params.get("partnerId").isJsonNull()) ? params.get("partnerId").getAsInt() : Integer.MAX_VALUE;
+            int timerInterval = (params.has("timerInterval")) ? params.get("timerInterval").getAsInt() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+            String ks = (!params.has("ks") || params.get("ks").isJsonNull()) ? "" : params.get("ks").getAsString();
             return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
         }
         return null;

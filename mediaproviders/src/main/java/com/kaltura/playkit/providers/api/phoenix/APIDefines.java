@@ -93,6 +93,5 @@ public class APIDefines {
             this.value = value;
         }
     }
-
 }
 

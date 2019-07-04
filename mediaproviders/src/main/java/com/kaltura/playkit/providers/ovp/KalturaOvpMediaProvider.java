@@ -21,8 +21,6 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKSubtitleFormat;
 import com.kaltura.playkit.player.PKExternalSubtitle;
-import com.kaltura.playkit.player.vr.VRPKMediaEntry;
-import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
@@ -453,17 +451,14 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
         private static PKMediaEntry initPKMediaEntry(String tags) {
+            PKMediaEntry pkMediaEntry = new PKMediaEntry();
             //If there is '360' tag -> Create VRPKMediaEntry with default VRSettings
             if(tags != null
                     && !tags.isEmpty()
                     && Pattern.compile("\\b360\\b").matcher(tags).find()){
-                return new VRPKMediaEntry()
-                        .setVRParams(new VRSettings());
+                pkMediaEntry.setIsVRMediaType(true);
             }
-
-            //Otherwise create regular PKMediaEntry
-            return new PKMediaEntry();
-
+            return pkMediaEntry;
         }
 
         private static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {
