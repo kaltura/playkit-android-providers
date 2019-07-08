@@ -39,9 +39,6 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
-import com.kaltura.playkit.player.vr.VRPKMediaEntry;
-import com.kaltura.playkit.player.vr.VRSettings;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.security.InvalidParameterException;
@@ -641,11 +638,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     static class ProviderParser {
 
         public static PKMediaEntry getMedia(String assetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources, boolean is360Content) {
-            PKMediaEntry mediaEntry = is360Content
-                    //360 entry init with default VRSettings.
-                    ? new VRPKMediaEntry().setVRParams(new VRSettings())
-                    //Regular entry
-                    : new PKMediaEntry();
+            PKMediaEntry mediaEntry = new PKMediaEntry();
+            if (is360Content) {
+                mediaEntry.setIsVRMediaType(true);
+            }
 
             mediaEntry.setId("" + assetId);
             mediaEntry.setName(null);
