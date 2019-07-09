@@ -14,8 +14,6 @@ script:
   - ./gradlew mediaproviders:build
 after_failure:
   - cat mediaproviders/build/reports/lint-results.xml
-after_success:
-  - ./travis-push-to-bintray.sh
 notifications:
   email:
     recipients:
