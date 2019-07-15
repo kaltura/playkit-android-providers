@@ -425,14 +425,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         }
 
         private static boolean isValidPlaybackCaption(KalturaPlaybackCaption kalturaPlaybackCaption) {
-            if (TextUtils.isEmpty(kalturaPlaybackCaption.getUrl()) ||
-                    TextUtils.isEmpty(kalturaPlaybackCaption.getFormat()) ||
-                    TextUtils.isEmpty(kalturaPlaybackCaption.getLabel()) ||
-                    TextUtils.isEmpty(kalturaPlaybackCaption.getLanguageCode())) {
-                return false;
-
-            }
-            return true;
+            return !TextUtils.isEmpty(kalturaPlaybackCaption.getUrl()) &&
+                    !TextUtils.isEmpty(kalturaPlaybackCaption.getFormat()) &&
+                    !TextUtils.isEmpty(kalturaPlaybackCaption.getLabel()) &&
+                    !TextUtils.isEmpty(kalturaPlaybackCaption.getLanguageCode());
         }
 
         private static void populateMetadata(Map<String, String> metadata, KalturaMediaEntry entry) {

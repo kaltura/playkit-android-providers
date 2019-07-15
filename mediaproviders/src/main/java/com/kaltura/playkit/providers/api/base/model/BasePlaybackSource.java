@@ -43,7 +43,7 @@ public class BasePlaybackSource extends BaseResult {
      */
     public String getProtocol(String protocol) {
         if (protocols != null && protocols.length() > 0) {
-            String protocolsLst[] = protocols.split(",");
+            String[] protocolsLst = protocols.split(",");
             for (String prc : protocolsLst) {
                 if (prc.equals(protocol)) {
                     return protocol;
