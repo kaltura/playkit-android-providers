@@ -13,7 +13,7 @@ package com.kaltura.playkit.providers.ovp;
  */
 
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;

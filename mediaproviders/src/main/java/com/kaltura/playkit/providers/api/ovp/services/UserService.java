@@ -12,7 +12,7 @@
 
 package com.kaltura.playkit.providers.api.ovp.services;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
 

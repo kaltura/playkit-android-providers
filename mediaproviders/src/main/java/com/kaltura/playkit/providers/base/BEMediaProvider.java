@@ -12,7 +12,8 @@
 
 package com.kaltura.playkit.providers.base;
 
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
