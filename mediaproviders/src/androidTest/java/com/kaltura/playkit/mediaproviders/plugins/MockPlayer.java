@@ -64,12 +64,12 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings allowClearLead(boolean allowClearLead) {
-                return null;
+                return this;
             }
 
             @Override
             public Settings enableDecoderFallback(boolean enableDecoderFallback) {
-                return null;
+                return this;
             }
 
             @Override
@@ -109,32 +109,32 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
-                return null;
+                return this;
             }
 
             @Override
             public Settings setABRSettings(ABRSettings abrSettings) {
-                return null;
+                return this;
             }
 
             @Override
             public Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
-                return null;
+                return this;
             }
 
             @Override
             public Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine) {
-                return null;
+                return this;
             }
 
             @Override
             public Settings setHideVideoViews(boolean hide) {
-                return null;
+                return this;
             }
 
             @Override
             public Settings setVRSettings(VRSettings vrSettings) {
-                return null;
+                return this;
             }
         };
     }
