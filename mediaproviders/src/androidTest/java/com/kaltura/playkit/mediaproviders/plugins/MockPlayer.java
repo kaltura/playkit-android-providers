@@ -10,10 +10,12 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
 
@@ -61,6 +63,16 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings allowClearLead(boolean allowClearLead) {
+                return this;
+            }
+
+            @Override
+            public Settings enableDecoderFallback(boolean enableDecoderFallback) {
+                return this;
+            }
+
+            @Override
             public Settings setSecureSurface(boolean isSurfaceSecured) {
                 return this;
             }
@@ -92,6 +104,36 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+                return this;
+            }
+
+            @Override
+            public Settings setSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+                return this;
+            }
+
+            @Override
+            public Settings setABRSettings(ABRSettings abrSettings) {
+                return this;
+            }
+
+            @Override
+            public Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+                return this;
+            }
+
+            @Override
+            public Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine) {
+                return this;
+            }
+
+            @Override
+            public Settings setHideVideoViews(boolean hide) {
+                return this;
+            }
+
+            @Override
+            public Settings setVRSettings(VRSettings vrSettings) {
                 return this;
             }
         };
@@ -263,7 +305,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public void removeListeners(@android.support.annotation.NonNull Object groupId) {
+    public void removeListeners(@NonNull Object groupId) {
 
     }
 
