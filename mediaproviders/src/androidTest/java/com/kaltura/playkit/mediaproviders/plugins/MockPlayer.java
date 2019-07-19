@@ -11,7 +11,9 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.utils.Consts;
 
 
@@ -156,6 +158,16 @@ public class MockPlayer implements Player {
     }
 
     @Override
+    public long getPositionInWindowMs() {
+        return 0;
+    }
+
+    @Override
+    public long getCurrentProgramTime() {
+        return 0;
+    }
+
+    @Override
     public long getDuration() {
         return duration;
     }
@@ -228,6 +240,31 @@ public class MockPlayer implements Player {
     @Override
     public <T extends PKController> T getController(Class<T> type) {
         return null;
+    }
+
+    @Override
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+
+    }
+
+    @Override
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+
+    }
+
+    @Override
+    public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
+
+    }
+
+    @Override
+    public void addListener(Object groupId, Enum type, PKEvent.Listener listener) {
+
+    }
+
+    @Override
+    public void removeListeners(@android.support.annotation.NonNull Object groupId) {
+
     }
 
     @Override
