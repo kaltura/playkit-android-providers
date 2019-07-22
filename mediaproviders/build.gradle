@@ -38,7 +38,7 @@ dependencies {
 
     api 'com.kaltura.netkit:netkit-core:1.1.0'
     //implementation project(":netkit")
-    implementation 'com.kaltura.playkit:playkit:3.9.6'
+    implementation 'com.kaltura.playkit:playkit:3.9.7'
     //implementation project(":playkit")
 
 
