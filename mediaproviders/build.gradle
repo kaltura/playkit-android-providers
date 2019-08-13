@@ -38,7 +38,7 @@ dependencies {
 
     api 'com.kaltura.netkit:netkit-core:1.2.0'
     //api project(":netkit")
-    implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
+    implementation 'com.kaltura.playkit:playkit:4.0.1'
     //implementation project(":playkit")
 
     testImplementation 'junit:junit:4.12'
