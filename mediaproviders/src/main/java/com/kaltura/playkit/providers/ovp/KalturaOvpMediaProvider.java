@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import com.google.gson.JsonSyntaxException;
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
@@ -123,6 +124,17 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
      */
     public KalturaOvpMediaProvider setReferrer(String referrer) {
         this.referrer = referrer;
+        return this;
+    }
+
+    /**
+     * NOT MANDATORY! The number of retries.
+     *
+     * @param numRetries - request num of retries.
+     * @return - instance of KalturaOvpMediaProvider
+     */
+    public KalturaOvpMediaProvider setNumOfRetries(int numRetries) {
+        APIOkRequestsExecutor.rertryPolicy.setNumRetries(numRetries);
         return this;
     }
 
@@ -249,7 +261,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     });
 
             synchronized (syncObject) {
-                loadReq = requestQueue.queue(entryRequest.build());
+                loadReq = requestQueue.queue(entryRequest.build(), APIOkRequestsExecutor.rertryPolicy.getNumRetries());
                 log.d(loadId + ": request queued for execution [" + loadReq + "]");
             }
 

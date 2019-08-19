@@ -507,7 +507,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public String queue(RequestElement request) {
+        public String queue(RequestElement request, int retryCount) {
             new RequestHandler(request).run();
             return null;
         }

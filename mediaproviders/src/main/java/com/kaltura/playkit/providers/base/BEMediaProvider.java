@@ -42,6 +42,7 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
     protected RequestQueue requestsExecutor;
     protected SessionProvider sessionProvider;
     private LoaderFuture currentLoad;
+    private int numRetries = 3;
     protected final Object syncObject = new Object();
 
     protected String tag = "BEMediaProvider";
@@ -73,9 +74,12 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
     }
 
-    protected BEMediaProvider(String tag){
-        APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder());
+    protected BEMediaProvider(String tag) {
+        if ("okhttp".equals(PKHttpClientManager.getHttpProvider())) {
+            APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connecton pull with netkit
+        }
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        APIOkRequestsExecutor.rertryPolicy.setNumRetries(numRetries);
         this.requestsExecutor.enableLogs(false);
         loadExecutor = Executors.newFixedThreadPool(MaxThreads);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
         this.tag = tag;
@@ -126,5 +130,4 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
             }
         }
     }
-
 }

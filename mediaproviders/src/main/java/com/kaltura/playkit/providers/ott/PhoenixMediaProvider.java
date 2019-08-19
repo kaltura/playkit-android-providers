@@ -22,6 +22,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
@@ -161,6 +162,17 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      */
     public PhoenixMediaProvider setReferrer(String referrer) {
         this.referrer = referrer;
+        return this;
+    }
+
+    /**
+     * NOT MANDATORY! The number of retries.
+     *
+     * @param numRetries - request num of retries.
+     * @return - instance of PhoenixMediaProvider
+     */
+    public PhoenixMediaProvider setNumOfRetries(int numRetries) {
+        APIOkRequestsExecutor.rertryPolicy.setNumRetries(numRetries);
         return this;
     }
 
@@ -423,7 +435,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     });
 
             synchronized (syncObject) {
-                loadReq = requestQueue.queue(requestBuilder.build());
+                loadReq = requestQueue.queue(requestBuilder.build(), APIOkRequestsExecutor.rertryPolicy.getNumRetries());
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
 
