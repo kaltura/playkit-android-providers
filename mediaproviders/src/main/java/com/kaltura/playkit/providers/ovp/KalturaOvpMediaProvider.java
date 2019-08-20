@@ -151,7 +151,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     /**
      * optional parameter.
-     * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
+     * Defaults to {@link APIOkRequestsExecutor} implementation.
      *
      * @param executor - executor
      * @return - instance of KalturaOvpMediaProvider
