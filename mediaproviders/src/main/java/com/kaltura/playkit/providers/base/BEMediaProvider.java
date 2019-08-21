@@ -80,7 +80,7 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
 
         if (retryPolicy != null) {
-            APIOkRequestsExecutor.rertryPolicy.setNumRetries(retryPolicy.getNumRetries()).
+            APIOkRequestsExecutor.retryPolicy.setNumRetries(retryPolicy.getNumRetries()).
                     setReadTimeoutMs(retryPolicy.getReadTimeoutMs()).
                     setWriteTimeoutMs(retryPolicy.getWriteTimeoutMs()).
                     setConnectTimeoutMs(retryPolicy.getConnectTimeoutMs());

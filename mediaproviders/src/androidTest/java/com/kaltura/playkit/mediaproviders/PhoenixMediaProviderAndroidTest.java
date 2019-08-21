@@ -16,6 +16,7 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.NetworkEventListener;
 import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.RestrictionError;
 import com.kaltura.netkit.utils.SessionProvider;
@@ -721,6 +722,11 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
+        public String queue(RequestElement request) {
+            return null;
+        }
+
+        @Override
         public String queue(RequestElement request, int retryCount) {
             new RequestHandler(request).run();
             return null;
@@ -749,6 +755,11 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
         @Override
         public void enableLogs(boolean enable) {
+
+        }
+
+        @Override
+        public void setNetworkEventListener(NetworkEventListener networkEventListener) {
 
         }
 

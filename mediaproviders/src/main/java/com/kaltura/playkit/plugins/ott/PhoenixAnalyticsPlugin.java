@@ -401,7 +401,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 }
             }
         });
-        requestsExecutor.queue(requestBuilder.build(), APIOkRequestsExecutor.rertryPolicy.getNumRetries());
+        requestsExecutor.queue(requestBuilder.build(), APIOkRequestsExecutor.retryPolicy.getNumRetries());
     }
 
     private void sendGenericErrorEvent(ResponseElement response, PhoenixActionType eventType) {

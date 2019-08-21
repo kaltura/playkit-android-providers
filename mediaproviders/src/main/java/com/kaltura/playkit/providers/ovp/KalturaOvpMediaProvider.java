@@ -254,7 +254,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     });
 
             synchronized (syncObject) {
-                loadReq = requestQueue.queue(entryRequest.build(), APIOkRequestsExecutor.rertryPolicy.getNumRetries());
+                loadReq = requestQueue.queue(entryRequest.build(), APIOkRequestsExecutor.retryPolicy.getNumRetries());
                 log.d(loadId + ": request queued for execution [" + loadReq + "]");
             }
 
@@ -279,7 +279,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) throws InterruptedException {
             ErrorElement error = null;
             PKMediaEntry mediaEntry = null;
-
 
             if (isCanceled()) {
                 log.v(loadId + ": i am canceled, exit response parsing ");
@@ -397,7 +396,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (isValidPlaybackCaption(kalturaPlaybackCaption)) {
                     PKSubtitleFormat subtitleFormat;
                     String subtitleURL = kalturaPlaybackCaption.getUrl();
-                    
+
                     if (KalturaCaptionType.srt.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {
                         subtitleFormat = PKSubtitleFormat.srt;
                     } else if (KalturaCaptionType.webvtt.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {
