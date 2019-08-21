@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.executor.RetryPolicy;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
@@ -130,12 +131,17 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     public PhoenixMediaProvider() {
-        super(PhoenixMediaProvider.TAG);
+        super(PhoenixMediaProvider.TAG, new RetryPolicy());
         this.mediaAsset = new MediaAsset();
     }
 
-    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks) {
-        this();
+    public PhoenixMediaProvider(RetryPolicy retryPolicy) {
+        super(PhoenixMediaProvider.TAG, retryPolicy);
+        this.mediaAsset = new MediaAsset();
+    }
+
+    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks, RetryPolicy retryPolicy) {
+        this(retryPolicy);
         setSessionProvider(new SessionProvider() {
             @Override
             public String baseUrl() {
@@ -162,17 +168,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      */
     public PhoenixMediaProvider setReferrer(String referrer) {
         this.referrer = referrer;
-        return this;
-    }
-
-    /**
-     * NOT MANDATORY! The number of retries.
-     *
-     * @param numRetries - request num of retries.
-     * @return - instance of PhoenixMediaProvider
-     */
-    public PhoenixMediaProvider setNumOfRetries(int numRetries) {
-        APIOkRequestsExecutor.rertryPolicy.setNumRetries(numRetries);
         return this;
     }
 
@@ -279,7 +274,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * OPTIONAL
-     * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
+     * Defaults to {@link APIOkRequestsExecutor} implementation.
      *
      * @param executor - executor
      * @return - instance of PhoenixMediaProvider
@@ -293,7 +288,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
     }
-
 
     /**
      * Checks for non empty value on the mandatory parameters.

@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.executor.RetryPolicy;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
@@ -79,14 +80,17 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
 
-
     public KalturaOvpMediaProvider() {
-        super(KalturaOvpMediaProvider.TAG);
+        super(KalturaOvpMediaProvider.TAG, new RetryPolicy());
+    }
+
+    public KalturaOvpMediaProvider(RetryPolicy retryPolicy) {
+        super(KalturaOvpMediaProvider.TAG, retryPolicy);
     }
 
 
-    public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks) {
-        this();
+    public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks, RetryPolicy retryPolicy) {
+        this(retryPolicy);
         setSessionProvider(new SessionProvider() {
             @Override
             public String baseUrl() {
@@ -124,17 +128,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
      */
     public KalturaOvpMediaProvider setReferrer(String referrer) {
         this.referrer = referrer;
-        return this;
-    }
-
-    /**
-     * NOT MANDATORY! The number of retries.
-     *
-     * @param numRetries - request num of retries.
-     * @return - instance of KalturaOvpMediaProvider
-     */
-    public KalturaOvpMediaProvider setNumOfRetries(int numRetries) {
-        APIOkRequestsExecutor.rertryPolicy.setNumRetries(numRetries);
         return this;
     }
 

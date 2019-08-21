@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.executor.RetryPolicy;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.SessionProvider;
@@ -42,7 +43,6 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
     protected RequestQueue requestsExecutor;
     protected SessionProvider sessionProvider;
     private LoaderFuture currentLoad;
-    private int numRetries = 3;
     protected final Object syncObject = new Object();
 
     protected String tag = "BEMediaProvider";
@@ -74,12 +74,19 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
     }
 
-    protected BEMediaProvider(String tag) {
+    protected BEMediaProvider(String tag, RetryPolicy retryPolicy) {
         if ("okhttp".equals(PKHttpClientManager.getHttpProvider())) {
-            APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connecton pull with netkit
+            APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connection-pool with netkit
         }
+
+        if (retryPolicy != null) {
+            APIOkRequestsExecutor.rertryPolicy.setNumRetries(retryPolicy.getNumRetries()).
+                    setReadTimeoutMs(retryPolicy.getReadTimeoutMs()).
+                    setWriteTimeoutMs(retryPolicy.getWriteTimeoutMs()).
+                    setConnectTimeoutMs(retryPolicy.getConnectTimeoutMs());
+        }
+
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        APIOkRequestsExecutor.rertryPolicy.setNumRetries(numRetries);
         this.requestsExecutor.enableLogs(false);
         loadExecutor = Executors.newFixedThreadPool(MaxThreads);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
         this.tag = tag;
