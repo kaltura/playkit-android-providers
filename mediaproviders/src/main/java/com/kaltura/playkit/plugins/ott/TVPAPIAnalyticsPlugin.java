@@ -129,7 +129,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
                 }
             }
         });
-        requestsExecutor.queue(requestBuilder.build(), APIOkRequestsExecutor.retryPolicy.getNumRetries());
+        requestsExecutor.queue(requestBuilder.build(), APIOkRequestsExecutor.getSingleton().getRequestConfiguration().getRetryAttempts());
     }
 
     private static TVPAPIAnalyticsConfig parseConfig(Object config) {

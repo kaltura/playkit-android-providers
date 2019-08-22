@@ -717,7 +717,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
     class Executor implements RequestQueue {
 
         @Override
-        public void setDefaultConfiguration(RequestConfiguration config) {
+        public void setRequestConfiguration(RequestConfiguration config) {
 
         }
 

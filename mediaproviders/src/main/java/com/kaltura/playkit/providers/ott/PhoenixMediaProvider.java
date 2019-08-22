@@ -24,7 +24,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
-import com.kaltura.netkit.connect.executor.RetryPolicy;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
@@ -131,17 +130,12 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     public PhoenixMediaProvider() {
-        super(PhoenixMediaProvider.TAG, new RetryPolicy());
+        super(PhoenixMediaProvider.TAG);
         this.mediaAsset = new MediaAsset();
     }
 
-    public PhoenixMediaProvider(RetryPolicy retryPolicy) {
-        super(PhoenixMediaProvider.TAG, retryPolicy);
-        this.mediaAsset = new MediaAsset();
-    }
-
-    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks, RetryPolicy retryPolicy) {
-        this(retryPolicy);
+    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks) {
+        this();
         setSessionProvider(new SessionProvider() {
             @Override
             public String baseUrl() {
@@ -408,7 +402,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
          * Builds and passes to the executor, the Asset info fetching request.
          *
          * @param ks - ks
-         * @throws InterruptedException - {@link InterruptedException}
          */
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
@@ -429,7 +422,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     });
 
             synchronized (syncObject) {
-                loadReq = requestQueue.queue(requestBuilder.build(), APIOkRequestsExecutor.retryPolicy.getNumRetries());
+                loadReq = requestQueue.queue(requestBuilder.build(), APIOkRequestsExecutor.getSingleton().getRequestConfiguration().getRetryAttempts());
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
 
@@ -451,7 +444,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
          * Parse and create a {@link PKMediaEntry} object from the API response.
          *
          * @param response - server response
-         * @throws InterruptedException - {@link InterruptedException}
          */
         private void onAssetGetResponse(final ResponseElement response) throws InterruptedException {
             ErrorElement error;

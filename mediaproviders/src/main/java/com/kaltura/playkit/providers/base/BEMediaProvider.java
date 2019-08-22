@@ -17,7 +17,6 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
-import com.kaltura.netkit.connect.executor.RetryPolicy;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.SessionProvider;
@@ -74,16 +73,9 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
     }
 
-    protected BEMediaProvider(String tag, RetryPolicy retryPolicy) {
+    protected BEMediaProvider(String tag) {
         if ("okhttp".equals(PKHttpClientManager.getHttpProvider())) {
             APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connection-pool with netkit
-        }
-
-        if (retryPolicy != null) {
-            APIOkRequestsExecutor.retryPolicy.setNumRetries(retryPolicy.getNumRetries()).
-                    setReadTimeoutMs(retryPolicy.getReadTimeoutMs()).
-                    setWriteTimeoutMs(retryPolicy.getWriteTimeoutMs()).
-                    setConnectTimeoutMs(retryPolicy.getConnectTimeoutMs());
         }
 
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();

@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
-import com.kaltura.netkit.connect.executor.RetryPolicy;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
@@ -81,16 +80,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private Map<String, Object> flavorsFilter;
 
     public KalturaOvpMediaProvider() {
-        super(KalturaOvpMediaProvider.TAG, new RetryPolicy());
+        super(KalturaOvpMediaProvider.TAG);
     }
 
-    public KalturaOvpMediaProvider(RetryPolicy retryPolicy) {
-        super(KalturaOvpMediaProvider.TAG, retryPolicy);
-    }
-
-
-    public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks, RetryPolicy retryPolicy) {
-        this(retryPolicy);
+    public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks) {
+        this();
         setSessionProvider(new SessionProvider() {
             @Override
             public String baseUrl() {
@@ -234,7 +228,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * Builds and passes to the executor, the multirequest for entry info and playback info fetching.
          *
          * @param ks - Kaltura KS
-         * @throws InterruptedException - {@link InterruptedException} in case the load operation canceled.
          */
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
@@ -254,7 +247,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     });
 
             synchronized (syncObject) {
-                loadReq = requestQueue.queue(entryRequest.build(), APIOkRequestsExecutor.retryPolicy.getNumRetries());
+                loadReq = requestQueue.queue(entryRequest.build(), APIOkRequestsExecutor.getSingleton().getRequestConfiguration().getRetryAttempts());
                 log.d(loadId + ": request queued for execution [" + loadReq + "]");
             }
 
@@ -274,7 +267,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * @param ks - Kaltura KS
          * @param response - Server response
          * @param completion - A callback to pass the constructed {@link PKMediaEntry} object on.
-         * @throws InterruptedException - in case the load operation canceled.
          */
         private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) throws InterruptedException {
             ErrorElement error = null;
