@@ -600,6 +600,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         if (kalturaMediaAsset.getDescription() != null) {
             metadata.put("description", kalturaMediaAsset.getDescription());
         }
+
+        metadata.put("assetType", mediaAsset.assetType.value);
+
         return metadata;
     }
 
