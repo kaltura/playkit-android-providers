@@ -247,7 +247,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     });
 
             synchronized (syncObject) {
-                loadReq = requestQueue.queue(entryRequest.build(), APIOkRequestsExecutor.getSingleton().getRequestConfiguration().getRetryAttempts());
+                loadReq = requestQueue.queue(entryRequest.build());
                 log.d(loadId + ": request queued for execution [" + loadReq + "]");
             }
 

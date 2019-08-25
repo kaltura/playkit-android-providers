@@ -422,7 +422,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     });
 
             synchronized (syncObject) {
-                loadReq = requestQueue.queue(requestBuilder.build(), APIOkRequestsExecutor.getSingleton().getRequestConfiguration().getRetryAttempts());
+                loadReq = requestQueue.queue(requestBuilder.build());
                 PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
             }
 

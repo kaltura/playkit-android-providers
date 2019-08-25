@@ -13,7 +13,7 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.NetworkEventListener;
+import com.kaltura.netkit.utils.NetworkErrorEventListener;
 import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.RestrictionError;
 import com.kaltura.netkit.utils.SessionProvider;
@@ -545,7 +545,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void setNetworkEventListener(NetworkEventListener networkEventListener) {
+        public void setNetworkErrorEventListener(NetworkErrorEventListener networkErrorEventListener) {
 
         }
 
