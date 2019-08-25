@@ -402,6 +402,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
          * Builds and passes to the executor, the Asset info fetching request.
          *
          * @param ks - ks
+         * @throws InterruptedException - {@link InterruptedException}
          */
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
@@ -444,6 +445,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
          * Parse and create a {@link PKMediaEntry} object from the API response.
          *
          * @param response - server response
+         * @throws InterruptedException - {@link InterruptedException}
          */
         private void onAssetGetResponse(final ResponseElement response) throws InterruptedException {
             ErrorElement error;
