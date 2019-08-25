@@ -381,7 +381,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         String assetType = APIDefines.KalturaAssetType.Media.value;
         if (mediaConfig.getMediaEntry().getMetadata() != null && mediaConfig.getMediaEntry().getMetadata().containsKey("assetType")) {
-            mediaConfig.getMediaEntry().getMetadata().get("assetType");
+            assetType = mediaConfig.getMediaEntry().getMetadata().get("assetType");
         }
 
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
