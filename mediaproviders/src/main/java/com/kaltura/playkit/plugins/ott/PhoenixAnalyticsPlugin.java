@@ -31,6 +31,7 @@ import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -378,8 +379,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying + " position = " + lastKnownPlayerPosition);
 
+        String assetType = APIDefines.KalturaAssetType.Media.value;
+        if (mediaConfig.getMediaEntry().getMetadata() != null && mediaConfig.getMediaEntry().getMetadata().containsKey("assetType")) {
+            mediaConfig.getMediaEntry().getMetadata().get("assetType");
+        }
+
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                "media", currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
+                assetType, currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(new OnRequestCompletion() {
             @Override
