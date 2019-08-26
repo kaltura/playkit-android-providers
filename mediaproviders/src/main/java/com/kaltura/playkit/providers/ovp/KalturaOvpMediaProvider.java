@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import com.google.gson.JsonSyntaxException;
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
@@ -78,11 +79,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
 
-
     public KalturaOvpMediaProvider() {
         super(KalturaOvpMediaProvider.TAG);
     }
-
 
     public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks) {
         this();
@@ -139,7 +138,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     /**
      * optional parameter.
-     * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
+     * Defaults to {@link APIOkRequestsExecutor} implementation.
      *
      * @param executor - executor
      * @return - instance of KalturaOvpMediaProvider
@@ -229,7 +228,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * Builds and passes to the executor, the multirequest for entry info and playback info fetching.
          *
          * @param ks - Kaltura KS
-         * @throws InterruptedException - {@link InterruptedException} in case the load operation canceled.
          */
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
@@ -269,12 +267,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          * @param ks - Kaltura KS
          * @param response - Server response
          * @param completion - A callback to pass the constructed {@link PKMediaEntry} object on.
-         * @throws InterruptedException - in case the load operation canceled.
          */
         private void onEntryInfoMultiResponse(String ks, ResponseElement response, OnMediaLoadCompletion completion) throws InterruptedException {
             ErrorElement error = null;
             PKMediaEntry mediaEntry = null;
-
 
             if (isCanceled()) {
                 log.v(loadId + ": i am canceled, exit response parsing ");
@@ -392,7 +388,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (isValidPlaybackCaption(kalturaPlaybackCaption)) {
                     PKSubtitleFormat subtitleFormat;
                     String subtitleURL = kalturaPlaybackCaption.getUrl();
-                    
+
                     if (KalturaCaptionType.srt.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {
                         subtitleFormat = PKSubtitleFormat.srt;
                     } else if (KalturaCaptionType.webvtt.equals(KalturaCaptionType.fromCaptionFormatString(kalturaPlaybackCaption.getFormat()))) {

@@ -73,8 +73,11 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
     }
 
-    protected BEMediaProvider(String tag){
-        APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder());
+    protected BEMediaProvider(String tag) {
+        if ("okhttp".equals(PKHttpClientManager.getHttpProvider())) {
+            APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connection-pool with netkit
+        }
+
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
         this.requestsExecutor.enableLogs(false);
         loadExecutor = Executors.newFixedThreadPool(MaxThreads);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
@@ -126,5 +129,4 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
             }
         }
     }
-
 }

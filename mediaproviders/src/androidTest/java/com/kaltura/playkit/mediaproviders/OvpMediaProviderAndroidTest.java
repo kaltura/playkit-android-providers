@@ -13,6 +13,7 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.NetworkErrorEventListener;
 import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.RestrictionError;
 import com.kaltura.netkit.utils.SessionProvider;
@@ -502,12 +503,17 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     class Executor implements RequestQueue {
 
         @Override
-        public void setDefaultConfiguration(RequestConfiguration config) {
+        public void setRequestConfiguration(RequestConfiguration config) {
 
         }
 
         @Override
         public String queue(RequestElement request) {
+            return null;
+        }
+
+        @Override
+        public String queue(RequestElement request, int retryCount) {
             new RequestHandler(request).run();
             return null;
         }
@@ -535,6 +541,11 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
         @Override
         public void enableLogs(boolean enable) {
+
+        }
+
+        @Override
+        public void setNetworkErrorEventListener(NetworkErrorEventListener networkErrorEventListener) {
 
         }
 

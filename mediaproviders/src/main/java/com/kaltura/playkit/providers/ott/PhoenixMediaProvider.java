@@ -22,6 +22,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
@@ -267,7 +268,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     /**
      * OPTIONAL
-     * Defaults to {@link com.kaltura.netkit.connect.executor.APIOkRequestsExecutor} implementation.
+     * Defaults to {@link APIOkRequestsExecutor} implementation.
      *
      * @param executor - executor
      * @return - instance of PhoenixMediaProvider
@@ -281,7 +282,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
     }
-
 
     /**
      * Checks for non empty value on the mandatory parameters.
