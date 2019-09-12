@@ -17,11 +17,11 @@ try {
 
     publish {
         artifactId = 'playkitproviders'
-        description = 'PlayKit Media Providers'
+        desc = 'PlayKit Media Providers'
         repoName = 'android'
         userOrg = 'kaltura'
         groupId = 'com.kaltura.playkit'
-        version = libVersion
+        publishVersion = libVersion
         autoPublish = true
         licences = ['AGPL-3.0']
     }
