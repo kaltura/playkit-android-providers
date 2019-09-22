@@ -15,6 +15,7 @@ import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
@@ -135,6 +136,11 @@ public class MockPlayer implements Player {
             @Override
             public Settings setVRSettings(VRSettings vrSettings) {
                 return this;
+            }
+
+            @Override
+            public Settings setPreferredVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
+                return null;
             }
         };
     }
