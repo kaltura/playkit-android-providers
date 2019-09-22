@@ -60,7 +60,6 @@ import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackContext;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackSource;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingType;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
 import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
 import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
