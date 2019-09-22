@@ -23,7 +23,8 @@ public class APIDefines {
     public enum AssetReferenceType {
         Media("media"),
         InternalEpg("epg_internal"),
-        ExternalEpg("epg_external");
+        ExternalEpg("epg_external"),
+        Npvr("npvr");
 
         public String value;
 
