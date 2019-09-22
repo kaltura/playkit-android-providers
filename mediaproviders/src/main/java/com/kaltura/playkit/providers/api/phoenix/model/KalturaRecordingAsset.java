@@ -18,6 +18,7 @@ public class KalturaRecordingAsset extends KalturaMediaAsset {
     private boolean enableCatchUp;
     private boolean enableCdvr;
     private String epgId;
+    private long epgChannelId;
     private long linearAssetId;
     private boolean enableStartOver;
     private boolean enableTrickPlay;
@@ -40,6 +41,10 @@ public class KalturaRecordingAsset extends KalturaMediaAsset {
 
     public String getEpgId() {
         return epgId;
+    }
+
+    public long getEpgChannelId() {
+        return epgChannelId;
     }
 
     public long getLinearAssetId() {
