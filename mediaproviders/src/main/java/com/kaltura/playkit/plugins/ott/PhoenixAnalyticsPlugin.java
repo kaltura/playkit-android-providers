@@ -458,14 +458,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         } else if (config instanceof JsonObject) {
             JsonObject params = (JsonObject) config;
             String baseUrl = "";
-            if (params.has("serviceUrl")) {
+            if (params.has("serviceUrl") && params.get("serviceUrl") != null) {
                 baseUrl = params.get("serviceUrl").getAsString();
-            } else if (params.has("baseUrl")) {
+            } else if (params.has("baseUrl") && params.get("baseUrl") != null) {
                 baseUrl = params.get("baseUrl").getAsString();
             }
-            int partnerId = (params.has("partnerId") && !params.get("partnerId").isJsonNull()) ? params.get("partnerId").getAsInt() : Integer.MAX_VALUE;
-            int timerInterval = (params.has("timerInterval")) ? params.get("timerInterval").getAsInt() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
-            String ks = (!params.has("ks") || params.get("ks").isJsonNull()) ? "" : params.get("ks").getAsString();
+            int partnerId = (params.has("partnerId") && !params.get("partnerId").isJsonNull() && params.get("partnerId") != null) ? params.get("partnerId").getAsInt() : Integer.MAX_VALUE;
+            int timerInterval = (params.has("timerInterval") && !params.get("timerInterval").isJsonNull() && params.get("timerInterval") != null) ? params.get("timerInterval").getAsInt() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+            String ks = (!params.has("ks") || params.get("ks").isJsonNull() || params.get("ks") != null) ? "" : params.get("ks").getAsString();
             return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
         }
         return null;
