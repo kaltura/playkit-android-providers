@@ -43,7 +43,8 @@ import java.util.TimerTask;
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
-    public static final String CONCURRENCY_ERROR_COODE = "4001";
+    public static final String CONCURRENCY_ERROR_CODE = "4001";
+    public static final String CONCURRENCY_ERROR_STRING = "ConcurrencyLimitation";
 
     // Fields shared with TVPAPIAnalyticsPlugin
     int mediaHitInterval;
@@ -421,7 +422,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             String errorCode = error.getString("code");
                             String errorMessage = error.getString("message");
 
-                            if (TextUtils.equals(errorCode, CONCURRENCY_ERROR_COODE)) {
+                            if (TextUtils.equals(errorCode, CONCURRENCY_ERROR_CODE) || TextUtils.equals(errorCode, CONCURRENCY_ERROR_STRING) ) {
                                 sendConcurrencyErrorEvent(errorMessage);
                             } else {
                                 messageBus.post(new PhoenixAnalyticsEvent.BookmarkErrorEvent(Integer.parseInt(errorCode), errorMessage));
@@ -437,7 +438,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private void sendConcurrencyErrorEvent(String errorMessage) {
         messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-        messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_COODE), errorMessage));
+        messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_CODE), errorMessage));
     }
 
     private static PhoenixAnalyticsConfig parseConfig(Object config) {
