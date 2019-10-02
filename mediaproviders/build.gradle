@@ -36,7 +36,7 @@ tasks.withType(Javadoc) {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    api 'com.kaltura.netkit:netkit-core:1.1.0'
+    api 'com.github.kaltura.netkit-android:netkit-core:3e265e73476645f58d36f929f3146761e2e156df'
     //implementation project(":netkit")
     implementation 'com.kaltura.playkit:playkit:3.9.4'
     //implementation project(":playkit")
