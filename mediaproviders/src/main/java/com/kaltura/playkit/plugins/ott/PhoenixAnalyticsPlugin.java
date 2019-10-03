@@ -458,7 +458,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         } else if (config instanceof JsonObject) {
             JsonObject params = (JsonObject) config;
             String baseUrl = "";
-            if (params.has("serviceUrl") && !params.get("baseUrl").toString().equals("null")) {
+            if (params.has("serviceUrl") && !params.get("serviceUrl").toString().equals("null")) {
                 baseUrl = params.get("serviceUrl").getAsString();
             } else if (params.has("baseUrl") && !params.get("baseUrl").toString().equals("null")) {
                 baseUrl = params.get("baseUrl").getAsString();
