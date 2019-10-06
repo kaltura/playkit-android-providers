@@ -142,6 +142,18 @@ public class MockPlayer implements Player {
             public Settings setPreferredVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
                 return null;
             }
+
+            @Override
+            public Settings setCustomLoadControlStrategy(Object o) {
+                return null;
+            }
+
+            @Override
+            public Settings setTunneledAudioPlayback(boolean b) {
+                return null;
+            }
+
+
         };
     }
 
