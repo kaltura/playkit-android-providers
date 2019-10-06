@@ -59,6 +59,7 @@ import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackContext;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackSource;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
 import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
 import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
@@ -604,7 +605,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         metadata.put("assetType", mediaAsset.assetType.value);
-
+        if (isRecordingMediaEntry(kalturaMediaAsset)) {
+            metadata.put("recordingId", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingId());
+            metadata.put("recordingType", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingType().name());
+        }
         return metadata;
     }
 
@@ -636,6 +640,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return (kalturaMediaAsset.getExternalIds() != null && kalturaMediaAsset.getExternalIds() != 0) ||
                 (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver) ||
                 LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType());
+    }
+
+    private boolean isRecordingMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
+        return kalturaMediaAsset instanceof KalturaRecordingAsset;
     }
 
     static class ProviderParser {

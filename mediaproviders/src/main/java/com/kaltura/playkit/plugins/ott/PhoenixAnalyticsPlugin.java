@@ -44,7 +44,7 @@ import java.util.TimerTask;
 public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
-    public static final String CONCURRENCY_ERROR_COODE = "4001";
+    public static final String CONCURRENCY_ERROR_CODE = "4001";
 
     // Fields shared with TVPAPIAnalyticsPlugin
     int mediaHitInterval;
@@ -119,7 +119,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.messageBus = messageBus;
         this.timer = new Timer();
         setConfigMembers(config);
-        if (baseUrl != null && !baseUrl.isEmpty() && partnerId > 0) {
+        if (!TextUtils.isEmpty(baseUrl) && partnerId > 0) {
             addListeners();
         } else {
             log.e("Error, base url/partner - incorrect");
@@ -432,7 +432,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             String errorCode = error.getString("code");
                             String errorMessage = error.getString("message");
 
-                            if (TextUtils.equals(errorCode, CONCURRENCY_ERROR_COODE)) {
+                            if (TextUtils.equals(errorCode, CONCURRENCY_ERROR_CODE)) {
                                 sendConcurrencyErrorEvent(errorMessage);
                             } else {
                                 messageBus.post(new PhoenixAnalyticsEvent.BookmarkErrorEvent(Integer.parseInt(errorCode), errorMessage));
@@ -448,7 +448,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private void sendConcurrencyErrorEvent(String errorMessage) {
         messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-        messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_COODE), errorMessage));
+        messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_CODE), errorMessage));
     }
 
     private static PhoenixAnalyticsConfig parseConfig(Object config) {
@@ -458,13 +458,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         } else if (config instanceof JsonObject) {
             JsonObject params = (JsonObject) config;
             String baseUrl = "";
-            if (params.has("serviceUrl")) {
+            if (params.has("serviceUrl") && !params.get("serviceUrl").isJsonNull()) {
                 baseUrl = params.get("serviceUrl").getAsString();
-            } else if (params.has("baseUrl")) {
+            } else if (params.has("baseUrl") && !params.get("baseUrl").isJsonNull()) {
                 baseUrl = params.get("baseUrl").getAsString();
             }
             int partnerId = (params.has("partnerId") && !params.get("partnerId").isJsonNull()) ? params.get("partnerId").getAsInt() : Integer.MAX_VALUE;
-            int timerInterval = (params.has("timerInterval")) ? params.get("timerInterval").getAsInt() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+            int timerInterval = (params.has("timerInterval") && !params.get("timerInterval").isJsonNull()) ? params.get("timerInterval").getAsInt() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
             String ks = (!params.has("ks") || params.get("ks").isJsonNull()) ? "" : params.get("ks").getAsString();
             return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
         }
