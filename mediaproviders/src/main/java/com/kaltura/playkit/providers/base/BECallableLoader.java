@@ -31,6 +31,8 @@ import com.kaltura.playkit.PKMediaEntry;
 
 public abstract class BECallableLoader extends CallableLoader<Void> {
 
+    private static final PKLog log = PKLog.get("BECallableLoader");
+
     protected String loadReq;
     protected RequestQueue requestQueue;
     protected SessionProvider sessionProvider;
@@ -55,15 +57,15 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
         super.cancel();
         if (loadReq != null) {
             synchronized (syncObject) {
-                Log.i(TAG, loadId + ": canceling request execution [" + loadReq + "]");
+                log.i(loadId + ": canceling request execution [" + loadReq + "]");
                 requestQueue.cancelRequest(loadReq);
                 loadReq = "CANCELED#"+loadReq;
             }
         } else {
-            Log.i(TAG, loadId+": cancel: request completed ");
+            log.i(loadId+": cancel: request completed ");
         }
 
-        Log.i(TAG, loadId+": i am canceled ...notifyCompletion");
+        log.i(loadId+": i am canceled ...notifyCompletion");
 
         notifyCompletion();
     }
@@ -71,7 +73,7 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
     @Override
     protected Void load() throws InterruptedException {
 
-        Log.v(TAG, loadId + ": load: start on get ks ");
+        log.v(loadId + ": load: start on get ks ");
         waitForCompletion = true;
 
         sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
@@ -87,7 +89,7 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
                 if (error == null) {
                     try {
                         requestRemote(response.getResult());
-                        Log.d(TAG, loadId + " remote load request finished...notifyCompletion");
+                        log.d(loadId + " remote load request finished...notifyCompletion");
                         notifyCompletion();
                         waitForCompletion = false;
                     } catch (InterruptedException e) {
@@ -95,12 +97,12 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
                     }
 
                 } else {
-                    Log.w(TAG, loadId + ": got error on ks fetching");
+                    log.w(loadId + ": got error on ks fetching");
                     if (completion != null) {
                         completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
                     }
 
-                    Log.d(TAG, loadId + "remote load error finished...notifyCompletion");
+                    log.d(loadId + "remote load error finished...notifyCompletion");
                     notifyCompletion();
                     waitForCompletion = false;
                 }
@@ -108,11 +110,11 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
         });
 
         if (waitForCompletion && !isCanceled()) { // prevent lock thread on already completed load
-            PKLog.v(TAG, loadId + ": load: setting outer completion wait lock");
+            PKLog.v("BECallableLoader", loadId + ": load: setting outer completion wait lock");
             waitCompletion();
         }
 
-        PKLog.d(TAG, loadId+": load: wait for completion released");
+        PKLog.d("BECallableLoader", loadId+": load: wait for completion released");
 
         return null;
     }
