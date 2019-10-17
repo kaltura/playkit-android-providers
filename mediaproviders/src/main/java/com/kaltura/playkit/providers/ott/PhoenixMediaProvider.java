@@ -71,6 +71,12 @@ import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.utils.Consts;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
+
 
 /**
  * Created by tehilarozin on 27/10/2016.
@@ -90,9 +96,16 @@ import com.kaltura.playkit.utils.Consts;
 
 public class PhoenixMediaProvider extends BEMediaProvider {
 
-    private static final String TAG = "PhoenixMediaProvider";
+    private static final PKLog log = PKLog.get("PhoenixMediaProvider");
 
     private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLiveAsset"; //Might be needed to support in KalturaProgramAsset for EPG
+
+    public static final String KALTURA_API_EXCEPTION = "KalturaAPIException";
+    public static final String ERROR = "error";
+    public static final String OBJECT_TYPE = "objectType";
+    public static final String CODE = "code";
+    public static final String MESSAGE = "message";
+    public static final String RESULT = "result";
 
     private static final boolean EnableEmptyKs = true;
 
@@ -131,7 +144,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     public PhoenixMediaProvider() {
-        super(PhoenixMediaProvider.TAG);
+        super(log.tag);
         this.mediaAsset = new MediaAsset();
     }
 
@@ -336,7 +349,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
 
         public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, MediaAsset mediaAsset, OnMediaLoadCompletion completion) {
-            super(PhoenixMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
+            super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.mediaAsset = mediaAsset;
 
@@ -461,6 +474,24 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 responseListener.onResponse(response);
             }
 
+            if (isErrorResponse(response)) {
+                ErrorElement errorResponse = parseErrorRersponse(response);
+                if (errorResponse == null) {
+                    errorResponse = GeneralError;
+                }
+                completion.onComplete(Accessories.buildResult(null, errorResponse));
+                return;
+            }
+
+            if (isAPIExceptionResponse(response)) {
+                ErrorElement apiExceptionError = parseAPIExceptionError(response);
+                if (apiExceptionError == null) {
+                    apiExceptionError = GeneralError;
+                }
+                completion.onComplete(Accessories.buildResult(null, apiExceptionError));
+                return;
+            }
+
             if (response != null && response.isSuccess()) {
                 KalturaMediaAsset asset = null;
 
@@ -541,7 +572,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 } catch (JsonParseException | InvalidParameterException ex) {
                     error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
                 } catch (IndexOutOfBoundsException ex) {
-                    error = ErrorElement.GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
+                    error = GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
             } else {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
@@ -556,6 +587,99 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             PKLog.w(TAG, loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
+        }
+
+
+
+        private boolean isAPIExceptionResponse(ResponseElement response) {
+            return response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION);
+        }
+
+        private boolean isErrorResponse(ResponseElement response) {
+            return !response.isSuccess() && response.getError() != null;
+        }
+
+
+        private ErrorElement parseErrorRersponse(ResponseElement response) {
+            if (response != null) {
+                return response.getError();
+            }
+            return null;
+        }
+
+        private ErrorElement parseAPIExceptionError(ResponseElement response) {
+
+            if (response != null) {
+
+                try {
+                    JSONObject apiException = new JSONObject(response.getResponse());
+                    if (apiException != null) {
+                        if (apiException.has(RESULT)) {
+                            if (apiException.get(RESULT) instanceof JSONObject) {
+
+                                JSONObject result = (JSONObject) apiException.get(RESULT);
+                                if (result != null && result.has(ERROR)) {
+                                    JSONObject error = (JSONObject) result.get(ERROR);
+                                    Map<String, String> errorMap = getAPIExceptionData(error);
+                                    if (errorMap != null) {
+                                        return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName("OTTError");
+                                    }
+                                }
+                            } else if (apiException.get(RESULT) instanceof JSONArray) {
+
+                                JSONArray result = (JSONArray) apiException.get(RESULT);
+                                for(int idx = 0 ; idx < result.length() ; idx++) {
+                                    JSONObject error = (JSONObject) result.get(idx);
+                                    if (error != null && error.has(ERROR)) {
+                                        JSONObject resultIndexJsonObjectError = (JSONObject) error.get(ERROR);
+                                        Map<String, String> errorMap = getAPIExceptionData(resultIndexJsonObjectError);
+                                        if (errorMap != null) {
+                                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName("OTTError");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (JSONException | NumberFormatException ex) {
+                    log.e("parseAPIExceptionError Exception = " + ex.getMessage());
+                }
+            }
+
+            return null;
+        }
+
+        private Map<String,String> getAPIExceptionData(JSONObject error) {
+
+            try {
+
+                if (error != null) {
+
+                    Map<String,String> errorMap = new HashMap<>();
+
+                    if (error.has(OBJECT_TYPE)) {
+                        String objectType = error.getString(OBJECT_TYPE);
+                        errorMap.put(OBJECT_TYPE, objectType);
+                    }
+
+                    if (error.has(CODE)) {
+                        String errorCode = error.getString(CODE);
+                        errorMap.put(CODE, errorCode);
+                    }
+
+                    if (error.has(MESSAGE)) {
+                        String errorMessage = error.getString(MESSAGE);
+                        errorMap.put(MESSAGE, errorMessage);
+                    }
+
+                    //log.d("Error objectType = " + objectType + " errorCode = " + errorCode + "errorMessage = " + errorMessage);
+                    return errorMap;
+                }
+            } catch (JSONException | NumberFormatException ex) {
+                log.e("getAPIExceptionData Exception = " + ex.getMessage());
+            }
+
+            return null;
         }
 
         private boolean isDvrLiveMedia() {
