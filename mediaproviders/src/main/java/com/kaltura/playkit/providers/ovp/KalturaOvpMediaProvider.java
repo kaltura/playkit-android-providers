@@ -48,6 +48,9 @@ import com.kaltura.playkit.providers.base.BEMediaProvider;
 import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -63,11 +66,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
+
 public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
     private static final PKLog log = PKLog.get(TAG);
 
+    public static final String KALTURA_API_EXCEPTION = "KalturaAPIException";
+    public static final String OBJECT_TYPE = "objectType";
+    public static final String CODE = "code";
+    public static final String MESSAGE = "message";
 
     public static final boolean CanBeEmpty = true;
 
@@ -277,6 +286,24 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 return;
             }
 
+            if (isErrorResponse(response)) {
+                ErrorElement errorResponse = parseErrorRersponse(response);
+                if (errorResponse == null) {
+                    errorResponse = GeneralError;
+                }
+                completion.onComplete(Accessories.buildResult(null, errorResponse));
+                return;
+            }
+
+            if (isAPIExceptionResponse(response)) {
+                ErrorElement apiExceptionError = parseAPIExceptionError(response);
+                if (apiExceptionError == null) {
+                    apiExceptionError = GeneralError;
+                }
+                completion.onComplete(Accessories.buildResult(null, apiExceptionError));
+                return;
+            }
+
             if (response != null && response.isSuccess()) {
 
                 try {
@@ -336,6 +363,87 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             notifyCompletion();
         }
+    }
+
+    private boolean isAPIExceptionResponse(ResponseElement response) {
+        return response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION);
+    }
+
+    private boolean isErrorResponse(ResponseElement response) {
+        return !response.isSuccess() && response.getError() != null;
+    }
+
+
+    private ErrorElement parseErrorRersponse(ResponseElement response) {
+        if (response != null) {
+            return response.getError();
+        }
+        return null;
+    }
+
+    private ErrorElement parseAPIExceptionError(ResponseElement response) {
+
+        if (response != null) {
+            String responseStr = response.getResponse();
+            try {
+                if (responseStr != null && responseStr.startsWith("{") && responseStr.endsWith("}")) {
+
+                    JSONObject error = new JSONObject(response.getResponse());
+                    if (error != null) {
+                        Map<String, String> errorMap = getAPIExceptionData(error);
+                        if (errorMap != null) {
+                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName("OVPError");
+                        }
+                    }
+
+                } else if (responseStr != null && responseStr.startsWith("[") && responseStr.endsWith("]")) {
+                    JSONArray result = new JSONArray(response.getResponse());
+                    for (int idx = 0; idx < result.length(); idx++) {
+                        JSONObject error = (JSONObject) result.get(idx);
+                        Map<String, String> errorMap = getAPIExceptionData(error);
+                        if (errorMap != null && KALTURA_API_EXCEPTION.equals(errorMap.get(OBJECT_TYPE))) {
+                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName("OVPError");
+                        }
+                    }
+                }
+            } catch (JSONException | NumberFormatException ex) {
+                log.e("parseAPIExceptionError Exception = " + ex.getMessage());
+            }
+        }
+        return null;
+    }
+
+    private Map<String,String> getAPIExceptionData(JSONObject error) {
+
+        try {
+
+            if (error != null) {
+
+                Map<String,String> errorMap = new HashMap<>();
+
+                if (error.has(OBJECT_TYPE)) {
+                    String objectType = error.getString(OBJECT_TYPE);
+                    errorMap.put(OBJECT_TYPE, objectType);
+                }
+
+                if (error.has(CODE)) {
+                    String errorCode = error.getString(CODE);
+                    errorMap.put(CODE, errorCode);
+                }
+
+                if (error.has(MESSAGE)) {
+                    String errorMessage = error.getString(MESSAGE);
+                    errorMap.put(MESSAGE, errorMessage);
+                }
+
+                //log.d("Error objectType = " + objectType + " errorCode = " + errorCode + "errorMessage = " + errorMessage);
+                return errorMap;
+            }
+        } catch (JSONException | NumberFormatException ex) {
+            log.e("getAPIExceptionData Exception = " + ex.getMessage());
+        }
+
+        return null;
     }
 
     private static class ProviderParser {
