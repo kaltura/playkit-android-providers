@@ -70,8 +70,7 @@ import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
 
 public class KalturaOvpMediaProvider extends BEMediaProvider {
 
-    private static final String TAG = KalturaOvpMediaProvider.class.getSimpleName();
-    private static final PKLog log = PKLog.get(TAG);
+    private static final PKLog log = PKLog.get("KalturaOvpMediaProvider");
 
     public static final String KALTURA_API_EXCEPTION = "KalturaAPIException";
     public static final String OBJECT_TYPE = "objectType";
@@ -89,7 +88,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private Map<String, Object> flavorsFilter;
 
     public KalturaOvpMediaProvider() {
-        super(KalturaOvpMediaProvider.TAG);
+        super(log.tag);
     }
 
     public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks) {
@@ -194,7 +193,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         private String referrer;
 
         Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, String referrer, OnMediaLoadCompletion completion) {
-            super(KalturaOvpMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
+            super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.entryId = entryId;
             this.uiConfId = uiConfId;
