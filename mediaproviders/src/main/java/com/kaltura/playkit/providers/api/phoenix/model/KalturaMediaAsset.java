@@ -28,7 +28,7 @@ public class KalturaMediaAsset extends BaseResult {
 
     private long endDate;
     private long startDate;
-    private Long externalIds;
+    private String externalIds;
 
     private String name;
     private JsonObject tags;
@@ -60,7 +60,7 @@ public class KalturaMediaAsset extends BaseResult {
         return startDate;
     }
 
-    public Long getExternalIds() {
+    public String getExternalIds() {
         return externalIds;
     }
 
