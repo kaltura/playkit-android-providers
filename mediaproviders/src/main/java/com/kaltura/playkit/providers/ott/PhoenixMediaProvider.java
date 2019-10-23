@@ -637,9 +637,14 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     private boolean isLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
-        return (kalturaMediaAsset.getExternalIds() != null && kalturaMediaAsset.getExternalIds() != 0) ||
-                (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver) ||
-                LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType());
+        if (kalturaMediaAsset == null) {
+            return false;
+        }
+
+        String externalIdsStr = kalturaMediaAsset.getExternalIds();
+        return (LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType()) ||
+                !TextUtils.isEmpty(externalIdsStr) && TextUtils.isDigitsOnly(externalIdsStr) && Long.valueOf(externalIdsStr) != 0) ||
+                (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver);
     }
 
     private boolean isRecordingMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
