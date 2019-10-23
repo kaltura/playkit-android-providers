@@ -353,7 +353,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
             this.mediaAsset = mediaAsset;
 
-            PKLog.v(TAG, loadId + ": construct new Loader");
+            log.v(loadId + ": construct new Loader");
         }
 
         @Override
@@ -424,7 +424,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
-                            PKLog.v(TAG, loadId + ": got response to [" + loadReq + "]");
+                            log.v(loadId + ": got response to [" + loadReq + "]");
                             loadReq = null;
 
                             try {
@@ -438,16 +438,16 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
             synchronized (syncObject) {
                 loadReq = requestQueue.queue(requestBuilder.build());
-                PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
+                log.d(loadId + ": request queued for execution [" + loadReq + "]");
             }
 
             if (!isCanceled()) {
-                PKLog.v(TAG, loadId + " set waitCompletion");
+                log.v(loadId + " set waitCompletion");
                 waitCompletion();
             } else {
-                PKLog.v(TAG, loadId + " was canceled.");
+                log.v(loadId + " was canceled.");
             }
-            PKLog.v(TAG, loadId + ": requestRemote wait released");
+            log.v(loadId + ": requestRemote wait released");
         }
 
         private String getApiBaseUrl() {
@@ -466,7 +466,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             PKMediaEntry mediaEntry = null;
 
             if (isCanceled()) {
-                PKLog.v(TAG, loadId + ": i am canceled, exit response parsing ");
+                log.v(loadId + ": i am canceled, exit response parsing ");
                 return;
             }
 
@@ -511,7 +511,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     //*************************
 
-                    PKLog.d(TAG, loadId + ": parsing response  [" + Loader.this.toString() + "]");
+                    log.d(loadId + ": parsing response  [" + Loader.this.toString() + "]");
                     /* 3. <T> T PhoenixParser.parse(String response): parse json string to an object of dynamically parsed type.
                        type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
                        case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
@@ -578,13 +578,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-            PKLog.i(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+            log.i(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
 
             if (!isCanceled() && completion != null) {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
-            PKLog.w(TAG, loadId + " media load finished, callback passed...notifyCompletion");
+            log.w(loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
         }
