@@ -79,7 +79,6 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
         }
 
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        this.requestsExecutor.enableLogs(false);
         loadExecutor = Executors.newFixedThreadPool(MaxThreads);//TODO - once multi load execution will be supported will be changed to newFixedThreadExecutor or alike
         this.tag = tag;
     }
