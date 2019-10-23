@@ -615,6 +615,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     JSONObject apiException = new JSONObject(response.getResponse());
                     if (apiException != null) {
                         if (apiException.has(RESULT)) {
+                            String ottError = "OTTError";
                             if (apiException.get(RESULT) instanceof JSONObject) {
 
                                 JSONObject result = (JSONObject) apiException.get(RESULT);
@@ -622,7 +623,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                                     JSONObject error = (JSONObject) result.get(ERROR);
                                     Map<String, String> errorMap = getAPIExceptionData(error);
                                     if (errorMap != null) {
-                                        return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName("OTTError");
+                                        return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
                                     }
                                 }
                             } else if (apiException.get(RESULT) instanceof JSONArray) {
@@ -634,7 +635,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                                         JSONObject resultIndexJsonObjectError = (JSONObject) error.get(ERROR);
                                         Map<String, String> errorMap = getAPIExceptionData(resultIndexJsonObjectError);
                                         if (errorMap != null) {
-                                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName("OTTError");
+                                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
                                         }
                                     }
                                 }

@@ -385,13 +385,14 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         if (response != null) {
             String responseStr = response.getResponse();
             try {
+                String ovpError = "OVPError";
                 if (responseStr != null && responseStr.startsWith("{") && responseStr.endsWith("}")) {
 
                     JSONObject error = new JSONObject(response.getResponse());
                     if (error != null) {
                         Map<String, String> errorMap = getAPIExceptionData(error);
                         if (errorMap != null) {
-                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName("OVPError");
+                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ovpError);
                         }
                     }
 
@@ -401,7 +402,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         JSONObject error = (JSONObject) result.get(idx);
                         Map<String, String> errorMap = getAPIExceptionData(error);
                         if (errorMap != null && KALTURA_API_EXCEPTION.equals(errorMap.get(OBJECT_TYPE))) {
-                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName("OVPError");
+                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ovpError);
                         }
                     }
                 }
