@@ -71,6 +71,12 @@ import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.utils.Consts;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
+
 
 /**
  * Created by tehilarozin on 27/10/2016.
@@ -90,9 +96,16 @@ import com.kaltura.playkit.utils.Consts;
 
 public class PhoenixMediaProvider extends BEMediaProvider {
 
-    private static final String TAG = "PhoenixMediaProvider";
+    private static final PKLog log = PKLog.get("PhoenixMediaProvider");
 
     private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLiveAsset"; //Might be needed to support in KalturaProgramAsset for EPG
+
+    public static final String KALTURA_API_EXCEPTION = "KalturaAPIException";
+    public static final String ERROR = "error";
+    public static final String OBJECT_TYPE = "objectType";
+    public static final String CODE = "code";
+    public static final String MESSAGE = "message";
+    public static final String RESULT = "result";
 
     private static final boolean EnableEmptyKs = true;
 
@@ -131,7 +144,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     }
 
     public PhoenixMediaProvider() {
-        super(PhoenixMediaProvider.TAG);
+        super(log.tag);
         this.mediaAsset = new MediaAsset();
     }
 
@@ -336,11 +349,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
 
         public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, MediaAsset mediaAsset, OnMediaLoadCompletion completion) {
-            super(PhoenixMediaProvider.TAG + "#Loader", requestsExecutor, sessionProvider, completion);
+            super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.mediaAsset = mediaAsset;
 
-            PKLog.v(TAG, loadId + ": construct new Loader");
+            log.v(loadId + ": construct new Loader");
         }
 
         @Override
@@ -411,7 +424,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
-                            PKLog.v(TAG, loadId + ": got response to [" + loadReq + "]");
+                            log.v(loadId + ": got response to [" + loadReq + "]");
                             loadReq = null;
 
                             try {
@@ -425,16 +438,16 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
             synchronized (syncObject) {
                 loadReq = requestQueue.queue(requestBuilder.build());
-                PKLog.d(TAG, loadId + ": request queued for execution [" + loadReq + "]");
+                log.d(loadId + ": request queued for execution [" + loadReq + "]");
             }
 
             if (!isCanceled()) {
-                PKLog.v(TAG, loadId + " set waitCompletion");
+                log.v(loadId + " set waitCompletion");
                 waitCompletion();
             } else {
-                PKLog.v(TAG, loadId + " was canceled.");
+                log.v(loadId + " was canceled.");
             }
-            PKLog.v(TAG, loadId + ": requestRemote wait released");
+            log.v(loadId + ": requestRemote wait released");
         }
 
         private String getApiBaseUrl() {
@@ -453,12 +466,30 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             PKMediaEntry mediaEntry = null;
 
             if (isCanceled()) {
-                PKLog.v(TAG, loadId + ": i am canceled, exit response parsing ");
+                log.v(loadId + ": i am canceled, exit response parsing ");
                 return;
             }
 
             if (responseListener != null) {
                 responseListener.onResponse(response);
+            }
+
+            if (isErrorResponse(response)) {
+                ErrorElement errorResponse = parseErrorRersponse(response);
+                if (errorResponse == null) {
+                    errorResponse = GeneralError;
+                }
+                completion.onComplete(Accessories.buildResult(null, errorResponse));
+                return;
+            }
+
+            if (isAPIExceptionResponse(response)) {
+                ErrorElement apiExceptionError = parseAPIExceptionError(response);
+                if (apiExceptionError == null) {
+                    apiExceptionError = GeneralError;
+                }
+                completion.onComplete(Accessories.buildResult(null, apiExceptionError));
+                return;
             }
 
             if (response != null && response.isSuccess()) {
@@ -480,7 +511,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     //*************************
 
-                    PKLog.d(TAG, loadId + ": parsing response  [" + Loader.this.toString() + "]");
+                    log.d(loadId + ": parsing response  [" + Loader.this.toString() + "]");
                     /* 3. <T> T PhoenixParser.parse(String response): parse json string to an object of dynamically parsed type.
                        type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
                        case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
@@ -541,21 +572,115 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 } catch (JsonParseException | InvalidParameterException ex) {
                     error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
                 } catch (IndexOutOfBoundsException ex) {
-                    error = ErrorElement.GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
+                    error = GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
             } else {
                 error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
-            PKLog.i(TAG, loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
+            log.i(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
 
             if (!isCanceled() && completion != null) {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
-            PKLog.w(TAG, loadId + " media load finished, callback passed...notifyCompletion");
+            log.w(loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
+        }
+
+
+
+        private boolean isAPIExceptionResponse(ResponseElement response) {
+            return response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION);
+        }
+
+        private boolean isErrorResponse(ResponseElement response) {
+            return !response.isSuccess() && response.getError() != null;
+        }
+
+
+        private ErrorElement parseErrorRersponse(ResponseElement response) {
+            if (response != null) {
+                return response.getError();
+            }
+            return null;
+        }
+
+        private ErrorElement parseAPIExceptionError(ResponseElement response) {
+
+            if (response != null) {
+
+                try {
+                    JSONObject apiException = new JSONObject(response.getResponse());
+                    if (apiException != null) {
+                        if (apiException.has(RESULT)) {
+                            String ottError = "OTTError";
+                            if (apiException.get(RESULT) instanceof JSONObject) {
+
+                                JSONObject result = (JSONObject) apiException.get(RESULT);
+                                if (result != null && result.has(ERROR)) {
+                                    JSONObject error = (JSONObject) result.get(ERROR);
+                                    Map<String, String> errorMap = getAPIExceptionData(error);
+                                    if (errorMap != null) {
+                                        return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
+                                    }
+                                }
+                            } else if (apiException.get(RESULT) instanceof JSONArray) {
+
+                                JSONArray result = (JSONArray) apiException.get(RESULT);
+                                for(int idx = 0 ; idx < result.length() ; idx++) {
+                                    JSONObject error = (JSONObject) result.get(idx);
+                                    if (error != null && error.has(ERROR)) {
+                                        JSONObject resultIndexJsonObjectError = (JSONObject) error.get(ERROR);
+                                        Map<String, String> errorMap = getAPIExceptionData(resultIndexJsonObjectError);
+                                        if (errorMap != null) {
+                                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (JSONException | NumberFormatException ex) {
+                    log.e("parseAPIExceptionError Exception = " + ex.getMessage());
+                }
+            }
+
+            return null;
+        }
+
+        private Map<String,String> getAPIExceptionData(JSONObject error) {
+
+            try {
+
+                if (error != null) {
+
+                    Map<String,String> errorMap = new HashMap<>();
+
+                    if (error.has(OBJECT_TYPE)) {
+                        String objectType = error.getString(OBJECT_TYPE);
+                        errorMap.put(OBJECT_TYPE, objectType);
+                    }
+
+                    if (error.has(CODE)) {
+                        String errorCode = error.getString(CODE);
+                        errorMap.put(CODE, errorCode);
+                    }
+
+                    if (error.has(MESSAGE)) {
+                        String errorMessage = error.getString(MESSAGE);
+                        errorMap.put(MESSAGE, errorMessage);
+                    }
+
+                    //log.d("Error objectType = " + objectType + " errorCode = " + errorCode + "errorMessage = " + errorMessage);
+                    return errorMap;
+                }
+            } catch (JSONException | NumberFormatException ex) {
+                log.e("getAPIExceptionData Exception = " + ex.getMessage());
+            }
+
+            return null;
         }
 
         private boolean isDvrLiveMedia() {

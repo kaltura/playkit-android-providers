@@ -45,6 +45,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static final PKLog log = PKLog.get("PhoenixAnalyticsPlugin");
     private static final double MEDIA_ENDED_THRESHOLD = 0.98;
     public static final String CONCURRENCY_ERROR_CODE = "4001";
+    public static final String CONCURRENCY_ERROR_STRING = "ConcurrencyLimitation";
 
     // Fields shared with TVPAPIAnalyticsPlugin
     int mediaHitInterval;
@@ -432,7 +433,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             String errorCode = error.getString("code");
                             String errorMessage = error.getString("message");
 
-                            if (TextUtils.equals(errorCode, CONCURRENCY_ERROR_CODE)) {
+                            if (TextUtils.equals(errorCode, CONCURRENCY_ERROR_CODE) || TextUtils.equals(errorCode, CONCURRENCY_ERROR_STRING) ) {
                                 sendConcurrencyErrorEvent(errorMessage);
                             } else {
                                 messageBus.post(new PhoenixAnalyticsEvent.BookmarkErrorEvent(Integer.parseInt(errorCode), errorMessage));

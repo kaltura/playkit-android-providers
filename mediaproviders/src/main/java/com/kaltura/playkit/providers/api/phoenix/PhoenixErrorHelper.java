@@ -97,10 +97,12 @@ public class PhoenixErrorHelper {
                 return new RestrictionError("content is not entitled", RestrictionError.Restriction.NotEntitled);
 
             case "ConcurrencyLimitation":
-            case "MediaConcurrencyLimitation":
-            case "4000":
             case "4001":
                 return new RestrictionError("restricted due to concurrency limitation", RestrictionError.Restriction.ConcurrencyLimitation);
+
+            case "MediaConcurrencyLimitation":
+            case "4000":
+                return new RestrictionError("restricted due to concurrency limitation", RestrictionError.Restriction.MediaConcurrencyLimitation);
 
             case "2001":
                 return new RestrictionError("restricted due to suspended account", RestrictionError.Restriction.Suspended);
