@@ -754,7 +754,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         } else if (playbackContextResult != null && playbackContextResult.error != null) {
             error = PhoenixErrorHelper.getErrorElement(playbackContextResult.error); // get predefined error if exists for this error code
         } else if (assetGetResult != null && assetGetResult.error != null) {
-            error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined error if exists for this error code
+            error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined -  error if exists for this error code
         } else {
             error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
         }
