@@ -549,7 +549,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                         Map<String, String> metadata = createOttMetadata(kalturaMediaAsset);
                         boolean is360Content = is360Supported(metadata);
-                        if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
+                        error = kalturaPlaybackContext.hasError();
+                        if (error != null) {
+                            completion.onComplete(Accessories.buildResult(null, error));
+                            return;
+                        } else { // check for error or unauthorized content
 
                             mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
                                     mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,

@@ -65,50 +65,6 @@ public class PhoenixErrorHelper {
         if (TextUtils.isEmpty(message)) {
             message = ERROR_MESSAGE_UNAVILABLE;
         }
-
-        switch (code){
-            case ERROR_CODE_UNAVILABLE:
-            case "2016":
-                return new ErrorElement(message, code);
-
-            case "500016":
-                return ErrorElement.SessionError.message("session token has been expired");
-
-            case "RecordingPlaybackNotAllowedForNonExistingEpgChannel":
-            case "3039":
-            case "4022":
-            case "3050":
-                return ErrorElement.NotFound.message("requested content was not found");
-
-            case "NoFilesFound":
-            case "3054":
-                return ErrorElement.NotFound.message("no available sources for media");
-
-            case "ServiceNotAllowed":
-            case "DeviceTypeNotAllowed":
-            case "1002":
-            case "3003":
-                return new RestrictionError("requested operation is not allowed", RestrictionError.Restriction.NotAllowed);
-
-            case "RecordingPlaybackNotAllowedForNotEntitledEpgChannel":
-            case "NotEntitled":
-            case "3051":
-            case "3032":
-                return new RestrictionError("content is not entitled", RestrictionError.Restriction.NotEntitled);
-
-            case "ConcurrencyLimitation":
-            case "4001":
-                return new RestrictionError("restricted due to concurrency limitation", RestrictionError.Restriction.ConcurrencyLimitation);
-
-            case "MediaConcurrencyLimitation":
-            case "4000":
-                return new RestrictionError("restricted due to concurrency limitation", RestrictionError.Restriction.MediaConcurrencyLimitation);
-
-            case "2001":
-                return new RestrictionError("restricted due to suspended account", RestrictionError.Restriction.Suspended);
-
-            default:
-                return null;
-        }
+        return new ErrorElement(message, code).setName("OTTError");
     }
 }
