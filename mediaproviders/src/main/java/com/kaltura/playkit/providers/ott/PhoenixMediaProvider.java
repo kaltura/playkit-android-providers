@@ -421,18 +421,15 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
             final RequestBuilder requestBuilder = getRemoteRequest(getApiBaseUrl(), ks, referrer, mediaAsset)
-                    .completion(new OnRequestCompletion() {
-                        @Override
-                        public void onComplete(ResponseElement response) {
-                            log.v(loadId + ": got response to [" + loadReq + "]");
-                            loadReq = null;
+                    .completion(response -> {
+                        log.v(loadId + ": got response to [" + loadReq + "]");
+                        loadReq = null;
 
-                            try {
-                                onAssetGetResponse(response);
+                        try {
+                            onAssetGetResponse(response);
 
-                            } catch (InterruptedException e) {
-                                interrupted();
-                            }
+                        } catch (InterruptedException e) {
+                            interrupted();
                         }
                     });
 
@@ -474,25 +471,11 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 responseListener.onResponse(response);
             }
 
-            if (isErrorResponse(response)) {
-                ErrorElement errorResponse = parseErrorRersponse(response);
-                if (errorResponse == null) {
-                    errorResponse = GeneralError;
-                }
-                completion.onComplete(Accessories.buildResult(null, errorResponse));
+            if (!isValidResponse(response)) {
                 return;
             }
 
-            if (isAPIExceptionResponse(response)) {
-                ErrorElement apiExceptionError = parseAPIExceptionError(response);
-                if (apiExceptionError == null) {
-                    apiExceptionError = GeneralError;
-                }
-                completion.onComplete(Accessories.buildResult(null, apiExceptionError));
-                return;
-            }
-
-            if (response != null && response.isSuccess()) {
+            if (response.isSuccess()) {
                 KalturaMediaAsset asset = null;
 
                 try {
@@ -553,7 +536,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         error = kalturaPlaybackContext.hasError(); // check for error or unauthorized content
 
                         if (error != null) {
-                            completion.onComplete(Accessories.buildResult(null, error));
+                            if (!isCanceled() && completion != null) {
+                                completion.onComplete(Accessories.buildResult(null, error));
+                            }
+                            notifyCompletion();
                             return;
                         }
 
@@ -580,7 +566,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     error = GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
             } else {
-                error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
+                error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
             log.i(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
@@ -594,6 +580,32 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         }
 
+        private boolean isValidResponse(ResponseElement response) {
+            if (isErrorResponse(response)) {
+                ErrorElement errorResponse = parseErrorRersponse(response);
+                if (errorResponse == null) {
+                    errorResponse = GeneralError;
+                }
+                if (!isCanceled() && completion != null) {
+                    completion.onComplete(Accessories.buildResult(null, errorResponse));
+                    notifyCompletion();
+                }
+                return false;
+            }
+
+            if (isAPIExceptionResponse(response)) {
+                ErrorElement apiExceptionError = parseAPIExceptionError(response);
+                if (apiExceptionError == null) {
+                    apiExceptionError = GeneralError;
+                }
+                if (!isCanceled() && completion != null) {
+                    completion.onComplete(Accessories.buildResult(null, apiExceptionError));
+                    notifyCompletion();
+                }
+                return false;
+            }
+            return true;
+        }
 
 
         private boolean isAPIExceptionResponse(ResponseElement response) {
@@ -601,9 +613,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         private boolean isErrorResponse(ResponseElement response) {
-            return !response.isSuccess() && response.getError() != null;
+            return response == null || (!response.isSuccess() && response.getError() != null);
         }
-
 
         private ErrorElement parseErrorRersponse(ResponseElement response) {
             if (response != null) {
@@ -618,34 +629,34 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                 try {
                     JSONObject apiException = new JSONObject(response.getResponse());
-                    if (apiException != null) {
-                        if (apiException.has(RESULT)) {
-                            String ottError = "OTTError";
-                            if (apiException.get(RESULT) instanceof JSONObject) {
 
-                                JSONObject result = (JSONObject) apiException.get(RESULT);
-                                if (result != null && result.has(ERROR)) {
-                                    JSONObject error = (JSONObject) result.get(ERROR);
-                                    Map<String, String> errorMap = getAPIExceptionData(error);
+                    if (apiException.has(RESULT)) {
+                        String ottError = "OTTError";
+                        if (apiException.get(RESULT) instanceof JSONObject) {
+
+                            JSONObject result = (JSONObject) apiException.get(RESULT);
+                            if (result != null && result.has(ERROR)) {
+                                JSONObject error = (JSONObject) result.get(ERROR);
+                                Map<String, String> errorMap = getAPIExceptionData(error);
+                                if (errorMap != null) {
+                                    return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
+                                }
+                            }
+                        } else if (apiException.get(RESULT) instanceof JSONArray) {
+
+                            JSONArray result = (JSONArray) apiException.get(RESULT);
+                            for(int idx = 0 ; idx < result.length() ; idx++) {
+                                JSONObject error = (JSONObject) result.get(idx);
+                                if (error != null && error.has(ERROR)) {
+                                    JSONObject resultIndexJsonObjectError = (JSONObject) error.get(ERROR);
+                                    Map<String, String> errorMap = getAPIExceptionData(resultIndexJsonObjectError);
                                     if (errorMap != null) {
                                         return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
                                     }
                                 }
-                            } else if (apiException.get(RESULT) instanceof JSONArray) {
-
-                                JSONArray result = (JSONArray) apiException.get(RESULT);
-                                for(int idx = 0 ; idx < result.length() ; idx++) {
-                                    JSONObject error = (JSONObject) result.get(idx);
-                                    if (error != null && error.has(ERROR)) {
-                                        JSONObject resultIndexJsonObjectError = (JSONObject) error.get(ERROR);
-                                        Map<String, String> errorMap = getAPIExceptionData(resultIndexJsonObjectError);
-                                        if (errorMap != null) {
-                                            return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
-                                        }
-                                    }
-                                }
                             }
                         }
+
                     }
                 } catch (JSONException | NumberFormatException ex) {
                     log.e("parseAPIExceptionError Exception = " + ex.getMessage());
