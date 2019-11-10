@@ -64,6 +64,9 @@ public class BasePlaybackContext extends BaseResult {
     }
 
     protected ErrorElement getErrorElement(KalturaAccessControlMessage errorMessage) {
+        if (errorMessage == null) {
+            return null;
+        }
         return new ErrorElement(errorMessage.message, errorMessage.code).setName("OTTError");
     }
 
