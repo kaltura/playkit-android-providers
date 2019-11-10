@@ -581,6 +581,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         private boolean isValidResponse(ResponseElement response) {
+
             if (isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
