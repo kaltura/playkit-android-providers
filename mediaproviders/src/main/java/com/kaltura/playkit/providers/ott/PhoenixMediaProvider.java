@@ -609,7 +609,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
 
         private boolean isAPIExceptionResponse(ResponseElement response) {
-            return response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION);
+            return response == null || (response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION));
         }
 
         private boolean isErrorResponse(ResponseElement response) {
