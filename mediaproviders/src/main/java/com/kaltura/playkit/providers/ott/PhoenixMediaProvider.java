@@ -549,28 +549,29 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                         Map<String, String> metadata = createOttMetadata(kalturaMediaAsset);
                         boolean is360Content = is360Supported(metadata);
+
                         error = kalturaPlaybackContext.hasError(); // check for error or unauthorized content
+
                         if (error != null) {
                             completion.onComplete(Accessories.buildResult(null, error));
                             return;
+                        }
+
+                        mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
+                                mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
+                                kalturaPlaybackContext.getSources(), is360Content);
+                        mediaEntry.setMetadata(metadata);
+                        mediaEntry.setName(kalturaMediaAsset.getName());
+                        if (isDvrLiveMedia()) {
+                            mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.DvrLive);
+                        } else if (isLiveMediaEntry(kalturaMediaAsset)) {
+                            mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
                         } else {
+                            mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Vod);
+                        }
 
-                            mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
-                                    mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
-                                    kalturaPlaybackContext.getSources(), is360Content);
-                            mediaEntry.setMetadata(metadata);
-                            mediaEntry.setName(kalturaMediaAsset.getName());
-                            if (isDvrLiveMedia()) {
-                                mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.DvrLive);
-                            } else if (isLiveMediaEntry(kalturaMediaAsset)) {
-                                mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
-                            } else {
-                                mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Vod);
-                            }
-
-                            if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
-                                error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");
-                            }
+                        if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
+                            error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");
                         }
                     }
                 } catch (JsonParseException | InvalidParameterException ex) {
