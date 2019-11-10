@@ -63,8 +63,11 @@ public class BasePlaybackContext extends BaseResult {
         return getErrorElement(kalturaBlockedAccessControlMessage);
     }
 
-    protected ErrorElement getErrorElement(KalturaAccessControlMessage message) {
-        return  null;
+    protected ErrorElement getErrorElement(KalturaAccessControlMessage errorMessage) {
+        if (errorMessage == null) {
+            return null;
+        }
+        return new ErrorElement(errorMessage.message, errorMessage.code).setName("OTTError");
     }
 
     public boolean hasBlockedAction() {

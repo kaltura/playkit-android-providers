@@ -285,25 +285,11 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 return;
             }
 
-            if (isErrorResponse(response)) {
-                ErrorElement errorResponse = parseErrorRersponse(response);
-                if (errorResponse == null) {
-                    errorResponse = GeneralError;
-                }
-                completion.onComplete(Accessories.buildResult(null, errorResponse));
+            if (!isValidResponse(response, completion)) {
                 return;
             }
 
-            if (isAPIExceptionResponse(response)) {
-                ErrorElement apiExceptionError = parseAPIExceptionError(response);
-                if (apiExceptionError == null) {
-                    apiExceptionError = GeneralError;
-                }
-                completion.onComplete(Accessories.buildResult(null, apiExceptionError));
-                return;
-            }
-
-            if (response != null && response.isSuccess()) {
+            if (response.isSuccess()) {
 
                 try {
                     //parse multi response from request response
@@ -351,7 +337,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 }
 
             } else {
-                error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
+                error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
             }
 
             log.v(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
@@ -362,14 +348,45 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             notifyCompletion();
         }
+
+        private boolean isValidResponse(ResponseElement response, OnMediaLoadCompletion completion) {
+
+            if (isErrorResponse(response)) {
+                ErrorElement errorResponse = parseErrorRersponse(response);
+                if (errorResponse == null) {
+                    errorResponse = GeneralError;
+                }
+                if (!isCanceled() && completion != null) {
+                    completion.onComplete(Accessories.buildResult(null, errorResponse));
+                }
+
+                notifyCompletion();
+                return false;
+            }
+
+            if (isAPIExceptionResponse(response)) {
+                ErrorElement apiExceptionError = parseAPIExceptionError(response);
+                if (apiExceptionError == null) {
+                    apiExceptionError = GeneralError;
+                }
+
+                if (!isCanceled() && completion != null) {
+                    completion.onComplete(Accessories.buildResult(null, apiExceptionError));
+                }
+
+                notifyCompletion();
+                return false;
+            }
+            return true;
+        }
     }
 
     private boolean isAPIExceptionResponse(ResponseElement response) {
-        return response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION);
+        return response == null|| (response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION));
     }
 
     private boolean isErrorResponse(ResponseElement response) {
-        return !response.isSuccess() && response.getError() != null;
+        return response == null|| (!response.isSuccess() && response.getError() != null);
     }
 
 
@@ -574,7 +591,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
         private static void extractMetadata(String xml, Map<String, String> metadataMap) {
 
-            XmlPullParserFactory xmlPullfactory = null;
+            XmlPullParserFactory xmlPullfactory;
             try {
                 xmlPullfactory = XmlPullParserFactory.newInstance();
                 xmlPullfactory.setNamespaceAware(true);
@@ -619,7 +636,6 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 log.d("extractMetadata End document");
             } catch (XmlPullParserException | IOException e) {
                 log.e("extractMetadata: XML parsing failed", e);
-                return;
             }
         }
 
@@ -647,13 +663,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                     continue;
                 }
 
-                String playUrl = null;
+                String playUrl;
                 PKMediaFormat mediaFormat = FormatsHelper.getPKMediaFormat(playbackSource.getFormat(), playbackSource.hasDrmData());
 
                 // in case playbackSource doesn't have flavors we don't need to build the url and we'll use the provided one.
                 if (playbackSource.hasFlavorIds()) {
 
-                    String baseProtocol = null;
+                    String baseProtocol;
                     try {
                         baseProtocol = new URL(baseUrl).getProtocol();
 
