@@ -21,6 +21,8 @@ import java.util.List;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 /**
  * @hide
  */
@@ -36,7 +38,7 @@ public class AssetService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("asset")
                 .action("get")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("asset-get")
                 .params(params);
@@ -63,7 +65,7 @@ public class AssetService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("asset")
                 .action("getPlaybackContext")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("asset-getPlaybackContext")
                 .params(params);

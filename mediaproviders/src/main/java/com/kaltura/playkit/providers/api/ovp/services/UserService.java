@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 
 /**
  * @hide
@@ -41,7 +43,7 @@ public class UserService extends OvpService {
         return new OvpRequestBuilder()
                 .service("user")
                 .action("loginByLoginId")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("user-loginbyloginid")
                 .params(params);

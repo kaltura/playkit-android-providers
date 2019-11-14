@@ -16,6 +16,8 @@ import com.google.gson.JsonObject;
 
 import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 /**
  * Created by tehilarozin on 17/11/2016.
  */
@@ -79,7 +81,7 @@ public class LicensedUrlService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("licensedUrl")
                 .action("get")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag(tag)
                 .params(reqParams);

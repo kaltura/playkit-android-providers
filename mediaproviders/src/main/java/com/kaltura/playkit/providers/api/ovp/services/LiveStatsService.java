@@ -20,6 +20,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
+
 /**
  * @hide
  */
@@ -30,7 +32,7 @@ public class LiveStatsService {
     public static RequestBuilder sendLiveStatsEvent(String baseUrl, int partnerId, int eventType, int eventIndex, long bufferTime, long bitrate,
                                                     String sessionId, long startTime, String entryId, boolean isLive, String clientVer, String deliveryType) {
         return new RequestBuilder()
-                .method("GET")
+                .method(HTTP_METHOD_GET)
                 .url(getOvpUrl(baseUrl, partnerId, eventType, eventIndex, bufferTime, bitrate, sessionId, startTime, entryId, isLive, clientVer, deliveryType))
                 .tag("stats-send");
     }

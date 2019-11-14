@@ -19,6 +19,8 @@ import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixConfigs;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 /**
  * @hide
  */
@@ -37,6 +39,6 @@ public class PhoenixService {
         if(!TextUtils.isEmpty(ks)) {
             params.addProperty("ks", ks);
         }
-        return (MultiRequestBuilder) new MultiRequestBuilder().service("multirequest").method("POST").url(baseUrl).params(params);
+        return (MultiRequestBuilder) new MultiRequestBuilder().service("multirequest").method(HTTP_METHOD_POST).url(baseUrl).params(params);
     }
 }

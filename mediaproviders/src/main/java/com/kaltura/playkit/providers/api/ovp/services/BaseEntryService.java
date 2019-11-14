@@ -20,6 +20,8 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.ovp.APIDefines;
 import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 
 /**
  * @hide
@@ -47,7 +49,7 @@ public class BaseEntryService extends OvpService {
         return new OvpRequestBuilder()
                 .service("baseEntry")
                 .action("list")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("baseEntry-list")
                 .params(getEntryListReqParams(ks, entryId));
@@ -74,7 +76,7 @@ public class BaseEntryService extends OvpService {
 
         return new OvpRequestBuilder().service("baseEntry")
                 .action("getContextData")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("baseEntry-getContextData")
                 .params(params);
@@ -95,7 +97,7 @@ public class BaseEntryService extends OvpService {
 
         return new OvpRequestBuilder().service("baseEntry")
                 .action("getPlaybackContext")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("baseEntry-getPlaybackContext")
                 .params(params);

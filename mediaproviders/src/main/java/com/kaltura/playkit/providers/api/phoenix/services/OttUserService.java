@@ -19,6 +19,9 @@ import android.text.TextUtils;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 /**
  * @hide
  */
@@ -41,7 +44,7 @@ public class OttUserService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("ottUser")
                 .action("login")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("ottuser-login")
                 .params(params);
@@ -57,7 +60,7 @@ public class OttUserService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("ottUser")
                 .action("anonymousLogin")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("ottuser-anonymous-login")
                 .params(params);
@@ -74,7 +77,7 @@ public class OttUserService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("ottUser")
                 .action("refreshSession")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("ottuser-refresh-session")
                 .params(params);
@@ -90,7 +93,7 @@ public class OttUserService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("ottUser")
                 .action("logout")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("ottuser-logout")
                 .params(params);
@@ -108,7 +111,7 @@ public class OttUserService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("social")
                 .action("login")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("social-login")
                 .params(params);

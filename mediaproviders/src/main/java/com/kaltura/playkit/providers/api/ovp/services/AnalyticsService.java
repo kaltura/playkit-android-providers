@@ -22,6 +22,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Date;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
+
 /**
  * Created by zivilan on 28/11/2016.
  */
@@ -32,7 +34,7 @@ public class AnalyticsService {
     public static RequestBuilder sendAnalyticsEvent(String baseUrl, int partnerId, int eventType, String clientVer, String playbackType, String sessionId, long position
                                                 , int uiConfId, String entryId, int eventIdx, int flavourId, int bufferTime, int actualBitrate, String deliveryType) {
         return new RequestBuilder()
-                .method("GET")
+                .method(HTTP_METHOD_GET)
                 .url(getAnalyticsUrl(baseUrl, partnerId, eventType, clientVer, playbackType, sessionId, position, uiConfId, entryId, eventIdx, flavourId, bufferTime,
                         actualBitrate, deliveryType))
                 .tag("stats-send");
