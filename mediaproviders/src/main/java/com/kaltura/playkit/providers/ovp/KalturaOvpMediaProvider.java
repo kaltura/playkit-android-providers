@@ -23,6 +23,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKSubtitleFormat;
 import com.kaltura.playkit.player.PKExternalSubtitle;
+import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
@@ -82,6 +83,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     private String entryId;
     private String uiConfId;
     private String referrer;
+    private String widgetId;
     private boolean useApiCaptions;
 
     private int maxBitrate;
@@ -134,6 +136,18 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     }
 
     /**
+     * NOT MANDATORY! The widgetId for anonymus KS generation.
+     * if widgetId is not given then "_" + partnerId pattern will be used as widgetId
+     *
+     * @param widgetId - provider widgetId.
+     * @return - instance of KalturaOvpMediaProvider
+     */
+    public KalturaOvpMediaProvider setWidgetId(String widgetId) {
+        this.widgetId = widgetId;
+        return this;
+    }
+
+    /**
      * MANDATORY! the entry id, to fetch the data for.
      *
      * @param entryId - Kaltura entryID
@@ -175,7 +189,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     @Override
     protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
-        return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, referrer, completion);
+        return new Loader(requestsExecutor, sessionProvider, widgetId, entryId, uiConfId, referrer, completion);
     }
 
     @Override
@@ -191,10 +205,12 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         private String entryId;
         private String uiConfId;
         private String referrer;
+        private String widgetId;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, String referrer, OnMediaLoadCompletion completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String widgetId, String entryId, String uiConfId, String referrer, OnMediaLoadCompletion completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
+            this.widgetId = widgetId;
             this.entryId = entryId;
             this.uiConfId = uiConfId;
             this.referrer = referrer;
@@ -214,7 +230,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             return null;
         }
 
-        private RequestBuilder getEntryInfo(String baseUrl, String ks, int partnerId, String entryId, String referrer) {
+        private RequestBuilder getEntryInfo(String baseUrl, String ks, int partnerId) {
             MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
                     .tag("entry-info-multireq");
 
@@ -222,7 +238,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             boolean isAnonymusKS = TextUtils.isEmpty(ks);
             if (isAnonymusKS) {
-                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, partnerId));
+                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, widgetId != null ? widgetId : "_" + partnerId));
+
                 ks = "{1:result:ks}";
                 baseEntryServiceEntryId = "{2:result:objects:0:id}";
             }
@@ -239,7 +256,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          */
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
-            final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId(), entryId, referrer)
+            final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
