@@ -322,7 +322,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         error = ErrorElement.LoadError.message("failed to get responses on load requests");
 
                     } else {
-                        if (ks == null && widgetId != null && !widgetId.equals(getDefaultWidgetId(sessionProvider.partnerId())) && responses.get(0) instanceof KalturaStartWidgetSessionResponse) {
+                        if (TextUtils.isEmpty(ks) && !TextUtils.isEmpty(widgetId) && !widgetId.equals(getDefaultWidgetId(sessionProvider.partnerId())) && responses.get(0) instanceof KalturaStartWidgetSessionResponse) {
                             ks = ((KalturaStartWidgetSessionResponse) responses.get(0)).getKs();
                         }
                         // indexes should match the order of requests sent to the server.
