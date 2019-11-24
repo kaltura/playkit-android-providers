@@ -19,7 +19,19 @@ import com.kaltura.netkit.connect.response.BaseResult;
  */
 
 public class KalturaStartWidgetSessionResponse extends BaseResult {
-    int partnerId;
-    String ks;
-    String userId;
+    private int partnerId;
+    private String ks;
+    private String userId;
+
+    public int getPartnerId() {
+        return partnerId;
+    }
+
+    public String getKs() {
+        return ks;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
 }
