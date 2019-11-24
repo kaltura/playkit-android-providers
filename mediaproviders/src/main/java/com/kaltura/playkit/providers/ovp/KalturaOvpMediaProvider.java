@@ -39,6 +39,7 @@ import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadataListResponse;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackCaption;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackContext;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackSource;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaStartWidgetSessionResponse;
 import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
 import com.kaltura.playkit.providers.api.ovp.services.MetaDataService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpService;
@@ -238,7 +239,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             boolean isAnonymusKS = TextUtils.isEmpty(ks);
             if (isAnonymusKS) {
-                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, widgetId != null ? widgetId : "_" + partnerId));
+                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, widgetId != null ? widgetId : getDefaultWidgetId(partnerId)));
 
                 ks = "{1:result:ks}";
                 baseEntryServiceEntryId = "{2:result:objects:0:id}";
@@ -321,6 +322,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         error = ErrorElement.LoadError.message("failed to get responses on load requests");
 
                     } else {
+                        if (ks == null && widgetId != null && !widgetId.equals(getDefaultWidgetId(sessionProvider.partnerId())) && responses.get(0) instanceof KalturaStartWidgetSessionResponse) {
+                            ks = ((KalturaStartWidgetSessionResponse) responses.get(0)).getKs();
+                        }
                         // indexes should match the order of requests sent to the server.
                         int entryListResponseIdx = responses.size() > 3 ? 1 : 0;
                         int playbackResponseIdx = entryListResponseIdx + 1;
@@ -396,6 +400,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
             return true;
         }
+    }
+
+    private String getDefaultWidgetId(int partnerId) {
+        return "_" + partnerId;
     }
 
     private boolean isAPIExceptionResponse(ResponseElement response) {
