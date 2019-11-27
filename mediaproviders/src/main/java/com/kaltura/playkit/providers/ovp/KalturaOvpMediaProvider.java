@@ -184,8 +184,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
-
-
+    
     class Loader extends BECallableLoader {
 
         private String entryId;
