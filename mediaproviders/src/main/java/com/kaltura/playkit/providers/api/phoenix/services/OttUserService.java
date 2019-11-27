@@ -19,7 +19,6 @@ import android.text.TextUtils;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
-import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
 import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
 
 /**
