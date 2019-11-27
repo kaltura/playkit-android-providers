@@ -184,8 +184,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
-
-
+    
     class Loader extends BECallableLoader {
 
         private String entryId;
@@ -214,7 +213,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             return null;
         }
 
-        private RequestBuilder getEntryInfo(String baseUrl, String ks, int partnerId, String entryId, String referrer) {
+        private RequestBuilder getEntryInfo(String baseUrl, String ks, int partnerId) {
             MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
                     .tag("entry-info-multireq");
 
@@ -222,7 +221,8 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
             boolean isAnonymusKS = TextUtils.isEmpty(ks);
             if (isAnonymusKS) {
-                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, partnerId));
+                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, getDefaultWidgetId(partnerId)));
+
                 ks = "{1:result:ks}";
                 baseEntryServiceEntryId = "{2:result:objects:0:id}";
             }
@@ -239,7 +239,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
          */
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
-            final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId(), entryId, referrer)
+            final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
                     .completion(new OnRequestCompletion() {
                         @Override
                         public void onComplete(ResponseElement response) {
@@ -379,6 +379,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             }
             return true;
         }
+    }
+
+    private String getDefaultWidgetId(int partnerId) {
+        return "_" + partnerId;
     }
 
     private boolean isAPIExceptionResponse(ResponseElement response) {

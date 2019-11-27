@@ -24,9 +24,9 @@ import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
 
 public class OvpSessionService extends OvpService {
 
-    public static OvpRequestBuilder anonymousSession(String baseUrl, int partnerId){
+    public static OvpRequestBuilder anonymousSession(String baseUrl, String widgetId){
         JsonObject params = new JsonObject();
-        params.addProperty("widgetId", "_"+partnerId);
+        params.addProperty("widgetId", widgetId);
 
         return new OvpRequestBuilder()
                 .service("session")
