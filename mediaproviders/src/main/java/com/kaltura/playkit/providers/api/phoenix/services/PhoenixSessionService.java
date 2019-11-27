@@ -15,6 +15,8 @@ package com.kaltura.playkit.providers.api.phoenix.services;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 
 /**
  * @hide
@@ -29,7 +31,7 @@ public class PhoenixSessionService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("session")
                 .action("get")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("session-get")
                 .params(params);
@@ -43,7 +45,7 @@ public class PhoenixSessionService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("session")
                 .action("switchUser")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("session-switchUser")
                 .params(params);

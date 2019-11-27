@@ -22,6 +22,8 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Date;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_GET;
+
 /**
  * @hide
  */
@@ -33,7 +35,7 @@ public class StatsService {
                                                 String sessionId, long position, int uiConfId, String entryId, String widgetId, boolean isSeek,
                                                 int contextId, String applicationName, String userId, boolean hasKanalony) {
         return new RequestBuilder()
-                .method("GET")
+                .method(HTTP_METHOD_GET)
                 .url(getOvpUrl(baseUrl, partnerId, eventType, clientVer, duration, sessionId, position, uiConfId, entryId, widgetId, isSeek,
                         contextId, applicationName, userId, hasKanalony))
                 .tag("stats-send");

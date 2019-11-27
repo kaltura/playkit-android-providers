@@ -15,6 +15,8 @@ package com.kaltura.playkit.providers.api.ovp.services;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 
 /**
  * @hide
@@ -29,7 +31,7 @@ public class OvpSessionService extends OvpService {
         return new OvpRequestBuilder()
                 .service("session")
                 .action("startWidgetSession")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("session-startWidget")
                 .params(params);
@@ -42,7 +44,7 @@ public class OvpSessionService extends OvpService {
         return new OvpRequestBuilder()
                 .service("session")
                 .action("get")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("session-get")
                 .params(params);
@@ -55,7 +57,7 @@ public class OvpSessionService extends OvpService {
         return new OvpRequestBuilder()
                 .service("session")
                 .action("end")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("session-end")
                 .params(params);

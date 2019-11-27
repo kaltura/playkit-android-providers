@@ -17,6 +17,8 @@ import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 /**
  * @hide
  */
@@ -45,7 +47,7 @@ public class OvpService {
         if(partnerId > 0) {
             ovpParams.addProperty("partnerId", partnerId);
         }
-        return (MultiRequestBuilder) new MultiRequestBuilder().method("POST")
+        return (MultiRequestBuilder) new MultiRequestBuilder().method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .params(ovpParams)
                 .service("multirequest");

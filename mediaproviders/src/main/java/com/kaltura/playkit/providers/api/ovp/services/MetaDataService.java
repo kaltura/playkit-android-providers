@@ -15,6 +15,8 @@ package com.kaltura.playkit.providers.api.ovp.services;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 
 /**
  * @hide
@@ -33,7 +35,7 @@ public class MetaDataService extends OvpService {
 
         return new OvpRequestBuilder().service("metadata_metadata")
                 .action("list")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("metadata_metadata-list")
                 .params(params);

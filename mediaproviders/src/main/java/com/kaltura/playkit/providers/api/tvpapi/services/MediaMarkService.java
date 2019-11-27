@@ -15,6 +15,8 @@ package com.kaltura.playkit.providers.api.tvpapi.services;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 /**
  * @hide
  */
@@ -22,7 +24,7 @@ import com.kaltura.netkit.connect.request.RequestBuilder;
 public class MediaMarkService {
     public static RequestBuilder sendTVPAPIEvent(String baseUrl, JsonObject initObj, String action, String assetId, String fileId, long position) {
         return new RequestBuilder()
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("media-action")
                 .params(buildRequestBody(initObj, action, assetId,  fileId,  position));

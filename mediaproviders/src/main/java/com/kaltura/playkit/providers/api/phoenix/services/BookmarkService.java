@@ -15,6 +15,8 @@ package com.kaltura.playkit.providers.api.phoenix.services;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
+import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
+
 
 /**
  * Created by zivilan on 21/11/2016.
@@ -26,7 +28,7 @@ public class BookmarkService extends PhoenixService {
         return new PhoenixRequestBuilder()
                 .service("bookmark")
                 .action("add")
-                .method("POST")
+                .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("bookmark-action-add")
                 .params(addBookmarkGetReqParams(ks, assetId,  type, actionType, position, fileId));
