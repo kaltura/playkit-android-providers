@@ -22,29 +22,13 @@ import java.util.List;
  * @hide
  */
 
-public class KalturaMediaEntry extends BaseResult {
-
-    private int msDuration;
-    private Integer dvrStatus; // 1-LIVE DVR  0-LIVE
+public class KalturaPlaylist extends BaseResult {
 
     private String id;
     private String name;
-    private String tags;
-    private String dataUrl;
     private String description;
     private String thumbnailUrl;
-    private String flavorParamsIds;
 
-    /** indicate the media type: {@link KalturaEntryType} **/
-    private KalturaEntryType type;
-
-    public int getMsDuration() {
-        return msDuration;
-    }
-
-    public Integer getDvrStatus() {
-        return dvrStatus;
-    }
 
     public String getId() {
         return id;
@@ -52,14 +36,6 @@ public class KalturaMediaEntry extends BaseResult {
 
     public String getName() {
         return name;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public String getDataUrl() {
-        return dataUrl;
     }
 
     public String getDescription() {
@@ -70,18 +46,6 @@ public class KalturaMediaEntry extends BaseResult {
         return thumbnailUrl;
     }
 
-    public String getFlavorParamsIds() {
-        return flavorParamsIds;
-    }
-
-    public KalturaEntryType getType() {
-        return type;
-    }
-
-    public List<String> getFlavorParamsIdsList(){
-        return Arrays.asList(flavorParamsIds.split(","));
-    }
-
     public void setId(String id) {
         this.id = id;
     }
@@ -89,6 +53,7 @@ public class KalturaMediaEntry extends BaseResult {
     public boolean hasId() {
         return id != null;
     }
+
     public boolean hasName() {
         return name != null;
     }
@@ -101,11 +66,5 @@ public class KalturaMediaEntry extends BaseResult {
         return thumbnailUrl != null;
     }
 
-    public boolean hasDvrStatus() {
-        return dvrStatus != null;
-    }
 
-    public boolean hasTags() {
-        return tags != null;
-    }
 }

@@ -540,11 +540,6 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void enableLogs(boolean enable) {
-
-        }
-
-        @Override
         public void setNetworkErrorEventListener(NetworkErrorEventListener networkErrorEventListener) {
 
         }
