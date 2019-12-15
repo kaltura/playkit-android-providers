@@ -37,6 +37,7 @@ public class KalturaMediaEntry extends BaseResult {
 
     /** indicate the media type: {@link KalturaEntryType} **/
     private KalturaEntryType type;
+    private KalturaMediaType mediaType;
 
     public int getMsDuration() {
         return msDuration;
@@ -78,17 +79,18 @@ public class KalturaMediaEntry extends BaseResult {
         return type;
     }
 
-    public List<String> getFlavorParamsIdsList(){
-        return Arrays.asList(flavorParamsIds.split(","));
+    public KalturaMediaType getMediaType() {
+        return mediaType;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public List<String> getFlavorParamsIdsList(){ return Arrays.asList(flavorParamsIds.split(",")); }
+
+    public void setId(String id) { this.id = id; }
 
     public boolean hasId() {
         return id != null;
     }
+
     public boolean hasName() {
         return name != null;
     }
@@ -107,5 +109,13 @@ public class KalturaMediaEntry extends BaseResult {
 
     public boolean hasTags() {
         return tags != null;
+    }
+
+    public boolean hasType() {
+        return type != null;
+    }
+
+    public boolean hasMediaType() {
+        return mediaType != null;
     }
 }

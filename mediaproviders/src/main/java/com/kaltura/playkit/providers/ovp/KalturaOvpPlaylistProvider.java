@@ -18,54 +18,35 @@ import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
+
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKSubtitleFormat;
-import com.kaltura.playkit.player.PKExternalSubtitle;
-import com.kaltura.playkit.providers.MediaProvidersUtils;
-import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
-import com.kaltura.playkit.providers.api.ovp.KalturaOvpErrorHelper;
+import com.kaltura.playkit.PKPlaylist;
+import com.kaltura.playkit.PKPlaylistMedia;
+import com.kaltura.playkit.PKPlaylistType;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
-import com.kaltura.playkit.providers.api.ovp.model.FlavorAssetsFilter;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaBaseEntryListResponse;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaCaptionType;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryContextDataResult;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaFlavorAsset;
+
+import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryType;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadata;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadataListResponse;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackCaption;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackContext;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaybackSource;
-import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
-import com.kaltura.playkit.providers.api.ovp.services.MetaDataService;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaylist;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaylistType;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaStartWidgetSessionResponse;
 import com.kaltura.playkit.providers.api.ovp.services.OvpService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpSessionService;
 import com.kaltura.playkit.providers.api.ovp.services.PlaylistService;
 import com.kaltura.playkit.providers.base.BECallableLoader;
 import com.kaltura.playkit.providers.base.BEMediaProvider;
-import com.kaltura.playkit.providers.base.FormatsHelper;
+
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
 
@@ -219,12 +200,13 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
             if (!TextUtils.isEmpty(playlistId)) {
-                List<KalturaMediaEntry> entriesList = null;
                 final RequestBuilder entryRequest = getPlaylistInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())//getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
                         .completion(new OnRequestCompletion() {
                             @Override
                             public void onComplete(ResponseElement response) {
+                                PKPlaylist playlistResult = null;
                                 ErrorElement error = null;
+
                                 if (response == null || response.getError() != null) {
                                     error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
                                     completion.onComplete(Accessories.buildResult(null, error));
@@ -241,26 +223,93 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
                                     return;
                                 }
 
-                                for (BaseResult baseResult : responses) {
-                                    if (baseResult.error != null) {
-                                        completion.onComplete(Accessories.buildResult(null, baseResult.error));
+                                for (int i = 0 ; i < responses.size() - 1 ; i++) { //index 3 in ArrayList does not contain error object
+                                    if (responses.get(i).error != null) {
+                                        completion.onComplete(Accessories.buildResult(null, responses.get(i).error));
                                         return;
                                     }
                                 }
 
-                                if (responses != null && responses.size() == 3) {
-                                    List<KalturaMediaEntry> entriesList = (List<KalturaMediaEntry>) responses.get(2);
-                                    for (KalturaMediaEntry mediaEntry : entriesList) {
-                                        log.v("XXXX " + mediaEntry.getId());
+                                int widgetSessionResponseIndex = 0;
+                                int playlistListIndex = responses.size() > 2 ? 1 : 0;
+                                int entriesListIndex = playlistListIndex + 1;
+
+                                if (!TextUtils.isEmpty(ks) && responses.size() == entriesListIndex || responses.size() == (entriesListIndex + 1)) {
+                                    KalturaStartWidgetSessionResponse widgetSessionResponse = null;
+                                    if (responses.size() == (entriesListIndex + 1)) {
+                                        widgetSessionResponse = (KalturaStartWidgetSessionResponse) responses.get(widgetSessionResponseIndex);
+                                    }
+                                    KalturaPlaylist kalturaPlaylist = (KalturaPlaylist) responses.get(playlistListIndex);
+                                    List<KalturaMediaEntry> entriesList = (List<KalturaMediaEntry>) responses.get(entriesListIndex);
+                                    playlistResult = getPKPlaylist(widgetSessionResponse == null ? ks : widgetSessionResponse.getKs(), kalturaPlaylist, entriesList);
+                                    if (completion != null) {
+                                        completion.onComplete(Accessories.buildResult(playlistResult, null));
                                     }
                                 } else {
                                     if (completion != null) {
                                         completion.onComplete(Accessories.buildResult(null, ErrorElement.LoadError.message("failed to get responses on load requests")));
                                     }
                                 }
+                            }
 
-                                if (completion != null) {
-                                    completion.onComplete(Accessories.buildResult(entriesList, null));
+                            private PKPlaylist getPKPlaylist(String playlistKs, KalturaPlaylist kalturaPlaylist,  List<KalturaMediaEntry> entriesList) {
+                                List<PKPlaylistMedia> mediaArrayList = new ArrayList<>();
+                                for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
+                                    mediaArrayList.add(new PKPlaylistMedia().
+                                            setId(kalturaMediaEntry.getId()).
+                                            setName(kalturaMediaEntry.getName()).
+                                            setDescription(kalturaMediaEntry.getDescription()).
+                                            setType(getTypeOf(kalturaMediaEntry.getType())).
+                                            setDataUrl(kalturaMediaEntry.getDataUrl()).
+                                            setMsDuration(kalturaMediaEntry.getMsDuration()).
+                                            setDvrStatus(kalturaMediaEntry.getDvrStatus()).
+                                            setThumbnailUrl(kalturaMediaEntry.getThumbnailUrl()).
+                                            setFlavorParamsIds(kalturaMediaEntry.getFlavorParamsIds()).
+                                            setTags(kalturaMediaEntry.getTags()));
+                                }
+
+                                PKPlaylist playlist = new PKPlaylist().
+                                        setKs(playlistKs).
+                                        setId(kalturaPlaylist.getId()).
+                                        setName(kalturaPlaylist.getName()).
+                                        setDescription(kalturaPlaylist.getDescription()).
+                                        setThumbnailUrl(kalturaPlaylist.getThumbnailUrl()).
+                                        setDuration(kalturaPlaylist.getDuration()).
+                                        setPlaylistType(getValueOf(kalturaPlaylist.getPlaylistType())).
+                                        setPlaylistMediaList(mediaArrayList);
+
+                                return playlist;
+                            }
+
+                            private PKPlaylistType getValueOf(KalturaPlaylistType playlistType) {
+                                if (playlistType == null) {
+                                    return PKPlaylistType.Unknown;
+                                }
+
+                                switch (playlistType) {
+                                    case STATIC_LIST:
+                                        return PKPlaylistType.Static;
+                                    case DYNAMIC:
+                                        return PKPlaylistType.Dynamic;
+                                    case EXTERNAL:
+                                        return PKPlaylistType.External;
+                                    default:
+                                        return PKPlaylistType.Unknown;
+                                }
+                            }
+
+                            private PKMediaEntry.MediaEntryType getTypeOf(KalturaEntryType type) {
+                                if (type == null) {
+                                    return PKMediaEntry.MediaEntryType.Unknown;
+                                }
+
+                                switch (type) {
+                                    case MEDIA_CLIP:
+                                        return PKMediaEntry.MediaEntryType.Vod;
+                                    case LIVE_STREAM:
+                                        return PKMediaEntry.MediaEntryType.Live;
+                                    default:
+                                        return PKMediaEntry.MediaEntryType.Unknown;
                                 }
                             }
                         });

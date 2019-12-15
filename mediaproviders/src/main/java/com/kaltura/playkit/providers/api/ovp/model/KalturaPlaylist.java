@@ -23,7 +23,6 @@ import java.util.List;
  */
 
 public class KalturaPlaylist extends BaseResult {
-
     private String id;
     private String name;
     private String description;
