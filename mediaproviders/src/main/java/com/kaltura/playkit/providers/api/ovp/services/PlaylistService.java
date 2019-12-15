@@ -35,14 +35,14 @@ public class PlaylistService extends OvpService {
                 .params(getPlaylistGetParams(ks, playlistId));
     }
 
-    public static OvpRequestBuilder execute(String baseUrl, String ks, String playlistId) {
+    public static OvpRequestBuilder execute(String baseUrl, String ks, String playlistId, Integer pageSize, Integer pageIndex) {
 
         return new OvpRequestBuilder().service("playlist")
                 .action("execute")
                 .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("playlist-execute")
-                .params(getPlaylistExecuteParams(ks, playlistId));
+                .params(getPlaylistExecuteParams(ks, playlistId, pageSize, pageIndex));
     }
 
     private static JsonObject getPlaylistGetParams(String ks, String playlistId) {
@@ -50,18 +50,21 @@ public class PlaylistService extends OvpService {
         PlaylistService.PlaylistParams playlistParams = new PlaylistService.PlaylistParams(ks, playlistId);
         playlistParams.ks = ks;
         playlistParams.id = playlistId;
-        playlistParams.responseProfile.fields = "id,name,description,thumbnailUr";
+        playlistParams.responseProfile.fields = "id,name,playlistType,type,description,thumbnailUrl,duration";// ,totalResults,plays,views,playlistContent";
         playlistParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
 
         return new Gson().toJsonTree(playlistParams).getAsJsonObject();
     }
 
-    private static JsonObject getPlaylistExecuteParams(String ks, String playlistId) {
+    private static JsonObject getPlaylistExecuteParams(String ks, String playlistId, Integer pageSize, Integer pageIndex) {
 
         PlaylistService.PlaylistParams playlistParams = new PlaylistService.PlaylistParams(ks, playlistId);
-        playlistParams.responseProfile.fields = "id,referenceId,name,description,thumbnailUrl,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags,dvrStatus,externalSourceType";
+        playlistParams.responseProfile.fields = "id,referenceId,name,description,thumbnailUrl,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags,dvrStatus,externalSourceType,searchText";
         playlistParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
-
+        KalturaFilterPager pager = null;
+        if (pageSize != null && pageIndex != null && pageIndex <= pageSize) {
+            playlistParams.pager = new KalturaFilterPager(pageSize,pageIndex);
+        }
         return new Gson().toJsonTree(playlistParams).getAsJsonObject();
     }
 
@@ -69,11 +72,22 @@ public class PlaylistService extends OvpService {
         String ks;
         String id;
         ResponseProfile responseProfile;
+        KalturaFilterPager pager;
 
         public PlaylistParams(String ks, String playlistId) {
             this.ks = ks;
             this.id = playlistId;
             this.responseProfile = new ResponseProfile();
+        }
+    }
+
+    static class KalturaFilterPager {
+        int pageSize;
+        int pageIndex;
+
+        public KalturaFilterPager(int pageSize, int pageIndex) {
+            this.pageSize = pageSize;
+            this.pageIndex = pageIndex;
         }
     }
 }
