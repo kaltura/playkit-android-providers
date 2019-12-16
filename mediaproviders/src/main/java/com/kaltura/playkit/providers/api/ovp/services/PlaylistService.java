@@ -35,16 +35,6 @@ public class PlaylistService extends OvpService {
                 .params(getPlaylistGetParams(ks, playlistId));
     }
 
-    public static OvpRequestBuilder execute(String baseUrl, String ks, String playlistId, Integer pageSize, Integer pageIndex) {
-
-        return new OvpRequestBuilder().service("playlist")
-                .action("execute")
-                .method(HTTP_METHOD_POST)
-                .url(baseUrl)
-                .tag("playlist-execute")
-                .params(getPlaylistExecuteParams(ks, playlistId, pageSize, pageIndex));
-    }
-
     private static JsonObject getPlaylistGetParams(String ks, String playlistId) {
 
         PlaylistService.PlaylistParams playlistParams = new PlaylistService.PlaylistParams(ks, playlistId);
@@ -54,6 +44,16 @@ public class PlaylistService extends OvpService {
         playlistParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
 
         return new Gson().toJsonTree(playlistParams).getAsJsonObject();
+    }
+
+    public static OvpRequestBuilder execute(String baseUrl, String ks, String playlistId, Integer pageSize, Integer pageIndex) {
+
+        return new OvpRequestBuilder().service("playlist")
+                .action("execute")
+                .method(HTTP_METHOD_POST)
+                .url(baseUrl)
+                .tag("playlist-execute")
+                .params(getPlaylistExecuteParams(ks, playlistId, pageSize, pageIndex));
     }
 
     private static JsonObject getPlaylistExecuteParams(String ks, String playlistId, Integer pageSize, Integer pageIndex) {
@@ -68,11 +68,33 @@ public class PlaylistService extends OvpService {
         return new Gson().toJsonTree(playlistParams).getAsJsonObject();
     }
 
+    public static OvpRequestBuilder list(String baseUrl, String ks, String playlistId) {
+
+        return new OvpRequestBuilder().service("playlist")
+                .action("list")
+                .method(HTTP_METHOD_POST)
+                .url(baseUrl)
+                .tag("playlist-list")
+                .params(getPlaylistListParams(ks, playlistId));
+    }
+
+    private static JsonObject getPlaylistListParams(String ks, String playlistId) {
+
+        PlaylistService.PlaylistParams playlistParams = new PlaylistService.PlaylistParams(ks, playlistId);
+        playlistParams.ks = ks;
+        playlistParams.filter = new KalturaPlaylistFilter();
+        playlistParams.filter.setIdIn(playlistId);
+        playlistParams.pager = null;
+        playlistParams.responseProfile = null;
+        return new Gson().toJsonTree(playlistParams).getAsJsonObject();
+    }
+
     static class PlaylistParams {
         String ks;
         String id;
         ResponseProfile responseProfile;
         KalturaFilterPager pager;
+        KalturaPlaylistFilter filter;
 
         public PlaylistParams(String ks, String playlistId) {
             this.ks = ks;
@@ -88,6 +110,23 @@ public class PlaylistService extends OvpService {
         public KalturaFilterPager(int pageSize, int pageIndex) {
             this.pageSize = pageSize;
             this.pageIndex = pageIndex;
+        }
+    }
+
+    static class KalturaPlaylistFilter {
+        String idEqual;
+        String idIn;
+
+        public KalturaPlaylistFilter() { }
+
+        public void setIdEqual(String idEqual) {
+            this.idEqual = idEqual;
+            this.idIn = null;
+        }
+
+        public void setIdIn(String idIn) {
+            this.idIn = idIn;
+            this.idEqual = null;
         }
     }
 }
