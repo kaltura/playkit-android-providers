@@ -49,6 +49,7 @@ import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaLoginSession;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaFile;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackContext;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackSource;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
@@ -122,28 +123,9 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
 
         public List<String> assetIds;
 
-        public APIDefines.KalturaAssetType assetType;
-
         public APIDefines.AssetReferenceType assetReferenceType;
 
-        public APIDefines.PlaybackContextType contextType;
-
-        public List<String> formats;
-
-        public List<String> mediaFileIds;
-
-        public String protocol;
-
-        public PKPlaylistRequest() {
-        }
-
-        public boolean hasFormats() {
-            return formats != null && formats.size() > 0;
-        }
-
-        public boolean hasFiles() {
-            return mediaFileIds != null && mediaFileIds.size() > 0;
-        }
+        public PKPlaylistRequest() { }
     }
 
     public PhoenixPlaylistProvider() {
@@ -216,68 +198,6 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
         return this;
     }
 
-    /**
-     * ESSENTIAL!! defines the playing asset group type
-     * Defaults to - {@link APIDefines.KalturaAssetType#Media}
-     *
-     * @param assetType - can be one of the following types {@link APIDefines.KalturaAssetType}
-     * @return - instance of PhoenixMediaProvider
-     */
-    public PhoenixPlaylistProvider setAssetType(@NonNull APIDefines.KalturaAssetType assetType) {
-        this.playlist.assetType = assetType;
-        return this;
-    }
-
-    /**
-     * ESSENTIAL!! defines the playing context: Trailer, Catchup, Playback etc
-     * Defaults to - {@link APIDefines.PlaybackContextType#Playback}
-     *
-     * @param contextType - can be one of the following types {@link APIDefines.PlaybackContextType}
-     * @return - instance of PhoenixMediaProvider
-     */
-    public PhoenixPlaylistProvider setContextType(@NonNull APIDefines.PlaybackContextType contextType) {
-        this.playlist.contextType = contextType;
-        return this;
-    }
-
-    /**
-     * OPTIONAL
-     *
-     * @param protocol - the desired protocol (http/https) for the playback sources
-     *                 The default is null, which makes the provider filter by server protocol.
-     * @return - instance of PhoenixMediaProvider
-     */
-    public PhoenixPlaylistProvider setProtocol(@NonNull @HttpProtocol String protocol) {
-        this.playlist.protocol = protocol;
-        return this;
-    }
-
-    /**
-     * OPTIONAL
-     * defines which of the sources to consider on {@link PKMediaEntry} creation.
-     *
-     * @param formats - 1 or more content format definition. can be: Hd, Sd, Download, Trailer etc
-     * @return - instance of PhoenixMediaProvider
-     */
-    public PhoenixPlaylistProvider setFormats(@NonNull String... formats) {
-        this.playlist.formats = new ArrayList<>(Arrays.asList(formats));
-        return this;
-    }
-
-
-    /**
-     * OPTIONAL - if not available all sources will be fetched
-     * Provide a list of media files ids. will be used in the getPlaybackContext API request                                                                                                 .
-     *
-     * @param mediaFileIds - list of MediaFile ids to narrow sources fetching from API to
-     *                     the specific files
-     * @return - instance of PhoenixMediaProvider
-     */
-    public PhoenixPlaylistProvider setFileIds(@NonNull String... mediaFileIds) {
-        this.playlist.mediaFileIds = new ArrayList<>(Arrays.asList(mediaFileIds));
-        return this;
-    }
-
     public PhoenixPlaylistProvider setResponseListener(BEResponseListener responseListener) {
         this.responseListener = responseListener;
         return this;
@@ -312,34 +232,11 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
             return ErrorElement.BadRequestError.addMessage("Missing required parameter [assetIds]");
         }
 
-        if (playlist.contextType == null) {
-            playlist.contextType = APIDefines.PlaybackContextType.Playback;
-        }
 
-        if (playlist.assetType == null) {
-            switch (playlist.contextType) {
-                case Playback:
-                case Trailer:
-                    playlist.assetType = APIDefines.KalturaAssetType.Media;
-                    break;
-
-                case StartOver:
-                case Catchup:
-                    playlist.assetType = APIDefines.KalturaAssetType.Epg;
-                    break;
-            }
-        }
 
         if (playlist.assetReferenceType == null) {
-            switch (playlist.assetType) {
-                case Media:
-                    playlist.assetReferenceType = APIDefines.AssetReferenceType.Media;
-                    break;
-                case Epg:
-                    playlist.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg;
-                    break;
-            }
-            // Or leave it as null.
+            playlist.assetReferenceType = APIDefines.AssetReferenceType.Media;
+            //playlist.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg;
         }
 
         return null;
@@ -386,7 +283,7 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
 
             if (playlistRequest.assetReferenceType != null) {
                 for(String assetId : playlistRequest.assetIds)
-                builder.add(getPlaylistRequest(baseUrl, multiReqKs, assetId, playlistRequest.assetReferenceType));
+                    builder.add(getPlaylistRequest(baseUrl, multiReqKs, assetId, playlistRequest.assetReferenceType));
             }
 
             return builder;
@@ -461,29 +358,9 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
                 KalturaMediaAsset asset = null;
 
                 try {
-                    //**************************
-
-                /* ways to parse the AssetInfo from response string:
-
-                    1. <T> T PhoenixParser.parseObject: parse json string to a single object, according to a specific type - returns an object of the specific type
-                            asset = PhoenixParser.parseObject(response.getResponse(), KalturaMediaAsset.class);
-
-                    2. Object PhoenixParser.parse(String response, Class...types): parse json string according to 1 or more types (dynamic types array) - returns Object since can
-                       be single or an array of objects. cast is needed, can be used for multiple response
-                            asset = (KalturaMediaAsset) PhoenixParser.parse(response.getResponse(), KalturaMediaAsset.class);
-
-                        in case of an error - the error will be passed over the returned object (should extend BaseResult) */
-
-                    //*************************
 
                     log.d(loadId + ": parsing response  [" + Loader.this.toString() + "]");
-                    /* 3. <T> T PhoenixParser.parse(String response): parse json string to an object of dynamically parsed type.
-                       type defined by the value of "objectType" property provided in the response objects, if type wasn't found or in
-                       case of error object in the response, will be parsed to BaseResult object (error if occurred will be accessible from this object)*/
-
                     BaseResult loginResult = null;
-                    BaseResult playbackContextResult = null;
-                    BaseResult assetGetResult = null;
 
                     Object parsedResponsesObject = PhoenixParser.parse(response.getResponse());
                     List<BaseResult> parsedResponses = new ArrayList<>();
@@ -553,7 +430,7 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
         }
 
         private PKPlaylist getPKPlaylist(String playlistKs, List<KalturaMediaAsset> entriesList, List<Map<String,String>> assetsMetadtaList) {
-            List<PKPlaylistMedia> mediaArrayList = new ArrayList<>();
+            List<PKPlaylistMedia> mediaList = new ArrayList<>();
 
             int listIndex = 0;
             for (KalturaMediaAsset kalturaMediaEntry : entriesList) {
@@ -565,14 +442,14 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
                         kalturaMediaEntry.getImages() == null || kalturaMediaEntry.getImages().isEmpty())  {
                     continue;
                 }
-                mediaArrayList.add(new PKPlaylistMedia().
+
+                mediaList.add(new PKPlaylistMedia().
                         setId(String.valueOf(kalturaMediaEntry.getId())).
                         setName(kalturaMediaEntry.getName()).
                         setDescription(kalturaMediaEntry.getDescription()).
-                        setType(PKMediaEntry.MediaEntryType.Unknown).
+                        setType(isLiveMediaEntry(kalturaMediaEntry) ? PKMediaEntry.MediaEntryType.Live : PKMediaEntry.MediaEntryType.Vod).
                         setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
                         setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
-                        setFlavorParamsIds(kalturaMediaEntry.getMediaFiles().get(0).getType()).
                         setTags(assetsMetadtaList.get(0).get("tags")).
                         setMetadata(assetsMetadtaList.get(listIndex)));
                 listIndex++;
@@ -586,7 +463,7 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
                     setThumbnailUrl("").
                     setDuration(0).
                     setPlaylistType(PKPlaylistType.Unknown).
-                    setPlaylistMediaList(mediaArrayList);
+                    setMediaList(mediaList);
 
             return playlist;
         }
@@ -710,10 +587,6 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
 
             return null;
         }
-
-        private boolean isDvrLiveMedia() {
-            return playlistRequest.assetType == APIDefines.KalturaAssetType.Epg && playlistRequest.contextType == APIDefines.PlaybackContextType.StartOver;
-        }
     }
 
     private boolean is360Supported(Map<String, String> metadata) {
@@ -757,7 +630,6 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
             metadata.put("description", kalturaMediaAsset.getDescription());
         }
 
-        metadata.put("assetType", playlist.assetType.value);
         if (isRecordingMediaEntry(kalturaMediaAsset)) {
             metadata.put("recordingId", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingId());
             metadata.put("recordingType", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingType().name());
@@ -796,112 +668,10 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
 
         String externalIdsStr = kalturaMediaAsset.getExternalIds();
         return (LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType()) ||
-                !TextUtils.isEmpty(externalIdsStr) && TextUtils.isDigitsOnly(externalIdsStr) && Long.valueOf(externalIdsStr) != 0) ||
-                (playlist.assetType == APIDefines.KalturaAssetType.Epg && playlist.contextType == APIDefines.PlaybackContextType.StartOver);
+                !TextUtils.isEmpty(externalIdsStr) && TextUtils.isDigitsOnly(externalIdsStr) && Long.valueOf(externalIdsStr) != 0);
     }
 
     private boolean isRecordingMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
         return kalturaMediaAsset instanceof KalturaRecordingAsset;
     }
-
-    static class ProviderParser {
-
-        public static PKMediaEntry getMedia(String assetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources, boolean is360Content) {
-            PKMediaEntry mediaEntry = new PKMediaEntry();
-            if (is360Content) {
-                mediaEntry.setIsVRMediaType(true);
-            }
-
-            mediaEntry.setId("" + assetId);
-            mediaEntry.setName(null);
-
-            // until the response will be delivered in the right order:
-            playbackSourcesSort(sourcesFilter, playbackSources);
-
-            ArrayList<PKMediaSource> sources = new ArrayList<>();
-
-            long maxDuration = 0;
-
-            if (playbackSources != null) {
-
-                // if provided, only the "formats" matching MediaFiles should be parsed and added to the PKMediaEntry media sources
-                for (KalturaPlaybackSource playbackSource : playbackSources) {
-
-                    boolean inSourceFilter = sourcesFilter != null &&
-                            (sourcesFilter.contains(playbackSource.getType()) ||
-                                    sourcesFilter.contains(playbackSource.getId() + ""));
-
-                    if (sourcesFilter != null && !inSourceFilter) { // if specific formats/fileIds were requested, only those will be added to the sources.
-                        continue;
-                    }
-
-                    PKMediaFormat mediaFormat = FormatsHelper.getPKMediaFormat(playbackSource.getFormat(), playbackSource.hasDrmData());
-
-                    if (mediaFormat == null) {
-                        continue;
-                    }
-
-                    PKMediaSource pkMediaSource = new PKMediaSource()
-                            .setId(playbackSource.getId() + "")
-                            .setUrl(playbackSource.getUrl())
-                            .setMediaFormat(mediaFormat);
-
-                    List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
-                    if (drmData != null && !drmData.isEmpty()) {
-                        if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)) {
-                            continue;
-                        }
-                        MediaProvidersUtils.updateDrmParams(pkMediaSource, drmData);
-                    }
-
-                    sources.add(pkMediaSource);
-                    maxDuration = Math.max(playbackSource.getDuration(), maxDuration);
-                }
-            }
-            return mediaEntry.setDuration(maxDuration * Consts.MILLISECONDS_MULTIPLIER).setSources(sources).setMediaType(MediaTypeConverter.toMediaEntryType(""));
-        }
-
-        //TODO: check why we get all sources while we asked for 4 specific formats
-
-        // needed to sort the playback source result to be in the same order as in the requested list.
-        private static void playbackSourcesSort(final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
-            Collections.sort(playbackSources, new Comparator<KalturaPlaybackSource>() {
-                @Override
-                public int compare(KalturaPlaybackSource o1, KalturaPlaybackSource o2) {
-
-                    int valueIndex1 = -1;
-                    int valueIndex2 = -1;
-                    if (sourcesFilter != null) {
-                        valueIndex1 = sourcesFilter.indexOf(o1.getType());
-                        if (valueIndex1 == -1) {
-                            valueIndex1 = sourcesFilter.indexOf(o1.getId() + "");
-                            valueIndex2 = sourcesFilter.indexOf(o2.getId() + "");
-                        } else {
-                            valueIndex2 = sourcesFilter.indexOf(o2.getType());
-                        }
-                    }
-                    return valueIndex1 - valueIndex2;
-                }
-            });
-        }
-    }
-
-    static class MediaTypeConverter {
-
-        public static PKMediaEntry.MediaEntryType toMediaEntryType(String mediaType) {
-            switch (mediaType) {
-                default:
-                    return PKMediaEntry.MediaEntryType.Unknown;
-            }
-        }
-    }
-
-    @StringDef({HttpProtocol.Http, HttpProtocol.Https, HttpProtocol.All})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface HttpProtocol {
-        String Http = "http";       // only http sources
-        String Https = "https";     // only https sources
-        String All = "all";         // do not filter by protocol
-    }
-
 }

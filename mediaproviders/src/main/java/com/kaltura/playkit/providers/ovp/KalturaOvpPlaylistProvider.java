@@ -246,16 +246,16 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
                                         completion.onComplete(Accessories.buildResult(playlistResult, null));
                                     }
                                 } else {
-                                    if (completion != null) {
+                                    if (!isCanceled() && completion != null) {
                                         completion.onComplete(Accessories.buildResult(null, ErrorElement.LoadError.message("failed to get responses on load requests")));
                                     }
                                 }
                             }
 
                             private PKPlaylist getPKPlaylist(String playlistKs, KalturaPlaylist kalturaPlaylist,  List<KalturaMediaEntry> entriesList) {
-                                List<PKPlaylistMedia> mediaArrayList = new ArrayList<>();
+                                List<PKPlaylistMedia> mediaList = new ArrayList<>();
                                 for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
-                                    mediaArrayList.add(new PKPlaylistMedia().
+                                    mediaList.add(new PKPlaylistMedia().
                                             setId(kalturaMediaEntry.getId()).
                                             setName(kalturaMediaEntry.getName()).
                                             setDescription(kalturaMediaEntry.getDescription()).
@@ -276,7 +276,7 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
                                         setThumbnailUrl(kalturaPlaylist.getThumbnailUrl()).
                                         setDuration(kalturaPlaylist.getDuration()).
                                         setPlaylistType(getValueOf(kalturaPlaylist.getPlaylistType())).
-                                        setPlaylistMediaList(mediaArrayList);
+                                        setMediaList(mediaList);
 
                                 return playlist;
                             }
@@ -322,8 +322,6 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
                 if (!isCanceled()) {
                     waitCompletion();
                 }
-            } else {
-
             }
         }
 
