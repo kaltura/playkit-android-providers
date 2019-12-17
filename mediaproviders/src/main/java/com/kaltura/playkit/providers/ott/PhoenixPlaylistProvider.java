@@ -358,7 +358,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
                         }
                     }
 //                    if (loginResult != null) {
-//                        ks = ((KalturaLoginSession)loginResult).getKs();
+//                         ks = ((KalturaLoginSession)loginResult).getKs();
 //                    }
 
                     int mediaAssetsStartIndex = 0;
