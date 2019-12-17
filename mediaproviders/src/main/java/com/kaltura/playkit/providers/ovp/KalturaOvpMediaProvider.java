@@ -47,6 +47,7 @@ import com.kaltura.playkit.providers.base.BECallableLoader;
 import com.kaltura.playkit.providers.base.BEMediaProvider;
 import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -184,7 +185,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
-    
+
     class Loader extends BECallableLoader {
 
         private String entryId;

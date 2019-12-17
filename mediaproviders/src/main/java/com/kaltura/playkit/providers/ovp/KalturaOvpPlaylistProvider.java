@@ -2,9 +2,6 @@ package com.kaltura.playkit.providers.ovp;
 
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-
-import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
@@ -26,31 +23,46 @@ import com.kaltura.playkit.PKPlaylistType;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 
+import com.kaltura.playkit.providers.api.ovp.model.KalturaBaseEntryListResponse;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryType;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadata;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadataListResponse;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaylist;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaylistType;
+
 import com.kaltura.playkit.providers.api.ovp.model.KalturaStartWidgetSessionResponse;
+import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
+
 import com.kaltura.playkit.providers.api.ovp.services.OvpService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpSessionService;
 import com.kaltura.playkit.providers.api.ovp.services.PlaylistService;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.base.BECallableLoader;
-import com.kaltura.playkit.providers.base.BEMediaProvider;
 
+import com.kaltura.playkit.providers.base.BEPlaylistProvider;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
+import com.kaltura.playkit.utils.Consts;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
 
-public class KalturaOvpPlaylistProvider extends BEMediaProvider {
+public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
 
     private static final PKLog log = PKLog.get("KalturaOvpPlaylistProvider");
 
@@ -62,6 +74,7 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
     public static final boolean CanBeEmpty = true;
 
     private String playlistId;
+    private List<OVPMediaAsset> mediaAssets;
     private Integer pageSize;
     private Integer pageIndex;
 
@@ -112,6 +125,11 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
         return this;
     }
 
+    public KalturaOvpPlaylistProvider setMediaAssets(List<OVPMediaAsset> mediaAssets) {
+        this.mediaAssets = mediaAssets;
+        return this;
+    }
+
     /**
      * Optional! the pager filter
      *
@@ -137,14 +155,19 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
         return this;
     }
 
+
     @Override
-    protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
-        return new Loader(requestsExecutor, sessionProvider, playlistId, pageSize, pageIndex, completion);
+    protected Callable<Void> factorNewLoader(OnPlaylistLoadCompletion completion) {
+        if (playlistId != null) {
+            return new Loader(requestsExecutor, sessionProvider, playlistId, pageSize, pageIndex, completion);
+        } else {
+            return new Loader(requestsExecutor, sessionProvider, mediaAssets, completion);
+        }
     }
 
     @Override
     protected ErrorElement validateParams() {
-        return TextUtils.isEmpty(this.playlistId) ?
+        return TextUtils.isEmpty(playlistId) && mediaAssets == null ?
                 ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, playlistId") :
                 null;
     }
@@ -152,15 +175,24 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
     class Loader extends BECallableLoader {
 
         private String playlistId;
+        private List<OVPMediaAsset> mediaAssets;
         private Integer pageSize;
         private Integer pageIndex;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String playlistId, Integer pageSize, Integer pageIndex, OnMediaLoadCompletion completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String playlistId, Integer pageSize, Integer pageIndex, OnPlaylistLoadCompletion completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.playlistId = playlistId;
             this.pageSize = pageSize;
             this.pageIndex = pageIndex;
+
+            log.v(loadId + ": construct new Loader");
+        }
+
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, List<OVPMediaAsset> mediaAssets, OnPlaylistLoadCompletion completion) {
+            super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
+
+            this.mediaAssets = mediaAssets;
 
             log.v(loadId + ": construct new Loader");
         }
@@ -192,6 +224,24 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
                     PlaylistService.execute(baseUrl, ks, playlistId, pageSize, pageIndex));
         }
 
+        private RequestBuilder getPlaylistInfoByEntryIdList(String baseUrl, String ks, int partnerId) {
+            MultiRequestBuilder multiRequestBuilder = (MultiRequestBuilder) OvpService.getMultirequest(baseUrl, ks, partnerId)
+                    .tag("entry-info-multireq");
+
+            boolean isAnonymusKS = TextUtils.isEmpty(ks);
+            if (isAnonymusKS) {
+                multiRequestBuilder.add(OvpSessionService.anonymousSession(baseUrl, getDefaultWidgetId(partnerId)));
+
+                ks = "{1:result:ks}";
+            }
+
+            for (OVPMediaAsset ovpMediaAsset : mediaAssets) {
+                multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, ovpMediaAsset.entryId)); // , MetaDataService.list(baseUrl, ks, ovpMediaAsset.entryId) not added as for now.
+            }
+
+            return multiRequestBuilder;
+        }
+
         /**
          * Builds and passes to the executor, the multirequest for entry info and playback info fetching.
          *
@@ -200,7 +250,7 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
             if (!TextUtils.isEmpty(playlistId)) {
-                final RequestBuilder entryRequest = getPlaylistInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())//getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
+                final RequestBuilder entryRequest = getPlaylistInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
                         .completion(new OnRequestCompletion() {
                             @Override
                             public void onComplete(ResponseElement response) {
@@ -230,18 +280,18 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
                                     }
                                 }
 
-                                int widgetSessionResponseIndex = 0;
+//                                int widgetSessionResponseIndex = 0;
                                 int playlistListIndex = responses.size() > 2 ? 1 : 0;
                                 int entriesListIndex = playlistListIndex + 1;
 
                                 if (!TextUtils.isEmpty(ks) && responses.size() == entriesListIndex || responses.size() == (entriesListIndex + 1)) {
-                                    KalturaStartWidgetSessionResponse widgetSessionResponse = null;
-                                    if (responses.size() == (entriesListIndex + 1)) {
-                                        widgetSessionResponse = (KalturaStartWidgetSessionResponse) responses.get(widgetSessionResponseIndex);
-                                    }
+//                                    KalturaStartWidgetSessionResponse widgetSessionResponse = null;
+//                                    if (responses.size() == (entriesListIndex + 1)) {
+//                                        widgetSessionResponse = (KalturaStartWidgetSessionResponse) responses.get(widgetSessionResponseIndex);
+//                                    }
                                     KalturaPlaylist kalturaPlaylist = (KalturaPlaylist) responses.get(playlistListIndex);
                                     List<KalturaMediaEntry> entriesList = (List<KalturaMediaEntry>) responses.get(entriesListIndex);
-                                    playlistResult = getPKPlaylist(widgetSessionResponse == null ? ks : widgetSessionResponse.getKs(), kalturaPlaylist, entriesList);
+                                    playlistResult = getPKPlaylist(ks, kalturaPlaylist, entriesList);
                                     if (completion != null) {
                                         completion.onComplete(Accessories.buildResult(playlistResult, null));
                                     }
@@ -251,65 +301,113 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
                                     }
                                 }
                             }
+                        });
 
-                            private PKPlaylist getPKPlaylist(String playlistKs, KalturaPlaylist kalturaPlaylist,  List<KalturaMediaEntry> entriesList) {
-                                List<PKPlaylistMedia> mediaList = new ArrayList<>();
-                                for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
-                                    mediaList.add(new PKPlaylistMedia().
-                                            setId(kalturaMediaEntry.getId()).
-                                            setName(kalturaMediaEntry.getName()).
-                                            setDescription(kalturaMediaEntry.getDescription()).
-                                            setType(getTypeOf(kalturaMediaEntry.getType())).
-                                            setDataUrl(kalturaMediaEntry.getDataUrl()).
-                                            setMsDuration(kalturaMediaEntry.getMsDuration()).
-                                            setDvrStatus(kalturaMediaEntry.getDvrStatus()).
-                                            setThumbnailUrl(kalturaMediaEntry.getThumbnailUrl()).
-                                            setFlavorParamsIds(kalturaMediaEntry.getFlavorParamsIds()).
-                                            setTags(kalturaMediaEntry.getTags()));
+                synchronized (syncObject) {
+                    loadReq = requestQueue.queue(entryRequest.build());
+                    log.d(loadId + ": request queued for execution [" + loadReq + "]");
+                }
+
+                if (!isCanceled()) {
+                    waitCompletion();
+                }
+            } else if (mediaAssets != null && !mediaAssets.isEmpty()) {
+                final RequestBuilder entryRequest = getPlaylistInfoByEntryIdList(getApiBaseUrl(), ks, sessionProvider.partnerId())//getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
+                        .completion(new OnRequestCompletion() {
+                            @Override
+                            public void onComplete(ResponseElement response) {
+                                PKPlaylist playlistResult = null;
+                                ErrorElement error = null;
+
+                                if (response == null || response.getError() != null) {
+                                    error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
+                                    completion.onComplete(Accessories.buildResult(null, error));
+                                    return;
                                 }
 
-                                PKPlaylist playlist = new PKPlaylist().
-                                        setKs(playlistKs).
-                                        setId(kalturaPlaylist.getId()).
-                                        setName(kalturaPlaylist.getName()).
-                                        setDescription(kalturaPlaylist.getDescription()).
-                                        setThumbnailUrl(kalturaPlaylist.getThumbnailUrl()).
-                                        setDuration(kalturaPlaylist.getDuration()).
-                                        setPlaylistType(getValueOf(kalturaPlaylist.getPlaylistType())).
-                                        setMediaList(mediaList);
+                                log.v(loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
+                                loadReq = null;
 
-                                return playlist;
-                            }
-
-                            private PKPlaylistType getValueOf(KalturaPlaylistType playlistType) {
-                                if (playlistType == null) {
-                                    return PKPlaylistType.Unknown;
+                                List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());
+                                if (responses == null || responses.size() == 0) {
+                                    error = ErrorElement.LoadError.message("failed to get responses on load requests");
+                                    completion.onComplete(Accessories.buildResult(null, error));
+                                    return;
                                 }
 
-                                switch (playlistType) {
-                                    case STATIC_LIST:
-                                        return PKPlaylistType.Static;
-                                    case DYNAMIC:
-                                        return PKPlaylistType.Dynamic;
-                                    case EXTERNAL:
-                                        return PKPlaylistType.External;
-                                    default:
-                                        return PKPlaylistType.Unknown;
+                                if (TextUtils.isEmpty(ks) && responses.get(0).error != null) {
+                                    completion.onComplete(Accessories.buildResult(null, responses.get(0).error));
+                                    return;
+                                } else {
+                                    boolean allErrors = true;
+                                    for (BaseResult baseResult : responses) {
+                                        if (baseResult.error == null) {
+                                            allErrors = false;
+                                            break;
+                                        }
+                                    }
+                                    if (allErrors == true) {
+                                        completion.onComplete(Accessories.buildResult(null, responses.get(0).error));
+                                        return;
+                                    }
                                 }
-                            }
 
-                            private PKMediaEntry.MediaEntryType getTypeOf(KalturaEntryType type) {
-                                if (type == null) {
-                                    return PKMediaEntry.MediaEntryType.Unknown;
-                                }
+                                if (!TextUtils.isEmpty(ks) && responses.size() == mediaAssets.size() || responses.size() == (mediaAssets.size() + 1)) {
+                                    List<KalturaMediaEntry> entriesList = new ArrayList<>();
+                                    //List<Map<String,String>> metadataList = new ArrayList<>();
+                                    int playlistListIndex = TextUtils.isEmpty(ks) ? 1 : 0;
+                                    for( ; playlistListIndex < responses.size() ; playlistListIndex ++) {
+                                        if (responses.get(playlistListIndex).error != null) {
+                                            entriesList.add(null);
+                                            continue;
+                                        }
+                                        KalturaMediaEntry kalturaMediaEntry = new KalturaMediaEntry();
+                                        if (responses.get(playlistListIndex) instanceof KalturaBaseEntryListResponse) {
+                                            entriesList.add(((KalturaBaseEntryListResponse) responses.get(playlistListIndex)).objects.get(0));
+                                        }
+//                                      else if (responses.get(playlistListIndex) instanceof KalturaMetadataListResponse) {
+//                                            KalturaMetadataListResponse metadataListResponse = (KalturaMetadataListResponse) responses.get(playlistListIndex);
+//
+//                                            metadataList.add(parseMetadata(metadataListResponse));
+//                                        }
+                                    }
 
-                                switch (type) {
-                                    case MEDIA_CLIP:
-                                        return PKMediaEntry.MediaEntryType.Vod;
-                                    case LIVE_STREAM:
-                                        return PKMediaEntry.MediaEntryType.Live;
-                                    default:
-                                        return PKMediaEntry.MediaEntryType.Unknown;
+                                    List<PKPlaylistMedia> mediaList = new ArrayList<>();
+                                    for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
+                                        if (kalturaMediaEntry == null) {
+                                            mediaList.add(null);
+                                            continue;
+                                        }
+                                        mediaList.add(new PKPlaylistMedia().
+                                                setId(kalturaMediaEntry.getId()).
+                                                setName(kalturaMediaEntry.getName()).
+                                                setDescription(kalturaMediaEntry.getDescription()).
+                                                setType(getTypeOf(kalturaMediaEntry.getType())).
+                                                setDataUrl(kalturaMediaEntry.getDataUrl()).
+                                                setMsDuration(kalturaMediaEntry.getMsDuration()).
+                                                setDvrStatus(kalturaMediaEntry.getDvrStatus()).
+                                                setThumbnailUrl(kalturaMediaEntry.getThumbnailUrl()).
+                                                setFlavorParamsIds(kalturaMediaEntry.getFlavorParamsIds()).
+                                                setTags(kalturaMediaEntry.getTags()));
+                                    }
+
+                                    playlistResult = new PKPlaylist().
+                                            setKs(ks).
+                                            setId("1").
+                                            setName("Playlist").
+                                            setDescription("").
+                                            setThumbnailUrl("").
+                                            setDuration(0).
+                                            setPlaylistType(PKPlaylistType.Unknown).
+                                            setMediaList(mediaList);
+
+                                    if (completion != null) {
+                                        completion.onComplete(Accessories.buildResult(playlistResult, null));
+                                    }
+                                } else {
+                                    if (!isCanceled() && completion != null) {
+                                        completion.onComplete(Accessories.buildResult(null, ErrorElement.LoadError.message("failed to get responses on load requests")));
+                                    }
                                 }
                             }
                         });
@@ -325,11 +423,71 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
             }
         }
 
+
         private String getApiBaseUrl() {
             String sep = sessionProvider.baseUrl().endsWith("/") ? "" : "/";
             return sessionProvider.baseUrl() + sep + OvpConfigs.ApiPrefix;
         }
 
+        private Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {
+            Map<String, String> metadata = new HashMap<>();
+            if (metadataList != null && metadataList.objects != null && metadataList.objects.size() > 0) {
+                for (KalturaMetadata metadataItem : metadataList.objects) {
+                    extractMetadata(metadataItem.xml, metadata);
+                }
+            }
+            return metadata;
+        }
+
+        private void extractMetadata(String xml, Map<String, String> metadataMap) {
+
+            XmlPullParserFactory xmlPullfactory;
+            try {
+                xmlPullfactory = XmlPullParserFactory.newInstance();
+                xmlPullfactory.setNamespaceAware(true);
+
+                XmlPullParser xmlPullParser = xmlPullfactory.newPullParser();
+                xmlPullParser.setInput(new StringReader(xml));
+                int eventType = xmlPullParser.getEventType();
+
+                boolean metadataParseStarted = false;
+                String key = "";
+                String value = "";
+
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+
+                    if(eventType == XmlPullParser.START_DOCUMENT) {
+                        log.d("extractMetadata Start document");
+                    } else if(eventType == XmlPullParser.START_TAG) {
+                        if ("metadata".equals(xmlPullParser.getName())) {
+                            metadataParseStarted = true;
+                        } else {
+                            key = xmlPullParser.getName();
+                        }
+                    } else if(eventType == XmlPullParser.END_TAG) {
+
+                        if ("metadata".equals(xmlPullParser.getName())) {
+                            metadataParseStarted = false;
+                        } else {
+                            if (metadataParseStarted) {
+                                log.d( "extractMetadata key/val = " + key + "/" + value);
+                                if (!TextUtils.isEmpty(key)) {
+                                    metadataMap.put(key, value);
+                                }
+                                key = "";
+                                value = "";
+                            }
+                        }
+                    } else if(eventType == XmlPullParser.TEXT) {
+                        value = xmlPullParser.getText();
+                    }
+                    eventType = xmlPullParser.next();
+                }
+                log.d("extractMetadata End document");
+            } catch (XmlPullParserException | IOException e) {
+                log.e("extractMetadata: XML parsing failed", e);
+            }
+        }
 
         private boolean isValidResponse(ResponseElement response, OnMediaLoadCompletion completion) {
 
@@ -360,6 +518,108 @@ public class KalturaOvpPlaylistProvider extends BEMediaProvider {
                 return false;
             }
             return true;
+        }
+    }
+
+    private PKPlaylist getPKPlaylist(String playlistKs, KalturaPlaylist kalturaPlaylist,  List<KalturaMediaEntry> entriesList) {
+        List<PKPlaylistMedia> mediaList = new ArrayList<>();
+        for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
+            mediaList.add(new PKPlaylistMedia().
+                    setId(kalturaMediaEntry.getId()).
+                    setName(kalturaMediaEntry.getName()).
+                    setDescription(kalturaMediaEntry.getDescription()).
+                    setType(getTypeOf(kalturaMediaEntry.getType())).
+                    setDataUrl(kalturaMediaEntry.getDataUrl()).
+                    setMsDuration(kalturaMediaEntry.getMsDuration()).
+                    setDvrStatus(kalturaMediaEntry.getDvrStatus()).
+                    setThumbnailUrl(kalturaMediaEntry.getThumbnailUrl()).
+                    setFlavorParamsIds(kalturaMediaEntry.getFlavorParamsIds()).
+                    setTags(kalturaMediaEntry.getTags()));
+        }
+
+        PKPlaylist playlist = new PKPlaylist().
+                setKs(playlistKs).
+                setId(kalturaPlaylist.getId()).
+                setName(kalturaPlaylist.getName()).
+                setDescription(kalturaPlaylist.getDescription()).
+                setThumbnailUrl(kalturaPlaylist.getThumbnailUrl()).
+                setDuration(kalturaPlaylist.getDuration()).
+                setPlaylistType(getValueOf(kalturaPlaylist.getPlaylistType())).
+                setMediaList(mediaList);
+
+        return playlist;
+    }
+
+    private PKPlaylist getPKPlaylistForAssetList(String playlistKs, List<KalturaMediaAsset> entriesList, List<Map<String,String>> assetsMetadtaList) {
+        if (entriesList == null || assetsMetadtaList == null) {
+            return null;
+        }
+
+        List<PKPlaylistMedia> mediaList = new ArrayList<>();
+
+        int listIndex = 0;
+        for (KalturaMediaAsset kalturaMediaEntry : entriesList) {
+            if (kalturaMediaEntry == null || kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty() ||
+                    kalturaMediaEntry.getImages() == null || kalturaMediaEntry.getImages().isEmpty()) {
+                mediaList.add(null);
+                listIndex++;
+                continue;
+            }
+
+            mediaList.add(new PKPlaylistMedia().
+                    setId(String.valueOf(kalturaMediaEntry.getId())).
+                    setName(kalturaMediaEntry.getName()).
+                    setDescription(kalturaMediaEntry.getDescription()).
+                    ///setType(isLiveMediaEntry(kalturaMediaEntry) ? PKMediaEntry.MediaEntryType.Live : PKMediaEntry.MediaEntryType.Vod).
+                            setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
+                            setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
+                            setTags(assetsMetadtaList.get(0).get("tags")).
+                            setMetadata(assetsMetadtaList.get(listIndex)));
+            listIndex++;
+        }
+
+        PKPlaylist playlist = new PKPlaylist().
+                setKs(playlistKs).
+                setId("1").
+                setName("Playlist").
+                setDescription("").
+                setThumbnailUrl("").
+                setDuration(0).
+                setPlaylistType(PKPlaylistType.Unknown).
+                setMediaList(mediaList);
+
+        return playlist;
+    }
+
+    private PKPlaylistType getValueOf(KalturaPlaylistType playlistType) {
+        if (playlistType == null) {
+            return PKPlaylistType.Unknown;
+        }
+
+        switch (playlistType) {
+            case STATIC_LIST:
+                return PKPlaylistType.Static;
+            case DYNAMIC:
+                return PKPlaylistType.Dynamic;
+            case EXTERNAL:
+                return PKPlaylistType.External;
+            default:
+                return PKPlaylistType.Unknown;
+        }
+    }
+
+    private PKMediaEntry.MediaEntryType getTypeOf(KalturaEntryType type) {
+        if (type == null) {
+            return PKMediaEntry.MediaEntryType.Unknown;
+        }
+
+        switch (type) {
+            case MEDIA_CLIP:
+                return PKMediaEntry.MediaEntryType.Vod;
+            case LIVE_STREAM:
+                return PKMediaEntry.MediaEntryType.Live;
+            default:
+                return PKMediaEntry.MediaEntryType.Unknown;
         }
     }
 

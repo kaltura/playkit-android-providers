@@ -32,7 +32,6 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnCompletion;
-import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 
 import com.kaltura.playkit.PKLog;
@@ -109,43 +108,13 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     private static final boolean EnableEmptyKs = true;
 
-    private MediaAsset mediaAsset;
+    private OTTMediaAsset mediaAsset;
 
     private BEResponseListener responseListener;
 
-    private String referrer;
-
-    private class MediaAsset {
-
-        public String assetId;
-
-        public APIDefines.KalturaAssetType assetType;
-
-        public APIDefines.AssetReferenceType assetReferenceType;
-
-        public APIDefines.PlaybackContextType contextType;
-
-        public List<String> formats;
-
-        public List<String> mediaFileIds;
-
-        public String protocol;
-
-        public MediaAsset() {
-        }
-
-        public boolean hasFormats() {
-            return formats != null && formats.size() > 0;
-        }
-
-        public boolean hasFiles() {
-            return mediaFileIds != null && mediaFileIds.size() > 0;
-        }
-    }
-
     public PhoenixMediaProvider() {
         super(log.tag);
-        this.mediaAsset = new MediaAsset();
+        this.mediaAsset = new OTTMediaAsset();
     }
 
     public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks) {
@@ -175,7 +144,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * @return - instance of PhoenixMediaProvider
      */
     public PhoenixMediaProvider setReferrer(String referrer) {
-        this.referrer = referrer;
+        mediaAsset.referrer = referrer;
         return this;
     }
 
@@ -345,10 +314,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     class Loader extends BECallableLoader {
 
-        private MediaAsset mediaAsset;
+        private OTTMediaAsset mediaAsset;
 
 
-        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, MediaAsset mediaAsset, OnMediaLoadCompletion completion) {
+        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, OTTMediaAsset mediaAsset, OnMediaLoadCompletion completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.mediaAsset = mediaAsset;
@@ -363,7 +332,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
 
-        private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
+        private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, OTTMediaAsset mediaAsset) {
             AssetService.KalturaPlaybackContextOptions contextOptions = new AssetService.KalturaPlaybackContextOptions(mediaAsset.contextType);
             if (mediaAsset.mediaFileIds != null) { // else - will fetch all available sources
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
@@ -377,19 +346,19 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 contextOptions.setMediaProtocol(mediaAsset.protocol);
             }
 
-            if (!TextUtils.isEmpty(referrer)) {
-                contextOptions.setReferrer(referrer);
+            if (!TextUtils.isEmpty(mediaAsset.referrer)) {
+                contextOptions.setReferrer(mediaAsset.referrer);
             }
 
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
                     mediaAsset.assetType, contextOptions);
         }
 
-        private RequestBuilder getMediaAssetRequest(String baseUrl, String ks, MediaAsset mediaAsset) {
+        private RequestBuilder getMediaAssetRequest(String baseUrl, String ks, OTTMediaAsset mediaAsset) {
             return AssetService.get(baseUrl, ks, mediaAsset.assetId, mediaAsset.assetReferenceType);
         }
 
-        private RequestBuilder getRemoteRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
+        private RequestBuilder getRemoteRequest(String baseUrl, String ks, OTTMediaAsset mediaAsset) {
 
             String multiReqKs;
 
@@ -403,7 +372,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 multiReqKs = ks;
             }
 
-            builder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset));
+            builder.add(getPlaybackContextRequest(baseUrl, multiReqKs, mediaAsset));
 
             if (mediaAsset.assetReferenceType != null) {
                 builder.add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
@@ -420,7 +389,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
          */
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
-            final RequestBuilder requestBuilder = getRemoteRequest(getApiBaseUrl(), ks, referrer, mediaAsset)
+            final RequestBuilder requestBuilder = getRemoteRequest(getApiBaseUrl(), ks, mediaAsset)
                     .completion(response -> {
                         log.v(loadId + ": got response to [" + loadReq + "]");
                         loadReq = null;

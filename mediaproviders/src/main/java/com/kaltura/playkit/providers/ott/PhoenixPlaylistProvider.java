@@ -15,7 +15,6 @@ package com.kaltura.playkit.providers.ott;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.StringDef;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -34,47 +33,34 @@ import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPlaylistType;
-import com.kaltura.playkit.providers.MediaProvidersUtils;
-import com.kaltura.playkit.providers.api.SimpleSessionProvider;
-import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaPlaylist;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaLoginSession;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaFile;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackContext;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackSource;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
 import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
 import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
 import com.kaltura.playkit.providers.api.phoenix.services.PhoenixService;
 import com.kaltura.playkit.providers.base.BECallableLoader;
-import com.kaltura.playkit.providers.base.BEMediaProvider;
+
+import com.kaltura.playkit.providers.base.BEPlaylistProvider;
 import com.kaltura.playkit.providers.base.BEResponseListener;
-import com.kaltura.playkit.providers.base.FormatsHelper;
+
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 import com.kaltura.playkit.utils.Consts;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +84,7 @@ import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
  *
  * */
 
-public class PhoenixPlaylistProvider extends BEMediaProvider {
+public class PhoenixPlaylistProvider extends BEPlaylistProvider {
 
     private static final PKLog log = PKLog.get("PhoenixMediaProvider");
 
@@ -121,9 +107,7 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
 
     private class PKPlaylistRequest {
 
-        public List<String> assetIds;
-
-        public APIDefines.AssetReferenceType assetReferenceType;
+        public List<OTTMediaAsset> mediaAssets;
 
         public PKPlaylistRequest() { }
     }
@@ -176,25 +160,13 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
     }
 
     /**
-     * MANDATORY! the media asset id, to fetch the data for.
+     * MANDATORY! the media assets to fetch the data for.
      *
-     * @param assetIds - assetIds of requested entry.
+     * @param mediaAssets - assets configuration of requested entry.
      * @return - instance of PhoenixMediaProvider
      */
-    public PhoenixPlaylistProvider setAssetIds(@NonNull List<String> assetIds) {
-        this.playlist.assetIds = assetIds;
-        return this;
-    }
-
-    /**
-     * ESSENTIAL in EPG!! defines the playing  AssetReferenceType especially in case of epg
-     * Defaults to - {@link APIDefines.KalturaAssetType#Media}
-     *
-     * @param assetReferenceType - can be one of the following types {@link APIDefines.AssetReferenceType}
-     * @return - instance of PhoenixMediaProvider
-     */
-    public PhoenixPlaylistProvider setAssetReferenceType(@NonNull APIDefines.AssetReferenceType assetReferenceType) {
-        this.playlist.assetReferenceType = assetReferenceType;
+    public PhoenixPlaylistProvider setMediaAssets(@NonNull List<OTTMediaAsset> mediaAssets) {
+        this.playlist.mediaAssets = mediaAssets;
         return this;
     }
 
@@ -216,7 +188,7 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
     }
 
 
-    protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
+    protected Loader factorNewLoader(OnPlaylistLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, playlist, completion);
     }
 
@@ -228,15 +200,8 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
     @Override
     protected ErrorElement validateParams() {
 
-        if (playlist.assetIds == null || playlist.assetIds.isEmpty()) {
+        if (playlist.mediaAssets == null || playlist.mediaAssets.isEmpty()) {
             return ErrorElement.BadRequestError.addMessage("Missing required parameter [assetIds]");
-        }
-
-
-
-        if (playlist.assetReferenceType == null) {
-            playlist.assetReferenceType = APIDefines.AssetReferenceType.Media;
-            //playlist.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg;
         }
 
         return null;
@@ -248,7 +213,7 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
         private PKPlaylistRequest playlistRequest;
 
 
-        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, PKPlaylistRequest playlistRequest, OnMediaLoadCompletion completion) {
+        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, PKPlaylistRequest playlistRequest, OnPlaylistLoadCompletion completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.playlistRequest = playlistRequest;
@@ -281,11 +246,10 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
                 multiReqKs = ks;
             }
 
-            if (playlistRequest.assetReferenceType != null) {
-                for(String assetId : playlistRequest.assetIds)
-                    builder.add(getPlaylistRequest(baseUrl, multiReqKs, assetId, playlistRequest.assetReferenceType));
-            }
+            for(OTTMediaAsset mediaAsset : playlistRequest.mediaAssets) {
+                builder.add(getPlaylistRequest(baseUrl, multiReqKs, mediaAsset.assetId, mediaAsset.assetReferenceType != null ? mediaAsset.assetReferenceType : APIDefines.AssetReferenceType.Media));
 
+            }
             return builder;
         }
 
@@ -380,10 +344,22 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
                         error = ErrorElement.LoadError.message("failed to get responses on load requests");
                         completion.onComplete(Accessories.buildResult(null, error));
                         return;
+                    } else {
+                        boolean allErrors = true;
+                        for (BaseResult baseResult : parsedResponses) {
+                            if (baseResult.error == null) {
+                                allErrors = false;
+                                break;
+                            }
+                        }
+                        if (allErrors == true) {
+                            completion.onComplete(Accessories.buildResult(null, parsedResponses.get(0).error));
+                            return;
+                        }
                     }
-                    if (loginResult != null) {
-                        ks = ((KalturaLoginSession)loginResult).getKs();
-                    }
+//                    if (loginResult != null) {
+//                        ks = ((KalturaLoginSession)loginResult).getKs();
+//                    }
 
                     int mediaAssetsStartIndex = 0;
                     if (loginResult != null && parsedResponses.size() > 1) {
@@ -399,6 +375,9 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
                             metadata.put("is360Content", String.valueOf(is360Supported(metadata)));
                             assetsMetadtaList.add(metadata);
                             kalturaMediaAssets.add(kalturaMediaAsset);
+                        } else {
+                            kalturaMediaAssets.add(null);
+                            assetsMetadtaList.add(null);
                         }
                     }
 
@@ -430,16 +409,18 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
         }
 
         private PKPlaylist getPKPlaylist(String playlistKs, List<KalturaMediaAsset> entriesList, List<Map<String,String>> assetsMetadtaList) {
+            if (entriesList == null || assetsMetadtaList == null) {
+                return null;
+            }
+
             List<PKPlaylistMedia> mediaList = new ArrayList<>();
 
             int listIndex = 0;
             for (KalturaMediaAsset kalturaMediaEntry : entriesList) {
-                if (kalturaMediaEntry == null || assetsMetadtaList == null) {
-                    break;
-                }
-
-                if (kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty() ||
-                        kalturaMediaEntry.getImages() == null || kalturaMediaEntry.getImages().isEmpty())  {
+                if (kalturaMediaEntry == null || kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty() ||
+                        kalturaMediaEntry.getImages() == null || kalturaMediaEntry.getImages().isEmpty()) {
+                    mediaList.add(null);
+                    listIndex++;
                     continue;
                 }
 
@@ -491,7 +472,7 @@ public class PhoenixPlaylistProvider extends BEMediaProvider {
                     completion.onComplete(Accessories.buildResult(null, apiExceptionError));
                     notifyCompletion();
                 }
-                return false;
+                //return false;
             }
             return true;
         }
