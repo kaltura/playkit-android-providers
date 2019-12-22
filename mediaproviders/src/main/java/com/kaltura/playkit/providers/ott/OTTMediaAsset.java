@@ -8,6 +8,8 @@ public class OTTMediaAsset {
 
     String assetId;
 
+    String ks;
+
     APIDefines.KalturaAssetType assetType;
 
     APIDefines.AssetReferenceType assetReferenceType;
@@ -27,6 +29,11 @@ public class OTTMediaAsset {
 
     public OTTMediaAsset setAssetId(String assetId) {
         this.assetId = assetId;
+        return this;
+    }
+
+    public OTTMediaAsset setKs(String ks) {
+        this.ks = ks;
         return this;
     }
 
