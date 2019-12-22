@@ -36,6 +36,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPlaylistType;
+import com.kaltura.playkit.providers.PlaylistMetadata;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
@@ -107,6 +108,8 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
 
     private class PKPlaylistRequest {
 
+        public PlaylistMetadata playlistMetadata;
+
         public List<OTTMediaAsset> mediaAssets;
 
         public PKPlaylistRequest() { }
@@ -160,13 +163,17 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
     }
 
     /**
-     * MANDATORY! the media assets to fetch the data for.
+     * MANDATORY! the playlist metadata and the media assets to fetch the data for.
      *
+     * @param mediaAssets - assets configuration of requested entry.
      * @param mediaAssets - assets configuration of requested entry.
      * @return - instance of PhoenixMediaProvider
      */
-    public PhoenixPlaylistProvider setMediaAssets(@NonNull List<OTTMediaAsset> mediaAssets) {
-        this.playlist.mediaAssets = mediaAssets;
+    public PhoenixPlaylistProvider setPlaylistParams(@NonNull PlaylistMetadata playlistMetadata, @NonNull List<OTTMediaAsset> mediaAssets) {
+        if (playlist != null) {
+            playlist.playlistMetadata = playlistMetadata;
+            playlist.mediaAssets = mediaAssets;
+        }
         return this;
     }
 
@@ -436,14 +443,18 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
                 listIndex++;
             }
 
+            if (playlistRequest.playlistMetadata == null) {
+                playlistRequest.playlistMetadata = new PlaylistMetadata();
+            }
+
             PKPlaylist playlist = new PKPlaylist().
                     setKs(playlistKs).
-                    setId("1").
-                    setName("Playlist").
-                    setDescription("").
-                    setThumbnailUrl("").
-                    setDuration(0).
-                    setPlaylistType(PKPlaylistType.Unknown).
+                    setId(playlistRequest.playlistMetadata.getId()).
+                    setName(playlistRequest.playlistMetadata.getName()).
+                    setDescription(playlistRequest.playlistMetadata.getDescription()).
+                    setThumbnailUrl(playlistRequest.playlistMetadata.getThumbnailUrl()).
+                    setDuration(playlistRequest.playlistMetadata.getDuration()).
+                    setPlaylistType(playlistRequest.playlistMetadata.getPlaylistType()).
                     setMediaList(mediaList);
 
             return playlist;

@@ -20,6 +20,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPlaylistType;
+import com.kaltura.playkit.providers.PlaylistMetadata;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 
@@ -75,6 +76,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
 
     private String playlistId;
     private List<OVPMediaAsset> mediaAssets;
+    private PlaylistMetadata playlistMetadata;
     private Integer pageSize;
     private Integer pageIndex;
 
@@ -115,7 +117,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
     }
 
     /**
-     * MANDATORY! the entry id, to fetch the data for.
+     * Incase ussage of playlistId only
      *
      * @param playlistId - Kaltura playlistId
      * @return - instance of KalturaOvpMediaProvider
@@ -125,7 +127,17 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
         return this;
     }
 
-    public KalturaOvpPlaylistProvider setMediaAssets(List<OVPMediaAsset> mediaAssets) {
+
+    /**
+     * Incase ussage of no playlistId available only
+     *
+     * @param playlistMetadata - Kaltura playlistMetadata
+     * @param mediaAssets - OVPMediaAsset to fetch
+     * @return - instance of KalturaOvpMediaProvider
+     */
+
+    public KalturaOvpPlaylistProvider setPlaylistParams(PlaylistMetadata playlistMetadata, List<OVPMediaAsset> mediaAssets) {
+        this.playlistMetadata = playlistMetadata;
         this.mediaAssets = mediaAssets;
         return this;
     }
@@ -250,179 +262,189 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
             if (!TextUtils.isEmpty(playlistId)) {
-                final RequestBuilder entryRequest = getPlaylistInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
-                        .completion(new OnRequestCompletion() {
-                            @Override
-                            public void onComplete(ResponseElement response) {
-                                PKPlaylist playlistResult = null;
-                                ErrorElement error = null;
+                handleByPlaylistIdResponse(ks);
+            } else if (mediaAssets != null && !mediaAssets.isEmpty()) {
+                handleByPlaylistAssets(ks);
+            }
+        }
 
-                                if (response == null || response.getError() != null) {
-                                    error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
-                                    completion.onComplete(Accessories.buildResult(null, error));
+        private void handleByPlaylistIdResponse(String ks) throws InterruptedException {
+            final RequestBuilder entryRequest = getPlaylistInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
+                    .completion(new OnRequestCompletion() {
+                        @Override
+                        public void onComplete(ResponseElement response) {
+                            PKPlaylist playlistResult = null;
+                            ErrorElement error = null;
+
+                            if (response == null || response.getError() != null) {
+                                error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
+                                completion.onComplete(Accessories.buildResult(null, error));
+                                return;
+                            }
+
+                            log.v(loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
+                            loadReq = null;
+
+                            List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());
+                            if (responses == null || responses.size() == 0) {
+                                error = ErrorElement.LoadError.message("failed to get responses on load requests");
+                                completion.onComplete(Accessories.buildResult(null, error));
+                                return;
+                            }
+
+                            for (int i = 0 ; i < responses.size() - 1 ; i++) { //index 3 in ArrayList does not contain error object
+                                if (responses.get(i).error != null) {
+                                    completion.onComplete(Accessories.buildResult(null, responses.get(i).error));
                                     return;
                                 }
-
-                                log.v(loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
-                                loadReq = null;
-
-                                List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());
-                                if (responses == null || responses.size() == 0) {
-                                    error = ErrorElement.LoadError.message("failed to get responses on load requests");
-                                    completion.onComplete(Accessories.buildResult(null, error));
-                                    return;
-                                }
-
-                                for (int i = 0 ; i < responses.size() - 1 ; i++) { //index 3 in ArrayList does not contain error object
-                                    if (responses.get(i).error != null) {
-                                        completion.onComplete(Accessories.buildResult(null, responses.get(i).error));
-                                        return;
-                                    }
-                                }
+                            }
 
 //                                int widgetSessionResponseIndex = 0;
-                                int playlistListIndex = responses.size() > 2 ? 1 : 0;
-                                int entriesListIndex = playlistListIndex + 1;
+                            int playlistListIndex = responses.size() > 2 ? 1 : 0;
+                            int entriesListIndex = playlistListIndex + 1;
 
-                                if (!TextUtils.isEmpty(ks) && responses.size() == entriesListIndex || responses.size() == (entriesListIndex + 1)) {
+                            if (!TextUtils.isEmpty(ks) && responses.size() == entriesListIndex || responses.size() == (entriesListIndex + 1)) {
 //                                    KalturaStartWidgetSessionResponse widgetSessionResponse = null;
 //                                    if (responses.size() == (entriesListIndex + 1)) {
 //                                        widgetSessionResponse = (KalturaStartWidgetSessionResponse) responses.get(widgetSessionResponseIndex);
 //                                    }
-                                    KalturaPlaylist kalturaPlaylist = (KalturaPlaylist) responses.get(playlistListIndex);
-                                    List<KalturaMediaEntry> entriesList = (List<KalturaMediaEntry>) responses.get(entriesListIndex);
-                                    playlistResult = getPKPlaylist(ks, kalturaPlaylist, entriesList);
-                                    if (completion != null) {
-                                        completion.onComplete(Accessories.buildResult(playlistResult, null));
-                                    }
-                                } else {
-                                    if (!isCanceled() && completion != null) {
-                                        completion.onComplete(Accessories.buildResult(null, ErrorElement.LoadError.message("failed to get responses on load requests")));
-                                    }
+                                KalturaPlaylist kalturaPlaylist = (KalturaPlaylist) responses.get(playlistListIndex);
+                                List<KalturaMediaEntry> entriesList = (List<KalturaMediaEntry>) responses.get(entriesListIndex);
+                                playlistResult = getPKPlaylist(ks, kalturaPlaylist, entriesList);
+                                if (completion != null) {
+                                    completion.onComplete(Accessories.buildResult(playlistResult, null));
+                                }
+                            } else {
+                                if (!isCanceled() && completion != null) {
+                                    completion.onComplete(Accessories.buildResult(null, ErrorElement.LoadError.message("failed to get responses on load requests")));
                                 }
                             }
-                        });
+                        }
+                    });
 
-                synchronized (syncObject) {
-                    loadReq = requestQueue.queue(entryRequest.build());
-                    log.d(loadId + ": request queued for execution [" + loadReq + "]");
-                }
+            synchronized (syncObject) {
+                loadReq = requestQueue.queue(entryRequest.build());
+                log.d(loadId + ": request queued for execution [" + loadReq + "]");
+            }
 
-                if (!isCanceled()) {
-                    waitCompletion();
-                }
-            } else if (mediaAssets != null && !mediaAssets.isEmpty()) {
-                final RequestBuilder entryRequest = getPlaylistInfoByEntryIdList(getApiBaseUrl(), ks, sessionProvider.partnerId())//getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
-                        .completion(new OnRequestCompletion() {
-                            @Override
-                            public void onComplete(ResponseElement response) {
-                                PKPlaylist playlistResult = null;
-                                ErrorElement error = null;
+            if (!isCanceled()) {
+                waitCompletion();
+            }
+        }
 
-                                if (response == null || response.getError() != null) {
-                                    error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
-                                    completion.onComplete(Accessories.buildResult(null, error));
-                                    return;
+        private void handleByPlaylistAssets(String ks) throws InterruptedException {
+            final RequestBuilder entryRequest = getPlaylistInfoByEntryIdList(getApiBaseUrl(), ks, sessionProvider.partnerId())//getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
+                    .completion(new OnRequestCompletion() {
+                        @Override
+                        public void onComplete(ResponseElement response) {
+                            PKPlaylist playlistResult = null;
+                            ErrorElement error = null;
+
+                            if (response == null || response.getError() != null) {
+                                error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
+                                completion.onComplete(Accessories.buildResult(null, error));
+                                return;
+                            }
+
+                            log.v(loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
+                            loadReq = null;
+
+                            List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());
+                            if (responses == null || responses.size() == 0) {
+                                error = ErrorElement.LoadError.message("failed to get responses on load requests");
+                                completion.onComplete(Accessories.buildResult(null, error));
+                                return;
+                            }
+
+                            if (TextUtils.isEmpty(ks) && responses.get(0).error != null) {
+                                completion.onComplete(Accessories.buildResult(null, responses.get(0).error));
+                                return;
+                            } else {
+                                boolean allErrors = true;
+                                for (BaseResult baseResult : responses) {
+                                    if (baseResult.error == null) {
+                                        allErrors = false;
+                                        break;
+                                    }
                                 }
-
-                                log.v(loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
-                                loadReq = null;
-
-                                List<BaseResult> responses = KalturaOvpParser.parse(response.getResponse());
-                                if (responses == null || responses.size() == 0) {
-                                    error = ErrorElement.LoadError.message("failed to get responses on load requests");
-                                    completion.onComplete(Accessories.buildResult(null, error));
-                                    return;
-                                }
-
-                                if (TextUtils.isEmpty(ks) && responses.get(0).error != null) {
+                                if (allErrors == true) {
                                     completion.onComplete(Accessories.buildResult(null, responses.get(0).error));
                                     return;
-                                } else {
-                                    boolean allErrors = true;
-                                    for (BaseResult baseResult : responses) {
-                                        if (baseResult.error == null) {
-                                            allErrors = false;
-                                            break;
-                                        }
-                                    }
-                                    if (allErrors == true) {
-                                        completion.onComplete(Accessories.buildResult(null, responses.get(0).error));
-                                        return;
-                                    }
                                 }
+                            }
 
-                                if (!TextUtils.isEmpty(ks) && responses.size() == mediaAssets.size() || responses.size() == (mediaAssets.size() + 1)) {
-                                    List<KalturaMediaEntry> entriesList = new ArrayList<>();
-                                    //List<Map<String,String>> metadataList = new ArrayList<>();
-                                    int playlistListIndex = TextUtils.isEmpty(ks) ? 1 : 0;
-                                    for( ; playlistListIndex < responses.size() ; playlistListIndex ++) {
-                                        if (responses.get(playlistListIndex).error != null) {
-                                            entriesList.add(null);
-                                            continue;
-                                        }
-                                        KalturaMediaEntry kalturaMediaEntry = new KalturaMediaEntry();
-                                        if (responses.get(playlistListIndex) instanceof KalturaBaseEntryListResponse) {
-                                            entriesList.add(((KalturaBaseEntryListResponse) responses.get(playlistListIndex)).objects.get(0));
-                                        }
+                            if (!TextUtils.isEmpty(ks) && responses.size() == mediaAssets.size() || responses.size() == (mediaAssets.size() + 1)) {
+                                List<KalturaMediaEntry> entriesList = new ArrayList<>();
+                                //List<Map<String,String>> metadataList = new ArrayList<>();
+                                int playlistListIndex = TextUtils.isEmpty(ks) ? 1 : 0;
+                                for( ; playlistListIndex < responses.size() ; playlistListIndex ++) {
+                                    if (responses.get(playlistListIndex).error != null) {
+                                        entriesList.add(null);
+                                        continue;
+                                    }
+                                    KalturaMediaEntry kalturaMediaEntry = new KalturaMediaEntry();
+                                    if (responses.get(playlistListIndex) instanceof KalturaBaseEntryListResponse) {
+                                        entriesList.add(((KalturaBaseEntryListResponse) responses.get(playlistListIndex)).objects.get(0));
+                                    }
 //                                      else if (responses.get(playlistListIndex) instanceof KalturaMetadataListResponse) {
 //                                            KalturaMetadataListResponse metadataListResponse = (KalturaMetadataListResponse) responses.get(playlistListIndex);
 //
 //                                            metadataList.add(parseMetadata(metadataListResponse));
 //                                        }
-                                    }
+                                }
 
-                                    List<PKPlaylistMedia> mediaList = new ArrayList<>();
-                                    for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
-                                        if (kalturaMediaEntry == null) {
-                                            mediaList.add(null);
-                                            continue;
-                                        }
-                                        mediaList.add(new PKPlaylistMedia().
-                                                setId(kalturaMediaEntry.getId()).
-                                                setName(kalturaMediaEntry.getName()).
-                                                setDescription(kalturaMediaEntry.getDescription()).
-                                                setType(getTypeOf(kalturaMediaEntry.getType())).
-                                                setDataUrl(kalturaMediaEntry.getDataUrl()).
-                                                setMsDuration(kalturaMediaEntry.getMsDuration()).
-                                                setDvrStatus(kalturaMediaEntry.getDvrStatus()).
-                                                setThumbnailUrl(kalturaMediaEntry.getThumbnailUrl()).
-                                                setFlavorParamsIds(kalturaMediaEntry.getFlavorParamsIds()).
-                                                setTags(kalturaMediaEntry.getTags()));
+                                List<PKPlaylistMedia> mediaList = new ArrayList<>();
+                                for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
+                                    if (kalturaMediaEntry == null) {
+                                        mediaList.add(null);
+                                        continue;
                                     }
+                                    mediaList.add(new PKPlaylistMedia().
+                                            setId(kalturaMediaEntry.getId()).
+                                            setName(kalturaMediaEntry.getName()).
+                                            setDescription(kalturaMediaEntry.getDescription()).
+                                            setType(getTypeOf(kalturaMediaEntry.getType())).
+                                            setDataUrl(kalturaMediaEntry.getDataUrl()).
+                                            setMsDuration(kalturaMediaEntry.getMsDuration()).
+                                            setDvrStatus(kalturaMediaEntry.getDvrStatus()).
+                                            setThumbnailUrl(kalturaMediaEntry.getThumbnailUrl()).
+                                            setFlavorParamsIds(kalturaMediaEntry.getFlavorParamsIds()).
+                                            setTags(kalturaMediaEntry.getTags()));
+                                }
 
-                                    playlistResult = new PKPlaylist().
-                                            setKs(ks).
-                                            setId("1").
-                                            setName("Playlist").
-                                            setDescription("").
-                                            setThumbnailUrl("").
-                                            setDuration(0).
-                                            setPlaylistType(PKPlaylistType.Unknown).
-                                            setMediaList(mediaList);
+                                if (playlistMetadata == null) {
+                                    playlistMetadata = new PlaylistMetadata();
+                                }
+                                playlistResult = new PKPlaylist().
+                                        setKs(ks).
+                                        setId(playlistMetadata.getId()).
+                                        setName(playlistMetadata.getName()).
+                                        setDescription(playlistMetadata.getDescription()).
+                                        setThumbnailUrl(playlistMetadata.getThumbnailUrl()).
+                                        setDuration(playlistMetadata.getDuration()).
+                                        setPlaylistType(playlistMetadata.getPlaylistType()).
+                                        setMediaList(mediaList);
 
-                                    if (completion != null) {
-                                        completion.onComplete(Accessories.buildResult(playlistResult, null));
-                                    }
-                                } else {
-                                    if (!isCanceled() && completion != null) {
-                                        completion.onComplete(Accessories.buildResult(null, ErrorElement.LoadError.message("failed to get responses on load requests")));
-                                    }
+                                if (completion != null) {
+                                    completion.onComplete(Accessories.buildResult(playlistResult, null));
+                                }
+                            } else {
+                                if (!isCanceled() && completion != null) {
+                                    completion.onComplete(Accessories.buildResult(null, ErrorElement.LoadError.message("failed to get responses on load requests")));
                                 }
                             }
-                        });
+                        }
+                    });
 
-                synchronized (syncObject) {
-                    loadReq = requestQueue.queue(entryRequest.build());
-                    log.d(loadId + ": request queued for execution [" + loadReq + "]");
-                }
+            synchronized (syncObject) {
+                loadReq = requestQueue.queue(entryRequest.build());
+                log.d(loadId + ": request queued for execution [" + loadReq + "]");
+            }
 
-                if (!isCanceled()) {
-                    waitCompletion();
-                }
+            if (!isCanceled()) {
+                waitCompletion();
             }
         }
-
 
         private String getApiBaseUrl() {
             String sep = sessionProvider.baseUrl().endsWith("/") ? "" : "/";
