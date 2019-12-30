@@ -37,6 +37,7 @@ import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPlaylistType;
 import com.kaltura.playkit.providers.PlaylistMetadata;
+import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
@@ -122,22 +123,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
 
     public PhoenixPlaylistProvider(final String baseUrl, final int partnerId, final String ks) {
         this();
-        setSessionProvider(new SessionProvider() {
-            @Override
-            public String baseUrl() {
-                return baseUrl;
-            }
-
-            @Override
-            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-                completion.onComplete(new PrimitiveResult(ks));
-            }
-
-            @Override
-            public int partnerId() {
-                return partnerId;
-            }
-        });
+        setSessionProvider(new SimpleSessionProvider(baseUrl, partnerId, ks));
     }
 
     /**

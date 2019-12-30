@@ -21,6 +21,7 @@ import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPlaylistType;
 import com.kaltura.playkit.providers.PlaylistMetadata;
+import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 
@@ -87,22 +88,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
 
     public KalturaOvpPlaylistProvider(final String baseUrl, final int partnerId, final String ks) {
         this();
-        setSessionProvider(new SessionProvider() {
-            @Override
-            public String baseUrl() {
-                return baseUrl;
-            }
-
-            @Override
-            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-                completion.onComplete(new PrimitiveResult(ks));
-            }
-
-            @Override
-            public int partnerId() {
-                return partnerId;
-            }
-        });
+        setSessionProvider(new SimpleSessionProvider(baseUrl, partnerId, ks));
     }
 
     /**

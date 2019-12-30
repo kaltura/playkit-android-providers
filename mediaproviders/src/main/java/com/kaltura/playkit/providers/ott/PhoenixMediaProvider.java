@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.kaltura.playkit.providers.MediaProvidersUtils;
+import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
@@ -119,22 +120,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
     public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks) {
         this();
-        setSessionProvider(new SessionProvider() {
-            @Override
-            public String baseUrl() {
-                return baseUrl;
-            }
-
-            @Override
-            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-                completion.onComplete(new PrimitiveResult(ks));
-            }
-
-            @Override
-            public int partnerId() {
-                return partnerId;
-            }
-        });
+        setSessionProvider(new SimpleSessionProvider(baseUrl, partnerId, ks));
     }
 
     /**

@@ -23,6 +23,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKSubtitleFormat;
 import com.kaltura.playkit.player.PKExternalSubtitle;
+import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpErrorHelper;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
@@ -94,22 +95,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
 
     public KalturaOvpMediaProvider(final String baseUrl, final int partnerId, final String ks) {
         this();
-        setSessionProvider(new SessionProvider() {
-            @Override
-            public String baseUrl() {
-                return baseUrl;
-            }
-
-            @Override
-            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-                completion.onComplete(new PrimitiveResult(ks));
-            }
-
-            @Override
-            public int partnerId() {
-                return partnerId;
-            }
-        });
+        setSessionProvider(new SimpleSessionProvider(baseUrl, partnerId, ks));
     }
 
     /**
