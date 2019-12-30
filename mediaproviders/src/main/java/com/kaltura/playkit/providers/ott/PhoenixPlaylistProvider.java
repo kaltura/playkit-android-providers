@@ -25,17 +25,17 @@ import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
-import com.kaltura.netkit.connect.response.PrimitiveResult;
+
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.OnCompletion;
+
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
-import com.kaltura.playkit.PKPlaylistType;
+
 import com.kaltura.playkit.providers.PlaylistMetadata;
 import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
@@ -49,11 +49,8 @@ import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
 import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
 import com.kaltura.playkit.providers.api.phoenix.services.PhoenixService;
 import com.kaltura.playkit.providers.base.BECallableLoader;
-
 import com.kaltura.playkit.providers.base.BEPlaylistProvider;
 import com.kaltura.playkit.providers.base.BEResponseListener;
-
-import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 import com.kaltura.playkit.utils.Consts;
 
@@ -68,11 +65,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
-
-
-/**
- * Created by tehilarozin on 27/10/2016.
- */
 
 /*
  * usages:
@@ -306,11 +298,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
             if (responseListener != null) {
                 responseListener.onResponse(response);
             }
-
-            if (!isValidResponse(response)) {
-                return;
-            }
-
+            
             if (response.isSuccess()) {
                 KalturaMediaAsset asset = null;
 
@@ -439,8 +427,6 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
                     setName(playlistRequest.playlistMetadata.getName()).
                     setDescription(playlistRequest.playlistMetadata.getDescription()).
                     setThumbnailUrl(playlistRequest.playlistMetadata.getThumbnailUrl()).
-                    setDuration(playlistRequest.playlistMetadata.getDuration()).
-                    setPlaylistType(playlistRequest.playlistMetadata.getPlaylistType()).
                     setMediaList(mediaList);
 
             return playlist;
@@ -469,7 +455,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
                     completion.onComplete(Accessories.buildResult(null, apiExceptionError));
                     notifyCompletion();
                 }
-                //return false;
+                return false;
             }
             return true;
         }

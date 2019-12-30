@@ -7,11 +7,10 @@ import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
-import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.OnCompletion;
+
 import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
@@ -407,8 +406,6 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                                         setName(playlistMetadata.getName()).
                                         setDescription(playlistMetadata.getDescription()).
                                         setThumbnailUrl(playlistMetadata.getThumbnailUrl()).
-                                        setDuration(playlistMetadata.getDuration()).
-                                        setPlaylistType(playlistMetadata.getPlaylistType()).
                                         setMediaList(mediaList);
 
                                 if (completion != null) {
@@ -551,8 +548,6 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                 setName(kalturaPlaylist.getName()).
                 setDescription(kalturaPlaylist.getDescription()).
                 setThumbnailUrl(kalturaPlaylist.getThumbnailUrl()).
-                setDuration(kalturaPlaylist.getDuration()).
-                setPlaylistType(getValueOf(kalturaPlaylist.getPlaylistType())).
                 setMediaList(mediaList);
 
         return playlist;
@@ -592,28 +587,9 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                 setName("Playlist").
                 setDescription("").
                 setThumbnailUrl("").
-                setDuration(0).
-                setPlaylistType(PKPlaylistType.Unknown).
                 setMediaList(mediaList);
 
         return playlist;
-    }
-
-    private PKPlaylistType getValueOf(KalturaPlaylistType playlistType) {
-        if (playlistType == null) {
-            return PKPlaylistType.Unknown;
-        }
-
-        switch (playlistType) {
-            case STATIC_LIST:
-                return PKPlaylistType.Static;
-            case DYNAMIC:
-                return PKPlaylistType.Dynamic;
-            case EXTERNAL:
-                return PKPlaylistType.External;
-            default:
-                return PKPlaylistType.Unknown;
-        }
     }
 
     private PKMediaEntry.MediaEntryType getTypeOf(KalturaEntryType type) {
