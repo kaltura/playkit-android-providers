@@ -144,7 +144,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
      * MANDATORY! the playlist metadata and the media assets to fetch the data for.
      *
      * @param mediaAssets - assets configuration of requested entry.
-     * @param mediaAssets - assets configuration of requested entry.
+     * @param   - assets configuration of requested entry.
      * @return - instance of PhoenixMediaProvider
      */
     public PhoenixPlaylistProvider setPlaylistParams(@NonNull PlaylistMetadata playlistMetadata, @NonNull List<OTTMediaAsset> mediaAssets) {
@@ -405,15 +405,18 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
                     continue;
                 }
 
-                mediaList.add(new PKPlaylistMedia().
-                        setId(String.valueOf(kalturaMediaEntry.getId())).
-                        setName(kalturaMediaEntry.getName()).
-                        setDescription(kalturaMediaEntry.getDescription()).
-                        setType(isLiveMediaEntry(kalturaMediaEntry) ? PKMediaEntry.MediaEntryType.Live : PKMediaEntry.MediaEntryType.Vod).
-                        setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
-                        setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
-                        setTags(assetsMetadtaList.get(0).get("tags")).
-                        setMetadata(assetsMetadtaList.get(listIndex)));
+                if (kalturaMediaEntry.getMediaFiles().get(0) != null) {
+                    mediaList.add(new PKPlaylistMedia().
+                            setMediaIndex(listIndex).
+                            setId(String.valueOf(kalturaMediaEntry.getId())).
+                            setName(kalturaMediaEntry.getName()).
+                            setDescription(kalturaMediaEntry.getDescription()).
+                            setType(isLiveMediaEntry(kalturaMediaEntry) ? PKMediaEntry.MediaEntryType.Live : PKMediaEntry.MediaEntryType.Vod).
+                            setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
+                            setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
+                            setTags(assetsMetadtaList.get(0).get("tags")).
+                            setMetadata(assetsMetadtaList.get(listIndex)));
+                }
                 listIndex++;
             }
 

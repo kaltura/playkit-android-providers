@@ -4,6 +4,7 @@ public class OVPMediaAsset {
 
     String entryId;
     String ks;
+    String referrer;
 
     public OVPMediaAsset() {
     }
@@ -15,6 +16,11 @@ public class OVPMediaAsset {
 
     public OVPMediaAsset setKs(String ks) {
         this.ks = ks;
+        return this;
+    }
+
+    public OVPMediaAsset setReferrer(String referrer) {
+        this.referrer = referrer;
         return this;
     }
 }

@@ -754,11 +754,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void enableLogs(boolean enable) {
-
-        }
-
-        @Override
         public void setNetworkErrorEventListener(NetworkErrorEventListener networkErrorEventListener) {
 
         }

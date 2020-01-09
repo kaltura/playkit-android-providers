@@ -8,8 +8,6 @@ public class PlaylistMetadata {
     private String name = "";
     private String description = "";
     private String thumbnailUrl = "";
-    private PKPlaylistType playlistType = PKPlaylistType.Unknown;
-    private Integer duration = 0;
 
     public String getId() {
         return id;
@@ -44,24 +42,6 @@ public class PlaylistMetadata {
 
     public PlaylistMetadata setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
-        return this;
-    }
-
-    public PKPlaylistType getPlaylistType() {
-        return playlistType;
-    }
-
-    public PlaylistMetadata setPlaylistType(PKPlaylistType playlistType) {
-        this.playlistType = playlistType;
-        return this;
-    }
-
-    public Integer getDuration() {
-        return duration;
-    }
-
-    public PlaylistMetadata setDuration(Integer duration) {
-        this.duration = duration;
         return this;
     }
 }

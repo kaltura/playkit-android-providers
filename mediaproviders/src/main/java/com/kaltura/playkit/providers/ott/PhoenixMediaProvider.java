@@ -317,7 +317,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
         }
 
-
         private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, OTTMediaAsset mediaAsset) {
             AssetService.KalturaPlaybackContextOptions contextOptions = new AssetService.KalturaPlaybackContextOptions(mediaAsset.contextType);
             if (mediaAsset.mediaFileIds != null) { // else - will fetch all available sources

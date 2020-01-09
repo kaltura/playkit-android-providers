@@ -378,6 +378,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
 //                                        }
                                 }
 
+                                int listIndex = 0;
                                 List<PKPlaylistMedia> mediaList = new ArrayList<>();
                                 for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
                                     if (kalturaMediaEntry == null) {
@@ -385,6 +386,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                                         continue;
                                     }
                                     mediaList.add(new PKPlaylistMedia().
+                                            setMediaIndex(listIndex++).
                                             setId(kalturaMediaEntry.getId()).
                                             setName(kalturaMediaEntry.getName()).
                                             setDescription(kalturaMediaEntry.getDescription()).
@@ -528,8 +530,10 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
 
     private PKPlaylist getPKPlaylist(String playlistKs, KalturaPlaylist kalturaPlaylist,  List<KalturaMediaEntry> entriesList) {
         List<PKPlaylistMedia> mediaList = new ArrayList<>();
+        int listIndex = 0;
         for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
             mediaList.add(new PKPlaylistMedia().
+                    setMediaIndex(listIndex++).
                     setId(kalturaMediaEntry.getId()).
                     setName(kalturaMediaEntry.getName()).
                     setDescription(kalturaMediaEntry.getDescription()).
@@ -570,6 +574,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
             }
 
             mediaList.add(new PKPlaylistMedia().
+                    setMediaIndex(listIndex).
                     setId(String.valueOf(kalturaMediaEntry.getId())).
                     setName(kalturaMediaEntry.getName()).
                     setDescription(kalturaMediaEntry.getDescription()).
