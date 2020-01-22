@@ -383,6 +383,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                                 for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
                                     if (kalturaMediaEntry == null) {
                                         mediaList.add(null);
+                                        listIndex++;
                                         continue;
                                     }
                                     mediaList.add(new PKPlaylistMedia().
