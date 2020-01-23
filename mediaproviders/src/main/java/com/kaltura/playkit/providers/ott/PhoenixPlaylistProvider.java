@@ -414,7 +414,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
                             setType(isLiveMediaEntry(kalturaMediaEntry) ? PKMediaEntry.MediaEntryType.Live : PKMediaEntry.MediaEntryType.Vod).
                             setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
                             setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
-                            setTags(assetsMetadtaList.get(0).get("tags")).
+                            setTags(assetsMetadtaList.get(listIndex).get("tags")).
                             setMetadata(assetsMetadtaList.get(listIndex)));
                 }
                 listIndex++;
