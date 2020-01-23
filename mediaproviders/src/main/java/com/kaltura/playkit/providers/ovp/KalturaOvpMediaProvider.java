@@ -337,7 +337,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 }
 
             } else {
-                error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
+                error = response.getError() != null ? response.getError() : ErrorElement.LoadError.message("error response in multirequest. response = " + response.getResponse());
             }
 
             log.v(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
@@ -354,7 +354,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if (isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
-                    errorResponse = GeneralError;
+                    errorResponse = GeneralError.addMessage("multirequest response is null");
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, errorResponse));
@@ -367,7 +367,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if (isAPIExceptionResponse(response)) {
                 ErrorElement apiExceptionError = parseAPIExceptionError(response);
                 if (apiExceptionError == null) {
-                    apiExceptionError = GeneralError;
+                    apiExceptionError = GeneralError.addMessage("multirequest KalturaAPIException");
                 }
 
                 if (!isCanceled() && completion != null) {

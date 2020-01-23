@@ -754,11 +754,6 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void enableLogs(boolean enable) {
-
-        }
-
-        @Override
         public void setNetworkErrorEventListener(NetworkErrorEventListener networkErrorEventListener) {
 
         }
@@ -828,7 +823,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                         } catch (IOException e) {
                             e.printStackTrace();
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.LoadError));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.LoadError.message(e.getMessage())));
                         }
 
 
