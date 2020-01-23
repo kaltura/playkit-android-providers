@@ -563,7 +563,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     error = GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
             } else {
-                error = response.getError() != null ? response.getError() : ErrorElement.LoadError.message("error response in multirequest. response = " + response.getResponse());
+                error = response.getError() != null ? response.getError() : ErrorElement.LoadError.message("error response in multirequest. response: " + response.getResponse());
             }
 
             log.i(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));

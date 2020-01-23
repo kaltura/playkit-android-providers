@@ -337,7 +337,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 }
 
             } else {
-                error = response.getError() != null ? response.getError() : ErrorElement.LoadError.message("error response in multirequest. response = " + response.getResponse());
+                error = response.getError() != null ? response.getError() : ErrorElement.LoadError.message("error response in multirequest. response: " + response.getResponse());
             }
 
             log.v(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
