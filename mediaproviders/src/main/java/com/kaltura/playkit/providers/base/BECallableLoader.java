@@ -12,11 +12,7 @@
 
 package com.kaltura.playkit.providers.base;
 
-
-import android.util.Log;
-
 import com.kaltura.netkit.connect.executor.RequestQueue;
-import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.CallableLoader;
 import com.kaltura.netkit.utils.ErrorElement;
@@ -76,36 +72,33 @@ public abstract class BECallableLoader extends CallableLoader<Void> {
         log.v(loadId + ": load: start on get ks ");
         waitForCompletion = true;
 
-        sessionProvider.getSessionToken(new OnCompletion<PrimitiveResult>() {
-            @Override
-            public void onComplete(PrimitiveResult response) {
-                if(isCanceled()){
+        sessionProvider.getSessionToken(response -> {
+            if(isCanceled()){
+                notifyCompletion();
+                waitForCompletion = false;
+                return;
+            }
+
+            ErrorElement error = response.error != null ? response.error : validateKs(response.getResult());
+            if (error == null) {
+                try {
+                    requestRemote(response.getResult());
+                    log.d(loadId + " remote load request finished...notifyCompletion");
                     notifyCompletion();
                     waitForCompletion = false;
-                    return;
+                } catch (InterruptedException e) {
+                     interrupted();
                 }
 
-                ErrorElement error = response.error != null ? response.error : validateKs(response.getResult());
-                if (error == null) {
-                    try {
-                        requestRemote(response.getResult());
-                        log.d(loadId + " remote load request finished...notifyCompletion");
-                        notifyCompletion();
-                        waitForCompletion = false;
-                    } catch (InterruptedException e) {
-                         interrupted();
-                    }
-
-                } else {
-                    log.w(loadId + ": got error on ks fetching");
-                    if (completion != null) {
-                        completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
-                    }
-
-                    log.d(loadId + "remote load error finished...notifyCompletion");
-                    notifyCompletion();
-                    waitForCompletion = false;
+            } else {
+                log.w(loadId + ": got error on ks fetching");
+                if (completion != null) {
+                    completion.onComplete(Accessories.<PKMediaEntry>buildResult(null, error));
                 }
+
+                log.d(loadId + "remote load error finished...notifyCompletion");
+                notifyCompletion();
+                waitForCompletion = false;
             }
         });
 

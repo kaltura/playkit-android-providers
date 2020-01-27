@@ -10,12 +10,9 @@ import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
-import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.OnCompletion;
-import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -48,7 +45,6 @@ import com.kaltura.playkit.providers.base.BECallableLoader;
 import com.kaltura.playkit.providers.base.BEMediaProvider;
 import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -227,17 +223,14 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
         @Override
         protected void requestRemote(final String ks) throws InterruptedException {
             final RequestBuilder entryRequest = getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
-                    .completion(new OnRequestCompletion() {
-                        @Override
-                        public void onComplete(ResponseElement response) {
-                            log.v(loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
-                            loadReq = null;
+                    .completion(response -> {
+                        log.v(loadId + ": got response to [" + loadReq + "]" + " isCanceled = " + isCanceled);
+                        loadReq = null;
 
-                            try {
-                                onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
-                            } catch (InterruptedException e) {
-                                interrupted();
-                            }
+                        try {
+                            onEntryInfoMultiResponse(ks, response, (OnMediaLoadCompletion) completion);
+                        } catch (InterruptedException e) {
+                            interrupted();
                         }
                     });
 

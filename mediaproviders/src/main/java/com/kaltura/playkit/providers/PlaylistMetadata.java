@@ -1,7 +1,5 @@
 package com.kaltura.playkit.providers;
 
-import com.kaltura.playkit.PKPlaylistType;
-
 public class PlaylistMetadata {
 
     private String id = "";

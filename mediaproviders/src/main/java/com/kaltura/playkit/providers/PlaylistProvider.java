@@ -12,8 +12,6 @@
 
 package com.kaltura.playkit.providers;
 
-
-import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 
 public interface PlaylistProvider {
