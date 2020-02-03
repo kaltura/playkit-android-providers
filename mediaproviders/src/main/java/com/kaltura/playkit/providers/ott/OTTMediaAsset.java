@@ -16,6 +16,8 @@ public class OTTMediaAsset {
 
     APIDefines.PlaybackContextType contextType;
 
+    APIDefines.KalturaUrlType urlType;
+
     List<String> formats;
 
     List<String> mediaFileIds;
@@ -49,6 +51,12 @@ public class OTTMediaAsset {
 
     public OTTMediaAsset setContextType(APIDefines.PlaybackContextType contextType) {
         this.contextType = contextType;
+        return this;
+    }
+
+
+    public OTTMediaAsset setUrlType(APIDefines.KalturaUrlType urlType) {
+        this.urlType = urlType;
         return this;
     }
 

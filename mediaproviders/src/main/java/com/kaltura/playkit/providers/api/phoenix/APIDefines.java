@@ -94,5 +94,16 @@ public class APIDefines {
             this.value = value;
         }
     }
+
+    public enum KalturaUrlType {
+        PlayManifest("PLAYMANIFEST"),
+        Direct("DIRECT");
+
+        public String value;
+
+        KalturaUrlType(String value){
+            this.value = value;
+        }
+    }
 }
 
