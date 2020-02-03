@@ -75,6 +75,7 @@ public class AssetService extends PhoenixService {
     public static class KalturaPlaybackContextOptions{
 
         private APIDefines.PlaybackContextType context;
+        private APIDefines.PKUrlType urlType;
         private String protocol;
         private String assetFileIds;
         private String referrer;
@@ -93,6 +94,11 @@ public class AssetService extends PhoenixService {
             return this;
         }
 
+        public KalturaPlaybackContextOptions setUrlType(APIDefines.PKUrlType urlType) {
+            this.urlType = urlType;
+            return this;
+        }
+
         public KalturaPlaybackContextOptions setMediaFileIds(String ids){
             this.assetFileIds = ids;
             return this;
@@ -105,19 +111,23 @@ public class AssetService extends PhoenixService {
 
         public JsonObject toJson(){
             JsonObject params = new JsonObject();
-            if(context != null) {
+            if (context != null) {
                 params.addProperty("context", context.value);
             }
 
-            if(!TextUtils.isEmpty(protocol)) {
+            if (urlType != null) {
+                params.addProperty("urlType", urlType.value);
+            }
+
+            if (!TextUtils.isEmpty(protocol)) {
                 params.addProperty("mediaProtocol", protocol);
             }
 
-            if(!TextUtils.isEmpty(assetFileIds)) {
+            if (!TextUtils.isEmpty(assetFileIds)) {
                 params.addProperty("assetFileIds", assetFileIds);
             }
 
-            if(!TextUtils.isEmpty(referrer)) {
+            if (!TextUtils.isEmpty(referrer)) {
                 params.addProperty("referrer", referrer);
             }
 
