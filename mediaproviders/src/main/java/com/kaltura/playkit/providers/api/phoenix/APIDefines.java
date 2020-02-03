@@ -94,5 +94,16 @@ public class APIDefines {
             this.value = value;
         }
     }
+
+    public enum PKUrlType {
+        PlayManifest("PLAYMANIFEST"),
+        Direct("DIRECT");
+
+        public String value;
+
+        PKUrlType(String value){
+            this.value = value;
+        }
+    }
 }
 
