@@ -324,6 +324,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             mediaAsset.contextType = APIDefines.PlaybackContextType.Playback;
         }
 
+        if (mediaAsset.urlType == null) {
+            mediaAsset.urlType = APIDefines.PKUrlType.PlayManifest;
+        }
+
         if (mediaAsset.assetType == null) {
             switch (mediaAsset.contextType) {
                 case Playback:
