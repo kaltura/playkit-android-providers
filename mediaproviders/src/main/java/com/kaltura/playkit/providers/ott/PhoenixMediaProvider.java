@@ -125,6 +125,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         public APIDefines.PlaybackContextType contextType;
 
+        public APIDefines.PKUrlType urlType;
+
         public List<String> formats;
 
         public List<String> mediaFileIds;
@@ -240,6 +242,17 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     /**
      * OPTIONAL
      *
+     * @param urlType - can be one of the following types {@link APIDefines.PKUrlType}
+     * @return - instance of PhoenixMediaProvider
+     */
+    public PhoenixMediaProvider setPKUrlType(@NonNull APIDefines.PKUrlType urlType) {
+        this.mediaAsset.urlType = urlType;
+        return this;
+    }
+
+    /**
+     * OPTIONAL
+     *
      * @param protocol - the desired protocol (http/https) for the playback sources
      *                 The default is null, which makes the provider filter by server protocol.
      * @return - instance of PhoenixMediaProvider
@@ -260,7 +273,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         this.mediaAsset.formats = new ArrayList<>(Arrays.asList(formats));
         return this;
     }
-
 
     /**
      * OPTIONAL - if not available all sources will be fetched
@@ -291,7 +303,6 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         this.requestsExecutor = executor;
         return this;
     }
-
 
     protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
@@ -367,6 +378,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             AssetService.KalturaPlaybackContextOptions contextOptions = new AssetService.KalturaPlaybackContextOptions(mediaAsset.contextType);
             if (mediaAsset.mediaFileIds != null) { // else - will fetch all available sources
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
+            }
+
+            if (mediaAsset.urlType != null) {
+                contextOptions.setUrlType(mediaAsset.urlType);
             }
 
             // protocol will be added only if no protocol was give or http/https was set
