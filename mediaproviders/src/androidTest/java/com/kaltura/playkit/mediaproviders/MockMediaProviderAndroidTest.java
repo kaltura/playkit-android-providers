@@ -57,7 +57,7 @@ public class MockMediaProviderAndroidTest {
                             public void onComplete(ResultElement<PKMediaEntry> response) {
                                 assertTrue(!response.isSuccess());
                                 assertTrue(response.getError() != null);
-                                assertTrue(response.getError().equals(ErrorElement.NotFound.message("can't find media")));
+                                assertTrue(response.getError().equals(new ErrorElement(ErrorElement.NotFound.getName(), "can't find media", ErrorElement.ErrorCode.NotFoundCode)));
                             }
                         });
                     }

@@ -72,8 +72,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
-
 
 /**
  * Created by tehilarozin on 27/10/2016.
@@ -314,7 +312,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     protected ErrorElement validateParams() {
 
         if (TextUtils.isEmpty(this.mediaAsset.assetId)) {
-            return ErrorElement.BadRequestError.addMessage("Missing required parameter [assetId]");
+            return new ErrorElement(ErrorElement.BadRequestError.getName(), "Missing required parameter [assetId]", ErrorElement.ErrorCode.BadRequestErrorCode);
         }
 
         if (mediaAsset.contextType == null) {
@@ -371,7 +369,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         @Override
         protected ErrorElement validateKs(String ks) { // enable anonymous session creation
             return EnableEmptyKs || !TextUtils.isEmpty(ks) ? null :
-                    ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
+                    new ErrorElement(ErrorElement.BadRequestError.getName(), ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token", ErrorElement.ErrorCode.BadRequestErrorCode);
         }
 
 
@@ -573,16 +571,16 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         }
 
                         if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
-                            error = ErrorElement.NotFound.message("Content can't be played due to lack of sources");
+                            error = new ErrorElement(ErrorElement.NotFound.getName(), "Content can't be played due to lack of sources", ErrorElement.ErrorCode.NotFoundCode);
                         }
                     }
                 } catch (JsonParseException | InvalidParameterException ex) {
-                    error = ErrorElement.LoadError.message("failed parsing remote response: " + ex.getMessage());
+                    error = new ErrorElement(ErrorElement.LoadError.getName(), "failed parsing remote response: " + ex.getMessage(), ErrorElement.ErrorCode.LoadErrorCode);
                 } catch (IndexOutOfBoundsException ex) {
-                    error = GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
+                    error = new ErrorElement(ErrorElement.GeneralError.getName(), "responses list doesn't contain the expected responses number: " + ex.getMessage(), ErrorElement.ErrorCode.GeneralErrorCode);
                 }
             } else {
-                error = response.getError() != null ? response.getError() : ErrorElement.LoadError.message("error response in multirequest. response: " + response.getResponse());
+                error = response.getError() != null ? response.getError() : new ErrorElement(ErrorElement.LoadError.getName(), "error response in multirequest. response: " + response.getResponse(), ErrorElement.ErrorCode.LoadErrorCode);
             }
 
             log.i(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
@@ -601,7 +599,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
-                    errorResponse = GeneralError.addMessage("multirequest response is null");
+                    errorResponse = new ErrorElement(ErrorElement.GeneralError.getName(), "multirequest response is null", ErrorElement.ErrorCode.GeneralErrorCode);
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, errorResponse));
@@ -613,7 +611,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (isAPIExceptionResponse(response)) {
                 ErrorElement apiExceptionError = parseAPIExceptionError(response);
                 if (apiExceptionError == null) {
-                    apiExceptionError = GeneralError.addMessage("multirequest KalturaAPIException");
+                    apiExceptionError = new ErrorElement(ErrorElement.GeneralError.getName(), "multirequest KalturaAPIException", ErrorElement.ErrorCode.GeneralErrorCode);
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, apiExceptionError));
@@ -789,7 +787,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         } else if (assetGetResult != null && assetGetResult.error != null) {
             error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined error if exists for this error code
         } else {
-            error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError.message("either response is null or response.getError() is null");
+            error = response != null && response.getError() != null ? response.getError() : new ErrorElement(ErrorElement.LoadError.getName(), "either response is null or response.getError() is null", ErrorElement.ErrorCode.LoadErrorCode);
         }
         return error;
     }

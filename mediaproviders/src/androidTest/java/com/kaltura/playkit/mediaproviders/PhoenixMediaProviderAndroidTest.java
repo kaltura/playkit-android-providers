@@ -794,7 +794,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                         }
 
                         if (identifier.equals("")) {
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.NotFound.message("mock file can't be traced from data")));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, new ErrorElement(ErrorElement.NotFound.getName(), "mock file can't be traced from data", ErrorElement.ErrorCode.NotFoundCode)));
                             return;
                         }
                         //assertNotNull(assetId);
@@ -823,7 +823,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                         } catch (IOException e) {
                             e.printStackTrace();
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.LoadError.message(e.getMessage())));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, new ErrorElement(ErrorElement.LoadError.getName(), e.getMessage(), ErrorElement.ErrorCode.LoadErrorCode)));
                         }
 
 

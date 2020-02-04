@@ -39,7 +39,7 @@ public class KalturaOvpErrorHelper {
             /*case "SCHEDULED_RESTRICTED":
             case "COUNTRY_RESTRICTED":*/
             case NO_FILES_FOUND:
-                return ErrorElement.NotFound.message("Content can't be played due to lack of sources");
+                return new ErrorElement(ErrorElement.NotFound.getName(), "Content can't be played due to lack of sources", ErrorElement.ErrorCode.NotFoundCode);
 
             default:
                 String messageCode = code;

@@ -599,7 +599,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
                         } catch (IOException e) {
                             e.printStackTrace();
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.LoadError.message(e.getMessage())));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, new ErrorElement(ErrorElement.LoadError.getName(), e.getMessage(), ErrorElement.ErrorCode.LoadErrorCode)));
                         }
 
 
