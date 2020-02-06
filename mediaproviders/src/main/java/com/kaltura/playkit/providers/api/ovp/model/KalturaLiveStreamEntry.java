@@ -19,9 +19,4 @@ package com.kaltura.playkit.providers.api.ovp.model;
 
 public class KalturaLiveStreamEntry extends KalturaMediaEntry {
 
-    private boolean dvrStatus;
-
-    public boolean isDvrStatus() {
-        return dvrStatus;
-    }
 }
