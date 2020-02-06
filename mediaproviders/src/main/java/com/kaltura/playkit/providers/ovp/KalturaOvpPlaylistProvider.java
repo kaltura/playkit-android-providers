@@ -386,7 +386,6 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                                         setType(getMediaEntryType(kalturaMediaEntry)).
                                         setDataUrl(kalturaMediaEntry.getDataUrl()).
                                         setMsDuration(kalturaMediaEntry.getMsDuration()).
-                                        setDvrStatus(kalturaMediaEntry.getDvrStatus()).
                                         setThumbnailUrl(kalturaMediaEntry.getThumbnailUrl()).
                                         setFlavorParamsIds(kalturaMediaEntry.getFlavorParamsIds()).
                                         setTags(kalturaMediaEntry.getTags()));
@@ -533,7 +532,6 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                     setType(getMediaEntryType(kalturaMediaEntry)).
                     setDataUrl(kalturaMediaEntry.getDataUrl()).
                     setMsDuration(kalturaMediaEntry.getMsDuration()).
-                    setDvrStatus(kalturaMediaEntry.getDvrStatus()).
                     setThumbnailUrl(kalturaMediaEntry.getThumbnailUrl()).
                     setFlavorParamsIds(kalturaMediaEntry.getFlavorParamsIds()).
                     setTags(kalturaMediaEntry.getTags()));

@@ -38,6 +38,7 @@ import com.kaltura.playkit.PKPlaylistMedia;
 
 import com.kaltura.playkit.providers.PlaylistMetadata;
 import com.kaltura.playkit.providers.api.SimpleSessionProvider;
+import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
@@ -411,7 +412,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
                             setId(String.valueOf(kalturaMediaEntry.getId())).
                             setName(kalturaMediaEntry.getName()).
                             setDescription(kalturaMediaEntry.getDescription()).
-                            setType(isLiveMediaEntry(kalturaMediaEntry) ? PKMediaEntry.MediaEntryType.Live : PKMediaEntry.MediaEntryType.Vod).
+                            setType(getMediaEntryType(listIndex,kalturaMediaEntry )).
                             setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
                             setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
                             setTags(assetsMetadtaList.get(listIndex).get("tags")).
@@ -628,6 +629,16 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
         return error;
     }
 
+    private PKMediaEntry.MediaEntryType getMediaEntryType(int index, KalturaMediaAsset kalturaMediaAsset) {
+        PKMediaEntry.MediaEntryType mediaEntryType = PKMediaEntry.MediaEntryType.Vod;
+        if (isDvrLiveMedia(index)) {
+            mediaEntryType = PKMediaEntry.MediaEntryType.DvrLive;
+        } else if (isLiveMediaEntry(kalturaMediaAsset)) {
+            mediaEntryType = PKMediaEntry.MediaEntryType.Live;
+        }
+        return mediaEntryType;
+    }
+
     private boolean isLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
         if (kalturaMediaAsset == null) {
             return false;
@@ -636,6 +647,13 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
         String externalIdsStr = kalturaMediaAsset.getExternalIds();
         return (LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType()) ||
                 !TextUtils.isEmpty(externalIdsStr) && TextUtils.isDigitsOnly(externalIdsStr) && Long.valueOf(externalIdsStr) != 0);
+    }
+
+    private boolean isDvrLiveMedia(int index) {
+        if (playlist != null && playlist.mediaAssets != null && !playlist.mediaAssets.isEmpty() && index >= 0 && index < playlist.mediaAssets.size() && playlist.mediaAssets.get(index) != null) {
+            return playlist.mediaAssets.get(index).assetType == APIDefines.KalturaAssetType.Epg && playlist.mediaAssets.get(index).contextType == APIDefines.PlaybackContextType.StartOver;
+        }
+        return false;
     }
 
     private boolean isRecordingMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
