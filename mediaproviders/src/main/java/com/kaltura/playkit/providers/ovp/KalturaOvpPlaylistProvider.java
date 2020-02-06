@@ -383,7 +383,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                                         setId(kalturaMediaEntry.getId()).
                                         setName(kalturaMediaEntry.getName()).
                                         setDescription(kalturaMediaEntry.getDescription()).
-                                        setType(getTypeOf(kalturaMediaEntry.getType())).
+                                        setType(getMediaEntryType(kalturaMediaEntry)).
                                         setDataUrl(kalturaMediaEntry.getDataUrl()).
                                         setMsDuration(kalturaMediaEntry.getMsDuration()).
                                         setDvrStatus(kalturaMediaEntry.getDvrStatus()).
@@ -524,12 +524,13 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
         List<PKPlaylistMedia> mediaList = new ArrayList<>();
         int listIndex = 0;
         for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
+
             mediaList.add(new PKPlaylistMedia().
                     setMediaIndex(listIndex++).
                     setId(kalturaMediaEntry.getId()).
                     setName(kalturaMediaEntry.getName()).
                     setDescription(kalturaMediaEntry.getDescription()).
-                    setType(getTypeOf(kalturaMediaEntry.getType())).
+                    setType(getMediaEntryType(kalturaMediaEntry)).
                     setDataUrl(kalturaMediaEntry.getDataUrl()).
                     setMsDuration(kalturaMediaEntry.getMsDuration()).
                     setDvrStatus(kalturaMediaEntry.getDvrStatus()).
@@ -549,60 +550,73 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
         return playlist;
     }
 
-    private PKPlaylist getPKPlaylistForAssetList(String playlistKs, List<KalturaMediaAsset> entriesList, List<Map<String,String>> assetsMetadtaList) {
-        if (entriesList == null || assetsMetadtaList == null) {
-            return null;
-        }
+    private PKMediaEntry.MediaEntryType getMediaEntryType(KalturaMediaEntry kalturaMediaEntry) {
+        PKMediaEntry.MediaEntryType mediaEntryType = PKMediaEntry.MediaEntryType.Vod;
 
-        List<PKPlaylistMedia> mediaList = new ArrayList<>();
-
-        int listIndex = 0;
-        for (KalturaMediaAsset kalturaMediaEntry : entriesList) {
-            if (kalturaMediaEntry == null || kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty() ||
-                    kalturaMediaEntry.getImages() == null || kalturaMediaEntry.getImages().isEmpty()) {
-                mediaList.add(null);
-                listIndex++;
-                continue;
+        if (kalturaMediaEntry.getDvrStatus() != null) {
+            if (kalturaMediaEntry.getDvrStatus() == 0) {
+                mediaEntryType = PKMediaEntry.MediaEntryType.Live;
+            } else {
+                mediaEntryType = PKMediaEntry.MediaEntryType.DvrLive;
             }
-
-            mediaList.add(new PKPlaylistMedia().
-                    setMediaIndex(listIndex).
-                    setId(String.valueOf(kalturaMediaEntry.getId())).
-                    setName(kalturaMediaEntry.getName()).
-                    setDescription(kalturaMediaEntry.getDescription()).
-                    ///setType(isLiveMediaEntry(kalturaMediaEntry) ? PKMediaEntry.MediaEntryType.Live : PKMediaEntry.MediaEntryType.Vod).
-                            setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
-                            setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
-                            setTags(assetsMetadtaList.get(listIndex).get("tags")).
-                            setMetadata(assetsMetadtaList.get(listIndex)));
-            listIndex++;
         }
-
-        PKPlaylist playlist = new PKPlaylist().
-                setKs(playlistKs).
-                setId("1").
-                setName("Playlist").
-                setDescription("").
-                setThumbnailUrl("").
-                setMediaList(mediaList);
-
-        return playlist;
+        return mediaEntryType;
     }
 
-    private PKMediaEntry.MediaEntryType getTypeOf(KalturaEntryType type) {
-        if (type == null) {
-            return PKMediaEntry.MediaEntryType.Unknown;
-        }
-
-        switch (type) {
-            case MEDIA_CLIP:
-                return PKMediaEntry.MediaEntryType.Vod;
-            case LIVE_STREAM:
-                return PKMediaEntry.MediaEntryType.Live;
-            default:
-                return PKMediaEntry.MediaEntryType.Unknown;
-        }
-    }
+//    private PKPlaylist getPKPlaylistForAssetList(String playlistKs, List<KalturaMediaAsset> entriesList, List<Map<String,String>> assetsMetadtaList) {
+//        if (entriesList == null || assetsMetadtaList == null) {
+//            return null;
+//        }
+//
+//        List<PKPlaylistMedia> mediaList = new ArrayList<>();
+//
+//        int listIndex = 0;
+//        for (KalturaMediaAsset kalturaMediaEntry : entriesList) {
+//            if (kalturaMediaEntry == null || kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty() ||
+//                    kalturaMediaEntry.getImages() == null || kalturaMediaEntry.getImages().isEmpty()) {
+//                mediaList.add(null);
+//                listIndex++;
+//                continue;
+//            }
+//
+//            mediaList.add(new PKPlaylistMedia().
+//                    setMediaIndex(listIndex).
+//                    setId(String.valueOf(kalturaMediaEntry.getId())).
+//                    setName(kalturaMediaEntry.getName()).
+//
+//                    setDescription(kalturaMediaEntry.getDescription()).
+//                            setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
+//                            setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
+//                            setTags(assetsMetadtaList.get(listIndex).get("tags")).
+//                            setMetadata(assetsMetadtaList.get(listIndex)));
+//            listIndex++;
+//        }
+//
+//        PKPlaylist playlist = new PKPlaylist().
+//                setKs(playlistKs).
+//                setId("1").
+//                setName("Playlist").
+//                setDescription("").
+//                setThumbnailUrl("").
+//                setMediaList(mediaList);
+//
+//        return playlist;
+//    }
+//
+//    private PKMediaEntry.MediaEntryType getTypeOf(KalturaEntryType type) {
+//        if (type == null) {
+//            return PKMediaEntry.MediaEntryType.Unknown;
+//        }
+//
+//        switch (type) {
+//            case MEDIA_CLIP:
+//                return PKMediaEntry.MediaEntryType.Vod;
+//            case LIVE_STREAM:
+//                return PKMediaEntry.MediaEntryType.Live;
+//            default:
+//                return PKMediaEntry.MediaEntryType.Unknown;
+//        }
+//    }
 
     private String getDefaultWidgetId(int partnerId) {
         return "_" + partnerId;

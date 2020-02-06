@@ -59,7 +59,7 @@ public class PlaylistService extends OvpService {
     private static JsonObject getPlaylistExecuteParams(String ks, String playlistId, Integer pageSize, Integer pageIndex) {
 
         PlaylistService.PlaylistParams playlistParams = new PlaylistService.PlaylistParams(ks, playlistId);
-        playlistParams.responseProfile.fields = "id,referenceId,name,description,thumbnailUrl,dataUrl,msDuration,flavorParamsIds,mediaType,type,tags,externalSourceType,searchText";
+        playlistParams.responseProfile.fields = "id,referenceId,name,description,thumbnailUrl,dataUrl,msDuration,flavorParamsIds,mediaType,type,tags,dvrStatus,externalSourceType,searchText";
         playlistParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
         KalturaFilterPager pager = null;
         if (pageSize != null && pageIndex != null && pageIndex <= pageSize) {
