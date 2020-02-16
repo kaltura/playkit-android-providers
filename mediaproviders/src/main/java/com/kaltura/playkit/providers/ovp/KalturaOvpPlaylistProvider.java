@@ -354,7 +354,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                             List<KalturaMediaEntry> entriesList = new ArrayList<>();
                             //List<Map<String,String>> metadataList = new ArrayList<>();
                             int playlistListIndex = TextUtils.isEmpty(ks) ? 1 : 0;
-                            for( ; playlistListIndex < responses.size() ; playlistListIndex ++) {
+                            for( ; playlistListIndex < responses.size() ; playlistListIndex++) {
                                 if (responses.get(playlistListIndex).error != null) {
                                     entriesList.add(null);
                                     continue;
