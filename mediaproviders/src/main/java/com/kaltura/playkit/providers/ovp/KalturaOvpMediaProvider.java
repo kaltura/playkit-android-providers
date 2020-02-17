@@ -205,7 +205,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (CanBeEmpty) {
                     log.w("provided ks is empty, Anonymous session will be used.");
                 } else {
-                    return new ErrorElement(ErrorElement.BadRequestError.getName(), ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token", ErrorElement.ErrorCode.BadRequestErrorCode);
+                    return MediaProvidersUtils.buildBadRequestErrorElement(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
                 }
             }
             return null;
@@ -329,9 +329,9 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         }
                     }
                 } catch (JsonSyntaxException | InvalidParameterException ex) {
-                    error =  MediaProvidersUtils.buildLoadErrorElement("failed to create PKMediaEntry: " + ex.getMessage());
+                    error = MediaProvidersUtils.buildLoadErrorElement("failed to create PKMediaEntry: " + ex.getMessage());
                 } catch (IndexOutOfBoundsException ex) {
-                    error =  MediaProvidersUtils.buildGeneralErrorElement("responses list doesn't contain the expected responses number: " + ex.getMessage());
+                    error = MediaProvidersUtils.buildGeneralErrorElement("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
 
             } else {

@@ -4,6 +4,7 @@ import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKMediaEntry;
 
+import com.kaltura.playkit.providers.MediaProvidersUtils;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.mock.MockMediaProvider;
 
@@ -57,7 +58,7 @@ public class MockMediaProviderAndroidTest {
                             public void onComplete(ResultElement<PKMediaEntry> response) {
                                 assertTrue(!response.isSuccess());
                                 assertTrue(response.getError() != null);
-                                assertTrue(response.getError().equals(new ErrorElement(ErrorElement.NotFound.getName(), "can't find media", ErrorElement.ErrorCode.NotFoundCode)));
+                                assertTrue(response.getError().equals(MediaProvidersUtils.buildNotFoundlErrorElement("can't find media")));
                             }
                         });
                     }
