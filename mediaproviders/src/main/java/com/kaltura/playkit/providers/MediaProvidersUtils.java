@@ -1,5 +1,6 @@
 package com.kaltura.playkit.providers;
 
+import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaSource;
 
@@ -55,5 +56,21 @@ public class MediaProvidersUtils {
             default:
                 return Unknown;
         }
+    }
+
+    public static ErrorElement buildGeneralErrorElement(String message) {
+        return new ErrorElement(ErrorElement.GeneralError.getName(), message, ErrorElement.ErrorCode.GeneralErrorCode);
+    }
+
+    public static ErrorElement buildLoadErrorElement(String message) {
+        return new ErrorElement(ErrorElement.LoadError.getName(), message,ErrorElement.ErrorCode.LoadErrorCode);
+    }
+
+    public static ErrorElement buildNotFoundlErrorElement(String message) {
+        return new ErrorElement(ErrorElement.NotFound.getName(), message, ErrorElement.ErrorCode.NotFoundCode);
+    }
+
+    public static ErrorElement buildBadRequestErrorElement(String message) {
+        return new ErrorElement(ErrorElement.BadRequestError.getName(), message, ErrorElement.ErrorCode.BadRequestErrorCode);
     }
 }

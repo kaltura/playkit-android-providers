@@ -312,7 +312,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     protected ErrorElement validateParams() {
 
         if (TextUtils.isEmpty(this.mediaAsset.assetId)) {
-            return new ErrorElement(ErrorElement.BadRequestError.getName(), "Missing required parameter [assetId]", ErrorElement.ErrorCode.BadRequestErrorCode);
+            return MediaProvidersUtils.buildBadRequestErrorElement("Missing required parameter [assetId]");
         }
 
         if (mediaAsset.contextType == null) {
@@ -369,7 +369,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         @Override
         protected ErrorElement validateKs(String ks) { // enable anonymous session creation
             return EnableEmptyKs || !TextUtils.isEmpty(ks) ? null :
-                    new ErrorElement(ErrorElement.BadRequestError.getName(), ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token", ErrorElement.ErrorCode.BadRequestErrorCode);
+                    MediaProvidersUtils.buildBadRequestErrorElement(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
         }
 
 
@@ -571,16 +571,16 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         }
 
                         if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
-                            error = new ErrorElement(ErrorElement.NotFound.getName(), "Content can't be played due to lack of sources", ErrorElement.ErrorCode.NotFoundCode);
+                            error = MediaProvidersUtils.buildNotFoundlErrorElement("Content can't be played due to lack of sources");
                         }
                     }
                 } catch (JsonParseException | InvalidParameterException ex) {
-                    error = new ErrorElement(ErrorElement.LoadError.getName(), "failed parsing remote response: " + ex.getMessage(), ErrorElement.ErrorCode.LoadErrorCode);
+                    error = MediaProvidersUtils.buildLoadErrorElement("failed parsing remote response: " + ex.getMessage());
                 } catch (IndexOutOfBoundsException ex) {
-                    error = new ErrorElement(ErrorElement.GeneralError.getName(), "responses list doesn't contain the expected responses number: " + ex.getMessage(), ErrorElement.ErrorCode.GeneralErrorCode);
+                    error = MediaProvidersUtils.buildGeneralErrorElement("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
             } else {
-                error = response.getError() != null ? response.getError() : new ErrorElement(ErrorElement.LoadError.getName(), "error response in multirequest. response: " + response.getResponse(), ErrorElement.ErrorCode.LoadErrorCode);
+                error = response.getError() != null ? response.getError() : MediaProvidersUtils.buildLoadErrorElement("error response in multirequest. response: " + response.getResponse());
             }
 
             log.i(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
@@ -599,7 +599,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
-                    errorResponse = new ErrorElement(ErrorElement.GeneralError.getName(), "multirequest response is null", ErrorElement.ErrorCode.GeneralErrorCode);
+                    errorResponse = MediaProvidersUtils.buildGeneralErrorElement("multirequest response is null");
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, errorResponse));
@@ -611,7 +611,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (isAPIExceptionResponse(response)) {
                 ErrorElement apiExceptionError = parseAPIExceptionError(response);
                 if (apiExceptionError == null) {
-                    apiExceptionError = new ErrorElement(ErrorElement.GeneralError.getName(), "multirequest KalturaAPIException", ErrorElement.ErrorCode.GeneralErrorCode);
+                    apiExceptionError = MediaProvidersUtils.buildGeneralErrorElement("multirequest KalturaAPIException");
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, apiExceptionError));
@@ -787,7 +787,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         } else if (assetGetResult != null && assetGetResult.error != null) {
             error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined error if exists for this error code
         } else {
-            error = response != null && response.getError() != null ? response.getError() : new ErrorElement(ErrorElement.LoadError.getName(), "either response is null or response.getError() is null", ErrorElement.ErrorCode.LoadErrorCode);
+            error = response != null && response.getError() != null ? response.getError() : MediaProvidersUtils.buildLoadErrorElement("either response is null or response.getError() is null");
         }
         return error;
     }
