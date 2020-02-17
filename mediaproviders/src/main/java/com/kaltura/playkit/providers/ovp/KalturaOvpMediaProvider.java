@@ -179,7 +179,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     @Override
     protected ErrorElement validateParams() {
         return TextUtils.isEmpty(this.entryId) ?
-                new ErrorElement(ErrorElement.BadRequestError.getName(), ErrorElement.BadRequestError + ": Missing required parameters, entryId", ErrorElement.ErrorCode.BadRequestErrorCode) :
+                MediaProvidersUtils.buildBadRequestErrorElement(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
 
@@ -299,7 +299,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                      * all response objects should extend BaseResult */
                     //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
                     if (responses.size() == 0) {
-                        error = new ErrorElement(ErrorElement.LoadError.getName(), "failed to get responses on load requests", ErrorElement.ErrorCode.LoadErrorCode);
+                        error =  MediaProvidersUtils.buildLoadErrorElement("failed to get responses on load requests");
 
                     } else {
                         // indexes should match the order of requests sent to the server.
@@ -329,13 +329,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         }
                     }
                 } catch (JsonSyntaxException | InvalidParameterException ex) {
-                    error = new ErrorElement(ErrorElement.LoadError.getName(), "failed to create PKMediaEntry: " + ex.getMessage(), ErrorElement.ErrorCode.LoadErrorCode);
+                    error =  MediaProvidersUtils.buildLoadErrorElement("failed to create PKMediaEntry: " + ex.getMessage());
                 } catch (IndexOutOfBoundsException ex) {
-                    error = new ErrorElement(ErrorElement.GeneralError.getName(), "responses list doesn't contain the expected responses number: " + ex.getMessage(), ErrorElement.ErrorCode.GeneralErrorCode);
+                    error =  MediaProvidersUtils.buildGeneralErrorElement("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
 
             } else {
-                error = response.getError() != null ? response.getError() : new ErrorElement(ErrorElement.LoadError.getName(), "error response in multirequest. response: " + response.getResponse(), ErrorElement.ErrorCode.LoadErrorCode);
+                error = response.getError() != null ? response.getError() : MediaProvidersUtils.buildLoadErrorElement("error response in multirequest. response: " + response.getResponse());
             }
 
             log.v(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
@@ -352,7 +352,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if (isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
-                    errorResponse = new ErrorElement(ErrorElement.GeneralError.getName(), "multirequest response is null", ErrorElement.ErrorCode.GeneralErrorCode);
+                    errorResponse = MediaProvidersUtils.buildGeneralErrorElement("multirequest response is null");
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, errorResponse));
@@ -365,7 +365,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if (isAPIExceptionResponse(response)) {
                 ErrorElement apiExceptionError = parseAPIExceptionError(response);
                 if (apiExceptionError == null) {
-                    apiExceptionError = new ErrorElement(ErrorElement.GeneralError.getName(), "multirequest KalturaAPIException", ErrorElement.ErrorCode.GeneralErrorCode);
+                    apiExceptionError = MediaProvidersUtils.buildGeneralErrorElement("multirequest KalturaAPIException");
                 }
 
                 if (!isCanceled() && completion != null) {
