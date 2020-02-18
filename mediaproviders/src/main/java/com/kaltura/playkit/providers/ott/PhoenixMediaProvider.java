@@ -37,7 +37,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.providers.MediaProvidersUtils;
+
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
@@ -71,6 +71,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildBadRequestErrorElement;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildGeneralErrorElement;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildLoadErrorElement;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildNotFoundlErrorElement;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.isDRMSchemeValid;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.updateDrmParams;
 
 
 /**
@@ -312,7 +319,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     protected ErrorElement validateParams() {
 
         if (TextUtils.isEmpty(this.mediaAsset.assetId)) {
-            return MediaProvidersUtils.buildBadRequestErrorElement("Missing required parameter [assetId]");
+            return buildBadRequestErrorElement("Missing required parameter [assetId]");
         }
 
         if (mediaAsset.contextType == null) {
@@ -369,9 +376,8 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         @Override
         protected ErrorElement validateKs(String ks) { // enable anonymous session creation
             return EnableEmptyKs || !TextUtils.isEmpty(ks) ? null :
-                    MediaProvidersUtils.buildBadRequestErrorElement(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
+                    buildBadRequestErrorElement(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
         }
-
 
         private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
             AssetService.KalturaPlaybackContextOptions contextOptions = new AssetService.KalturaPlaybackContextOptions(mediaAsset.contextType);
@@ -571,16 +577,16 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                         }
 
                         if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
-                            error = MediaProvidersUtils.buildNotFoundlErrorElement("Content can't be played due to lack of sources");
+                            error = buildNotFoundlErrorElement("Content can't be played due to lack of sources");
                         }
                     }
                 } catch (JsonParseException | InvalidParameterException ex) {
-                    error = MediaProvidersUtils.buildLoadErrorElement("failed parsing remote response: " + ex.getMessage());
+                    error = buildLoadErrorElement("failed parsing remote response: " + ex.getMessage());
                 } catch (IndexOutOfBoundsException ex) {
-                    error = MediaProvidersUtils.buildGeneralErrorElement("responses list doesn't contain the expected responses number: " + ex.getMessage());
+                    error = buildGeneralErrorElement("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
             } else {
-                error = response.getError() != null ? response.getError() : MediaProvidersUtils.buildLoadErrorElement("error response in multirequest. response: " + response.getResponse());
+                error = response.getError() != null ? response.getError() : buildLoadErrorElement("error response in multirequest. response: " + response.getResponse());
             }
 
             log.i(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure")));
@@ -599,7 +605,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
-                    errorResponse = MediaProvidersUtils.buildGeneralErrorElement("multirequest response is null");
+                    errorResponse = buildGeneralErrorElement("multirequest response is null");
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, errorResponse));
@@ -611,7 +617,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             if (isAPIExceptionResponse(response)) {
                 ErrorElement apiExceptionError = parseAPIExceptionError(response);
                 if (apiExceptionError == null) {
-                    apiExceptionError = MediaProvidersUtils.buildGeneralErrorElement("multirequest KalturaAPIException");
+                    apiExceptionError = buildGeneralErrorElement("multirequest KalturaAPIException");
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, apiExceptionError));
@@ -787,7 +793,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         } else if (assetGetResult != null && assetGetResult.error != null) {
             error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined error if exists for this error code
         } else {
-            error = response != null && response.getError() != null ? response.getError() : MediaProvidersUtils.buildLoadErrorElement("either response is null or response.getError() is null");
+            error = response != null && response.getError() != null ? response.getError() : buildLoadErrorElement("either response is null or response.getError() is null");
         }
         return error;
     }
@@ -851,10 +857,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
                     List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                     if (drmData != null && !drmData.isEmpty()) {
-                        if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)) {
+                        if (!isDRMSchemeValid(pkMediaSource, drmData)) {
                             continue;
                         }
-                        MediaProvidersUtils.updateDrmParams(pkMediaSource, drmData);
+                        updateDrmParams(pkMediaSource, drmData);
                     }
 
                     sources.add(pkMediaSource);

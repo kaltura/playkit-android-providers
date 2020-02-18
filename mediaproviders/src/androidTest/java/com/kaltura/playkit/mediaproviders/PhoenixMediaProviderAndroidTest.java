@@ -25,7 +25,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.providers.MediaProvidersUtils;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
@@ -47,6 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import androidx.test.InstrumentationRegistry;
 
 
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildLoadErrorElement;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildNotFoundlErrorElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -795,7 +796,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
                         }
 
                         if (identifier.equals("")) {
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, MediaProvidersUtils.buildNotFoundlErrorElement("mock file can't be traced from data")));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, buildNotFoundlErrorElement("mock file can't be traced from data")));
                             return;
                         }
                         //assertNotNull(assetId);
@@ -824,7 +825,7 @@ public class PhoenixMediaProviderAndroidTest extends BaseTest {
 
                         } catch (IOException e) {
                             e.printStackTrace();
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, MediaProvidersUtils.buildLoadErrorElement(e.getMessage())));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, buildLoadErrorElement(e.getMessage())));
                         }
 
 

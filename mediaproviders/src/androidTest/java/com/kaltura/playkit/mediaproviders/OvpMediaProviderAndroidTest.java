@@ -22,7 +22,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.providers.MediaProvidersUtils;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
@@ -40,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildLoadErrorElement;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
@@ -600,7 +600,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
                         } catch (IOException e) {
                             e.printStackTrace();
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, MediaProvidersUtils.buildLoadErrorElement(e.getMessage())));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, buildLoadErrorElement(e.getMessage())));
                         }
 
 
