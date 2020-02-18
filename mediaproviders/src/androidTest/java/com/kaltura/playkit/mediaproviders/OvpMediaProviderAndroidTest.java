@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildLoadErrorElement;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
@@ -540,11 +541,6 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
         }
 
         @Override
-        public void enableLogs(boolean enable) {
-
-        }
-
-        @Override
         public void setNetworkErrorEventListener(NetworkErrorEventListener networkErrorEventListener) {
 
         }
@@ -604,7 +600,7 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
 
                         } catch (IOException e) {
                             e.printStackTrace();
-                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, ErrorElement.LoadError));
+                            request.onComplete((ResponseElement) Accessories.<String>buildResult(null, buildLoadErrorElement(e.getMessage())));
                         }
 
 

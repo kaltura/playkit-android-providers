@@ -13,6 +13,7 @@
 package com.kaltura.playkit.providers.mock;
 
 import android.content.Context;
+
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
@@ -28,6 +29,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.providers.MediaEntryProvider;
+import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,9 +43,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import com.kaltura.playkit.providers.MediaEntryProvider;
-import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 
 import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Unknown;
 

@@ -1,7 +1,6 @@
 package com.kaltura.playkit.mediaproviders;
 
 import com.kaltura.netkit.connect.response.ResultElement;
-import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKMediaEntry;
 
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
@@ -13,6 +12,7 @@ import org.junit.runner.RunWith;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildNotFoundlErrorElement;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -57,7 +57,7 @@ public class MockMediaProviderAndroidTest {
                             public void onComplete(ResultElement<PKMediaEntry> response) {
                                 assertTrue(!response.isSuccess());
                                 assertTrue(response.getError() != null);
-                                assertTrue(response.getError().equals(ErrorElement.NotFound.message("can't find media")));
+                                assertTrue(response.getError().equals(buildNotFoundlErrorElement("can't find media")));
                             }
                         });
                     }

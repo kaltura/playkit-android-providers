@@ -17,6 +17,8 @@ import android.text.TextUtils;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.RestrictionError;
 
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildNotFoundlErrorElement;
+
 /**
  * @hide
  */
@@ -39,7 +41,7 @@ public class KalturaOvpErrorHelper {
             /*case "SCHEDULED_RESTRICTED":
             case "COUNTRY_RESTRICTED":*/
             case NO_FILES_FOUND:
-                return ErrorElement.NotFound.message("Content can't be played due to lack of sources");
+                return buildNotFoundlErrorElement("Content can't be played due to lack of sources");
 
             default:
                 String messageCode = code;
