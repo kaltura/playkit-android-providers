@@ -40,7 +40,6 @@ import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
 import com.kaltura.playkit.providers.api.ovp.services.MetaDataService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpSessionService;
-import com.kaltura.playkit.providers.MediaProvidersUtils;
 import com.kaltura.playkit.providers.base.BECallableLoader;
 import com.kaltura.playkit.providers.base.BEMediaProvider;
 import com.kaltura.playkit.providers.base.FormatsHelper;
@@ -64,7 +63,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildBadRequestErrorElement;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildGeneralErrorElement;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.buildLoadErrorElement;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.isDRMSchemeValid;
+import static com.kaltura.playkit.providers.MediaProvidersUtils.updateDrmParams;
 
 public class KalturaOvpMediaProvider extends BEMediaProvider {
 
@@ -164,7 +167,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     @Override
     protected ErrorElement validateParams() {
         return TextUtils.isEmpty(this.entryId) ?
-                ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
+                buildBadRequestErrorElement(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
 
@@ -190,7 +193,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 if (CanBeEmpty) {
                     log.w("provided ks is empty, Anonymous session will be used.");
                 } else {
-                    return ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
+                    return buildBadRequestErrorElement(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
                 }
             }
             return null;
@@ -281,7 +284,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                      * all response objects should extend BaseResult */
                     //  List<BaseResult> responses = (List<BaseResult>) KalturaOvpParser.parse(response.getResponse(), KalturaBaseEntryListResponse.class, KalturaEntryContextDataResult.class);
                     if (responses.size() == 0) {
-                        error = ErrorElement.LoadError.message("failed to get responses on load requests");
+                        error = buildLoadErrorElement("failed to get responses on load requests");
 
                     } else {
                         // indexes should match the order of requests sent to the server.
@@ -311,13 +314,13 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                         }
                     }
                 } catch (JsonSyntaxException | InvalidParameterException ex) {
-                    error = ErrorElement.LoadError.message("failed to create PKMediaEntry: " + ex.getMessage());
+                    error = buildLoadErrorElement("failed to create PKMediaEntry: " + ex.getMessage());
                 } catch (IndexOutOfBoundsException ex) {
-                    error = ErrorElement.GeneralError.message("responses list doesn't contain the expected responses number: " + ex.getMessage());
+                    error = buildGeneralErrorElement("responses list doesn't contain the expected responses number: " + ex.getMessage());
                 }
 
             } else {
-                error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
+                error = response.getError() != null ? response.getError() : buildLoadErrorElement("error response in multirequest. response: " + response.getResponse());
             }
 
             log.v(loadId + ": load operation " + (isCanceled() ? "canceled" : "finished with " + (error == null ? "success" : "failure: " + error)));
@@ -334,7 +337,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if (isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
-                    errorResponse = GeneralError;
+                    errorResponse = buildGeneralErrorElement("multirequest response is null");
                 }
                 if (!isCanceled() && completion != null) {
                     completion.onComplete(Accessories.buildResult(null, errorResponse));
@@ -347,7 +350,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
             if (isAPIExceptionResponse(response)) {
                 ErrorElement apiExceptionError = parseAPIExceptionError(response);
                 if (apiExceptionError == null) {
-                    apiExceptionError = GeneralError;
+                    apiExceptionError = buildGeneralErrorElement("multirequest KalturaAPIException");
                 }
 
                 if (!isCanceled() && completion != null) {
@@ -702,10 +705,10 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 //-> sources with multiple drm data are split to PKMediaSource per drm
                 List<KalturaDrmPlaybackPluginData> drmData = playbackSource.getDrmData();
                 if (drmData != null && !drmData.isEmpty()) {
-                    if (!MediaProvidersUtils.isDRMSchemeValid(pkMediaSource, drmData)){
+                    if (!isDRMSchemeValid(pkMediaSource, drmData)){
                         continue;
                     }
-                    MediaProvidersUtils.updateDrmParams(pkMediaSource, drmData);
+                    updateDrmParams(pkMediaSource, drmData);
                 }
                 sources.add(pkMediaSource);
             }
