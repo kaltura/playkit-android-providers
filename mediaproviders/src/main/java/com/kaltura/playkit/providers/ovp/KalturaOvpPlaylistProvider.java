@@ -359,7 +359,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                                     entriesList.add(null);
                                     continue;
                                 }
-                                KalturaMediaEntry kalturaMediaEntry = new KalturaMediaEntry();
+
                                 if (responses.get(playlistListIndex) instanceof KalturaBaseEntryListResponse) {
                                     entriesList.add(((KalturaBaseEntryListResponse) responses.get(playlistListIndex)).objects.get(0));
                                 }
@@ -523,7 +523,6 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
         List<PKPlaylistMedia> mediaList = new ArrayList<>();
         int listIndex = 0;
         for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
-
             mediaList.add(new PKPlaylistMedia().
                     setMediaIndex(listIndex++).
                     setId(kalturaMediaEntry.getId()).

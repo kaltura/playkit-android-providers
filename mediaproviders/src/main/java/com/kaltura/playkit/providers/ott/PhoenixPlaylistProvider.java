@@ -38,7 +38,6 @@ import com.kaltura.playkit.PKPlaylistMedia;
 
 import com.kaltura.playkit.providers.PlaylistMetadata;
 import com.kaltura.playkit.providers.api.SimpleSessionProvider;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
