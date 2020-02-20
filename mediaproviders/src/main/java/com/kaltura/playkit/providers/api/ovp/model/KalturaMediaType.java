@@ -33,5 +33,5 @@ public enum KalturaMediaType {
     @SerializedName("203")
     LIVE_STREAM_REAL_MEDIA,
     @SerializedName("204")
-    LIVE_STREAM_QUICKTIME;
+    LIVE_STREAM_QUICKTIME
 }
