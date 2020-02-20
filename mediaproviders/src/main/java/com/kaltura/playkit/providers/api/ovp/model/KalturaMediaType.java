@@ -21,23 +21,17 @@ import com.google.gson.annotations.SerializedName;
 public enum KalturaMediaType {
 
     @SerializedName("1")
-    VIDEO("1"),
+    VIDEO,
     @SerializedName("2")
-    IMAGE("2"),
+    IMAGE,
     @SerializedName("5")
-    AUDIO("5"),
+    AUDIO,
     @SerializedName("201")
-    LIVE_STREAM_FLASH("201"),
+    LIVE_STREAM_FLASH,
     @SerializedName("202")
-    LIVE_STREAM_WINDOWS_MEDIA("202"),
+    LIVE_STREAM_WINDOWS_MEDIA,
     @SerializedName("203")
-    LIVE_STREAM_REAL_MEDIA("203"),
+    LIVE_STREAM_REAL_MEDIA,
     @SerializedName("204")
-    LIVE_STREAM_QUICKTIME("204");
-
-    public String type;
-
-    KalturaMediaType(String type) {
-        this.type = type;
-    }
+    LIVE_STREAM_QUICKTIME;
 }
