@@ -8,9 +8,11 @@ import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 
@@ -18,6 +20,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.providers.PlaylistMetadata;
+import com.kaltura.playkit.providers.PlaylistProvider;
 import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
@@ -33,9 +36,9 @@ import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpSessionService;
 import com.kaltura.playkit.providers.api.ovp.services.PlaylistService;
+import com.kaltura.playkit.providers.base.BEBaseProvider;
 import com.kaltura.playkit.providers.base.BECallableLoader;
 
-import com.kaltura.playkit.providers.base.BEPlaylistProvider;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 
@@ -52,11 +55,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
 
-public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
+public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> implements PlaylistProvider {
 
     private static final PKLog log = PKLog.get("KalturaOvpPlaylistProvider");
 
@@ -147,7 +149,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
 
 
     @Override
-    protected Callable<Void> createNewLoader(OnPlaylistLoadCompletion completion) {
+    protected Loader createNewLoader(OnCompletion<ResultElement<PKPlaylist>> completion) {
         if (playlistId != null) {
             return new Loader(requestsExecutor, sessionProvider, playlistId, pageSize, pageIndex, completion);
         } else {
@@ -162,6 +164,11 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                 null;
     }
 
+    @Override
+    public void load(OnPlaylistLoadCompletion completion) {
+        load((OnCompletion<ResultElement<PKPlaylist>>)completion);
+    }
+
     class Loader extends BECallableLoader {
 
         private String playlistId;
@@ -169,7 +176,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
         private Integer pageSize;
         private Integer pageIndex;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String playlistId, Integer pageSize, Integer pageIndex, OnPlaylistLoadCompletion completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String playlistId, Integer pageSize, Integer pageIndex, OnCompletion<ResultElement<PKPlaylist>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.playlistId = playlistId;
@@ -179,7 +186,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
             log.v(loadId + ": construct new Loader");
         }
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, List<OVPMediaAsset> mediaAssets, OnPlaylistLoadCompletion completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, List<OVPMediaAsset> mediaAssets, OnCompletion<ResultElement<PKPlaylist>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.mediaAssets = mediaAssets;

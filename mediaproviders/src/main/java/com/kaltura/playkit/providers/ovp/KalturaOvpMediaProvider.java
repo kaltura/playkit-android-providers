@@ -11,8 +11,10 @@ import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -20,6 +22,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKSubtitleFormat;
 import com.kaltura.playkit.player.PKExternalSubtitle;
+import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.ovp.KalturaOvpErrorHelper;
@@ -40,8 +43,8 @@ import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
 import com.kaltura.playkit.providers.api.ovp.services.MetaDataService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpSessionService;
+import com.kaltura.playkit.providers.base.BEBaseProvider;
 import com.kaltura.playkit.providers.base.BECallableLoader;
-import com.kaltura.playkit.providers.base.BEMediaProvider;
 import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 
@@ -69,7 +72,7 @@ import static com.kaltura.playkit.providers.MediaProvidersUtils.buildLoadErrorEl
 import static com.kaltura.playkit.providers.MediaProvidersUtils.isDRMSchemeValid;
 import static com.kaltura.playkit.providers.MediaProvidersUtils.updateDrmParams;
 
-public class KalturaOvpMediaProvider extends BEMediaProvider {
+public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implements MediaEntryProvider {
 
     private static final PKLog log = PKLog.get("KalturaOvpMediaProvider");
 
@@ -160,7 +163,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     }
 
     @Override
-    protected Loader createNewLoader(OnMediaLoadCompletion completion) {
+    protected Loader createNewLoader(OnCompletion<ResultElement<PKMediaEntry>> completion) {
         return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, referrer, completion);
     }
 
@@ -171,13 +174,18 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
                 null;
     }
 
+    @Override
+    public void load(OnMediaLoadCompletion completion) {
+        load((OnCompletion<ResultElement<PKMediaEntry>>)completion);
+    }
+
     class Loader extends BECallableLoader {
 
         private String entryId;
         private String uiConfId;
         private String referrer;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, String referrer, OnMediaLoadCompletion completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, String referrer, OnCompletion<ResultElement<PKMediaEntry>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.entryId = entryId;

@@ -27,9 +27,11 @@ import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
 
 import com.kaltura.netkit.connect.response.ResponseElement;
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -37,6 +39,7 @@ import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 
 import com.kaltura.playkit.providers.PlaylistMetadata;
+import com.kaltura.playkit.providers.PlaylistProvider;
 import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
@@ -48,8 +51,8 @@ import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
 import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
 import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
 import com.kaltura.playkit.providers.api.phoenix.services.PhoenixService;
+import com.kaltura.playkit.providers.base.BEBaseProvider;
 import com.kaltura.playkit.providers.base.BECallableLoader;
-import com.kaltura.playkit.providers.base.BEPlaylistProvider;
 import com.kaltura.playkit.providers.base.BEResponseListener;
 import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 import com.kaltura.playkit.utils.Consts;
@@ -78,9 +81,9 @@ import static com.kaltura.netkit.utils.ErrorElement.GeneralError;
  *
  * */
 
-public class PhoenixPlaylistProvider extends BEPlaylistProvider {
+public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implements PlaylistProvider {
 
-    private static final PKLog log = PKLog.get("PhoenixMediaProvider");
+    private static final PKLog log = PKLog.get("PhoenixPlaylistProvider");
 
     private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLiveAsset"; //Might be needed to support in KalturaProgramAsset for EPG
 
@@ -172,11 +175,6 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
         return this;
     }
 
-
-    protected Loader createNewLoader(OnPlaylistLoadCompletion completion) {
-        return new Loader(requestsExecutor, sessionProvider, playlist, completion);
-    }
-
     /**
      * Checks for non empty value on the mandatory parameters.
      *
@@ -192,13 +190,22 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
         return null;
     }
 
+    @Override
+    protected Loader createNewLoader(OnCompletion<ResultElement<PKPlaylist>> completion) {
+        return new Loader(requestsExecutor, sessionProvider, playlist, completion);
+    }
+
+    @Override
+    public void load(OnPlaylistLoadCompletion completion) {
+        load((OnCompletion<ResultElement<PKPlaylist>>)completion);
+    }
 
     class Loader extends BECallableLoader {
 
         private PKPlaylistRequest playlistRequest;
 
 
-        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, PKPlaylistRequest playlistRequest, OnPlaylistLoadCompletion completion) {
+        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, PKPlaylistRequest playlistRequest, OnCompletion<ResultElement<PKPlaylist>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.playlistRequest = playlistRequest;

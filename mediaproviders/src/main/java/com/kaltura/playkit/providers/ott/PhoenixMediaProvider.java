@@ -28,8 +28,10 @@ import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -42,10 +44,11 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
@@ -59,11 +62,12 @@ import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
 import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
 import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
 import com.kaltura.playkit.providers.api.phoenix.services.PhoenixService;
+import com.kaltura.playkit.providers.base.BEBaseProvider;
 import com.kaltura.playkit.providers.base.BECallableLoader;
-import com.kaltura.playkit.providers.base.BEMediaProvider;
 import com.kaltura.playkit.providers.base.BEResponseListener;
 import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.utils.Consts;
 
 import org.json.JSONArray;
@@ -94,7 +98,7 @@ import static com.kaltura.playkit.providers.MediaProvidersUtils.updateDrmParams;
  *
  * */
 
-public class PhoenixMediaProvider extends BEMediaProvider {
+public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implements MediaEntryProvider {
 
     private static final PKLog log = PKLog.get("PhoenixMediaProvider");
 
@@ -257,7 +261,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
-    protected Loader createNewLoader(OnMediaLoadCompletion completion) {
+    protected Loader createNewLoader(OnCompletion<ResultElement<PKMediaEntry>> completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
     }
 
@@ -310,13 +314,17 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return null;
     }
 
+    @Override
+    public void load(OnMediaLoadCompletion completion) {
+        load((OnCompletion<ResultElement<PKMediaEntry>>)completion);
+    }
 
     class Loader extends BECallableLoader {
 
         private OTTMediaAsset mediaAsset;
 
 
-        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, OTTMediaAsset mediaAsset, OnMediaLoadCompletion completion) {
+        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, OTTMediaAsset mediaAsset, OnCompletion<ResultElement<PKMediaEntry>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.mediaAsset = mediaAsset;

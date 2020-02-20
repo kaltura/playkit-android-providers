@@ -17,36 +17,41 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.OnCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKPlaylist;
-import com.kaltura.playkit.player.PKHttpClientManager;
-import com.kaltura.playkit.providers.PlaylistProvider;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public abstract class BEPlaylistProvider implements PlaylistProvider {
+import com.kaltura.playkit.player.PKHttpClientManager;
+import com.kaltura.playkit.providers.MediaEntryProvider;
+
+
+
+public abstract class BEBaseProvider<OutputType> {
+
     public static final int MaxThreads = 3;
     private ExecutorService loadExecutor;
     protected RequestQueue requestsExecutor;
     protected SessionProvider sessionProvider;
-    private BEPlaylistProvider.LoaderFuture currentLoad;
+    private LoaderFuture<OutputType> currentLoad;
     protected final Object syncObject = new Object();
 
-    protected String tag = "BEMediaProvider";
+    protected String tag = "BEBaseProvider";
 
-    private static class LoaderFuture {
+    private static class LoaderFuture<OutputType> {
 
-        OnPlaylistLoadCompletion loadCompletion;
+        OnCompletion<ResultElement<OutputType>> loadCompletion;
         Future<Void> submittedTask;
 
-        LoaderFuture(@NonNull Future<Void> task, OnPlaylistLoadCompletion completion) {
+        LoaderFuture(@NonNull Future<Void> task, OnCompletion<ResultElement<OutputType>> completion) {
             this.submittedTask = task;
             this.loadCompletion = completion;
         }
@@ -68,7 +73,7 @@ public abstract class BEPlaylistProvider implements PlaylistProvider {
         }
     }
 
-    protected BEPlaylistProvider(String tag) {
+    protected BEBaseProvider(String tag) {
         if ("okhttp".equals(PKHttpClientManager.getHttpProvider())) {
             APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connection-pool with netkit
         }
@@ -80,7 +85,8 @@ public abstract class BEPlaylistProvider implements PlaylistProvider {
 
     protected abstract ErrorElement validateParams();
 
-    protected abstract Callable<Void> createNewLoader(OnPlaylistLoadCompletion completion);
+    protected abstract Callable<Void> createNewLoader(OnCompletion<ResultElement<OutputType>> completion);
+
     /**
      * Activates the providers data fetching process.
      * According to previously provided arguments, a request is built and passed to the remote server.
@@ -88,13 +94,12 @@ public abstract class BEPlaylistProvider implements PlaylistProvider {
      *
      * @param completion - a callback for handling the result of data fetching flow.
      */
-    @Override
-    public void load(final OnPlaylistLoadCompletion completion) {
+    public void load(final OnCompletion<ResultElement<OutputType>> completion) {
 
         ErrorElement error = validateParams();
         if (error != null) {
             if (completion != null) {
-                completion.onComplete(Accessories.<PKPlaylist>buildResult(null, error));
+                completion.onComplete(Accessories.<OutputType>buildResult(null, error));
             }
             return;
         }
@@ -102,16 +107,15 @@ public abstract class BEPlaylistProvider implements PlaylistProvider {
         //!- in case load action is in progress and new load is activated, prev request will be canceled
         if (currentLoad != null && currentLoad.cancel(true)) {
             if (currentLoad.loadCompletion != null) {
-                currentLoad.loadCompletion.onComplete(Accessories.<PKPlaylist>buildResult(null, ErrorElement.CanceledRequest));
+                currentLoad.loadCompletion.onComplete(Accessories.<OutputType>buildResult(null, ErrorElement.CanceledRequest));
             }
         }
         synchronized (syncObject) {
-            currentLoad = new BEPlaylistProvider.LoaderFuture(loadExecutor.submit(createNewLoader(completion)), completion);
+            currentLoad = new LoaderFuture<>(loadExecutor.submit(createNewLoader(completion)), completion);
             PKLog.v(tag, "new loader started " + currentLoad.toString());
         }
     }
 
-    @Override
     public void cancel() {
         synchronized (syncObject) {
             if (currentLoad != null && !currentLoad.isDone() && !currentLoad.isCancelled()) {
