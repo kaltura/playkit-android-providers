@@ -147,7 +147,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
 
 
     @Override
-    protected Callable<Void> factorNewLoader(OnPlaylistLoadCompletion completion) {
+    protected Callable<Void> createNewLoader(OnPlaylistLoadCompletion completion) {
         if (playlistId != null) {
             return new Loader(requestsExecutor, sessionProvider, playlistId, pageSize, pageIndex, completion);
         } else {

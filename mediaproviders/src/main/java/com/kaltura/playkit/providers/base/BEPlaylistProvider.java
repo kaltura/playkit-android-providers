@@ -80,7 +80,7 @@ public abstract class BEPlaylistProvider implements PlaylistProvider {
 
     protected abstract ErrorElement validateParams();
 
-    protected abstract Callable<Void> factorNewLoader(OnPlaylistLoadCompletion completion);
+    protected abstract Callable<Void> createNewLoader(OnPlaylistLoadCompletion completion);
     /**
      * Activates the providers data fetching process.
      * According to previously provided arguments, a request is built and passed to the remote server.
@@ -106,7 +106,7 @@ public abstract class BEPlaylistProvider implements PlaylistProvider {
             }
         }
         synchronized (syncObject) {
-            currentLoad = new BEPlaylistProvider.LoaderFuture(loadExecutor.submit(factorNewLoader(completion)), completion);
+            currentLoad = new BEPlaylistProvider.LoaderFuture(loadExecutor.submit(createNewLoader(completion)), completion);
             PKLog.v(tag, "new loader started " + currentLoad.toString());
         }
     }

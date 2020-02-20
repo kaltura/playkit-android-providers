@@ -173,7 +173,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
     }
 
 
-    protected Loader factorNewLoader(OnPlaylistLoadCompletion completion) {
+    protected Loader createNewLoader(OnPlaylistLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, playlist, completion);
     }
 

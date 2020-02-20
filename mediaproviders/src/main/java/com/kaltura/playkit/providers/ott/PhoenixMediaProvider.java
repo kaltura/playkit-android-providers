@@ -257,7 +257,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
-    protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
+    protected Loader createNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
     }
 

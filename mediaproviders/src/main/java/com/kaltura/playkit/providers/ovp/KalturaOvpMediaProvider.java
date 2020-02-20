@@ -160,7 +160,7 @@ public class KalturaOvpMediaProvider extends BEMediaProvider {
     }
 
     @Override
-    protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
+    protected Loader createNewLoader(OnMediaLoadCompletion completion) {
         return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, referrer, completion);
     }
 

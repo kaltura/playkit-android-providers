@@ -85,7 +85,7 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
 
     protected abstract ErrorElement validateParams();
 
-    protected abstract Callable<Void> factorNewLoader(OnMediaLoadCompletion completion);
+    protected abstract Callable<Void> createNewLoader(OnMediaLoadCompletion completion);
 
     /**
      * Activates the providers data fetching process.
@@ -112,7 +112,7 @@ public abstract class BEMediaProvider implements MediaEntryProvider {
             }
         }
         synchronized (syncObject) {
-            currentLoad = new LoaderFuture(loadExecutor.submit(factorNewLoader(completion)), completion);
+            currentLoad = new LoaderFuture(loadExecutor.submit(createNewLoader(completion)), completion);
             PKLog.v(tag, "new loader started " + currentLoad.toString());
         }
     }
