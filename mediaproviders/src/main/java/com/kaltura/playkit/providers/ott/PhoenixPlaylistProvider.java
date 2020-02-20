@@ -333,7 +333,7 @@ public class PhoenixPlaylistProvider extends BEPlaylistProvider {
                                 break;
                             }
                         }
-                        if (allErrors == true) {
+                        if (allErrors) {
                             completion.onComplete(Accessories.buildResult(null, parsedResponses.get(0).error));
                             return;
                         }

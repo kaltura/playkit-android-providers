@@ -825,23 +825,20 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         // needed to sort the playback source result to be in the same order as in the requested list.
         private static void playbackSourcesSort(final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
-            Collections.sort(playbackSources, new Comparator<KalturaPlaybackSource>() {
-                @Override
-                public int compare(KalturaPlaybackSource o1, KalturaPlaybackSource o2) {
+            Collections.sort(playbackSources, (o1, o2) -> {
 
-                    int valueIndex1 = -1;
-                    int valueIndex2 = -1;
-                    if (sourcesFilter != null) {
-                        valueIndex1 = sourcesFilter.indexOf(o1.getType());
-                        if (valueIndex1 == -1) {
-                            valueIndex1 = sourcesFilter.indexOf(o1.getId() + "");
-                            valueIndex2 = sourcesFilter.indexOf(o2.getId() + "");
-                        } else {
-                            valueIndex2 = sourcesFilter.indexOf(o2.getType());
-                        }
+                int valueIndex1 = -1;
+                int valueIndex2 = -1;
+                if (sourcesFilter != null) {
+                    valueIndex1 = sourcesFilter.indexOf(o1.getType());
+                    if (valueIndex1 == -1) {
+                        valueIndex1 = sourcesFilter.indexOf(o1.getId() + "");
+                        valueIndex2 = sourcesFilter.indexOf(o2.getId() + "");
+                    } else {
+                        valueIndex2 = sourcesFilter.indexOf(o2.getType());
                     }
-                    return valueIndex1 - valueIndex2;
                 }
+                return valueIndex1 - valueIndex2;
             });
         }
     }

@@ -24,7 +24,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.player.PKHttpClientManager;
-import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.PlaylistProvider;
 
 import java.util.concurrent.Callable;

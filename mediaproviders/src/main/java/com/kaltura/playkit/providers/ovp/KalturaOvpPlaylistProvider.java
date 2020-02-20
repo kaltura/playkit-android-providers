@@ -11,7 +11,6 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 
-import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.netkit.utils.SessionProvider;
 import com.kaltura.playkit.PKLog;
 
@@ -24,7 +23,6 @@ import com.kaltura.playkit.providers.api.ovp.KalturaOvpParser;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 
 import com.kaltura.playkit.providers.api.ovp.model.KalturaBaseEntryListResponse;
-import com.kaltura.playkit.providers.api.ovp.model.KalturaEntryType;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadata;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadataListResponse;
@@ -35,13 +33,11 @@ import com.kaltura.playkit.providers.api.ovp.services.BaseEntryService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpService;
 import com.kaltura.playkit.providers.api.ovp.services.OvpSessionService;
 import com.kaltura.playkit.providers.api.ovp.services.PlaylistService;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.base.BECallableLoader;
 
 import com.kaltura.playkit.providers.base.BEPlaylistProvider;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
-import com.kaltura.playkit.utils.Consts;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -344,7 +340,7 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
                                     break;
                                 }
                             }
-                            if (allErrors == true) {
+                            if (allErrors) {
                                 completion.onComplete(Accessories.buildResult(null, responses.get(0).error));
                                 return;
                             }
@@ -559,61 +555,6 @@ public class KalturaOvpPlaylistProvider extends BEPlaylistProvider {
         }
         return mediaEntryType;
     }
-
-//    private PKPlaylist getPKPlaylistForAssetList(String playlistKs, List<KalturaMediaAsset> entriesList, List<Map<String,String>> assetsMetadtaList) {
-//        if (entriesList == null || assetsMetadtaList == null) {
-//            return null;
-//        }
-//
-//        List<PKPlaylistMedia> mediaList = new ArrayList<>();
-//
-//        int listIndex = 0;
-//        for (KalturaMediaAsset kalturaMediaEntry : entriesList) {
-//            if (kalturaMediaEntry == null || kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty() ||
-//                    kalturaMediaEntry.getImages() == null || kalturaMediaEntry.getImages().isEmpty()) {
-//                mediaList.add(null);
-//                listIndex++;
-//                continue;
-//            }
-//
-//            mediaList.add(new PKPlaylistMedia().
-//                    setMediaIndex(listIndex).
-//                    setId(String.valueOf(kalturaMediaEntry.getId())).
-//                    setName(kalturaMediaEntry.getName()).
-//
-//                    setDescription(kalturaMediaEntry.getDescription()).
-//                            setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
-//                            setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
-//                            setTags(assetsMetadtaList.get(listIndex).get("tags")).
-//                            setMetadata(assetsMetadtaList.get(listIndex)));
-//            listIndex++;
-//        }
-//
-//        PKPlaylist playlist = new PKPlaylist().
-//                setKs(playlistKs).
-//                setId("1").
-//                setName("Playlist").
-//                setDescription("").
-//                setThumbnailUrl("").
-//                setMediaList(mediaList);
-//
-//        return playlist;
-//    }
-//
-//    private PKMediaEntry.MediaEntryType getTypeOf(KalturaEntryType type) {
-//        if (type == null) {
-//            return PKMediaEntry.MediaEntryType.Unknown;
-//        }
-//
-//        switch (type) {
-//            case MEDIA_CLIP:
-//                return PKMediaEntry.MediaEntryType.Vod;
-//            case LIVE_STREAM:
-//                return PKMediaEntry.MediaEntryType.Live;
-//            default:
-//                return PKMediaEntry.MediaEntryType.Unknown;
-//        }
-//    }
 
     private String getDefaultWidgetId(int partnerId) {
         return "_" + partnerId;
