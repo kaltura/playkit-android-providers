@@ -4,15 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 public enum KalturaPlaylistType {
     @SerializedName("3")
-    STATIC_LIST("3"),
+    STATIC_LIST,
     @SerializedName("10")
-    DYNAMIC("10"),
+    DYNAMIC,
     @SerializedName("101")
-    EXTERNAL("101");
-
-    public String type;
-
-    KalturaPlaylistType(String type) {
-        this.type = type;
-    }
+    EXTERNAL
 }
