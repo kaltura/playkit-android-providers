@@ -14,10 +14,6 @@ package com.kaltura.playkit.providers.api.ovp.model;
 
 import com.google.gson.annotations.SerializedName;
 
-/**
- * Created by tehilarozin on 21/12/2016.
- */
-
 public enum KalturaMediaType {
 
     @SerializedName("1")
