@@ -1,7 +1,10 @@
 package com.kaltura.playkit.providers.ott;
 
 import com.kaltura.playkit.providers.BaseMediaAsset;
-import com.kaltura.playkit.providers.api.phoenix.APIDefines;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines.AssetReferenceType;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaAssetType;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaUrlType;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines.PlaybackContextType;
 
 import java.util.List;
 
@@ -9,20 +12,19 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     String assetId;
 
-    APIDefines.KalturaAssetType assetType;
+    KalturaAssetType assetType;
 
-    APIDefines.AssetReferenceType assetReferenceType;
+    AssetReferenceType assetReferenceType;
 
-    APIDefines.PlaybackContextType contextType;
+    PlaybackContextType contextType;
 
-    APIDefines.KalturaUrlType urlType;
+    KalturaUrlType urlType;
 
     List<String> formats;
 
     List<String> mediaFileIds;
 
     String protocol;
-
 
     public OTTMediaAsset() {
     }
@@ -37,23 +39,23 @@ public class OTTMediaAsset extends BaseMediaAsset {
         return this;
     }
 
-    public OTTMediaAsset setAssetType(APIDefines.KalturaAssetType assetType) {
+    public OTTMediaAsset setAssetType(KalturaAssetType assetType) {
         this.assetType = assetType;
         return this;
     }
 
-    public OTTMediaAsset setAssetReferenceType(APIDefines.AssetReferenceType assetReferenceType) {
+    public OTTMediaAsset setAssetReferenceType(AssetReferenceType assetReferenceType) {
         this.assetReferenceType = assetReferenceType;
         return this;
     }
 
-    public OTTMediaAsset setContextType(APIDefines.PlaybackContextType contextType) {
+    public OTTMediaAsset setContextType(PlaybackContextType contextType) {
         this.contextType = contextType;
         return this;
     }
 
 
-    public OTTMediaAsset setUrlType(APIDefines.KalturaUrlType urlType) {
+    public OTTMediaAsset setUrlType(KalturaUrlType urlType) {
         this.urlType = urlType;
         return this;
     }
@@ -82,19 +84,19 @@ public class OTTMediaAsset extends BaseMediaAsset {
         return assetId;
     }
 
-    public APIDefines.KalturaAssetType getAssetType() {
+    public KalturaAssetType getAssetType() {
         return assetType;
     }
 
-    public APIDefines.AssetReferenceType getAssetReferenceType() {
+    public AssetReferenceType getAssetReferenceType() {
         return assetReferenceType;
     }
 
-    public APIDefines.PlaybackContextType getContextType() {
+    public PlaybackContextType getContextType() {
         return contextType;
     }
 
-    public APIDefines.KalturaUrlType getUrlType() {
+    public KalturaUrlType getUrlType() {
         return urlType;
     }
 
