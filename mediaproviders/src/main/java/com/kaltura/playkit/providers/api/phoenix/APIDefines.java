@@ -24,7 +24,7 @@ public class APIDefines {
         Media("media"),
         InternalEpg("epg_internal"),
         ExternalEpg("epg_external"),
-        Npvr("npvr");
+        Npvr("nPVR");
 
         public String value;
 
