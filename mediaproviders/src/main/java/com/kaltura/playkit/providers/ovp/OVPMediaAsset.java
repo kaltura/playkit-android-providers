@@ -1,10 +1,10 @@
 package com.kaltura.playkit.providers.ovp;
 
-public class OVPMediaAsset {
+import com.kaltura.playkit.providers.BaseMediaAsset;
+
+public class OVPMediaAsset extends BaseMediaAsset {
 
     String entryId;
-    String ks;
-    String referrer;
 
     public OVPMediaAsset() {
     }
@@ -15,12 +15,16 @@ public class OVPMediaAsset {
     }
 
     public OVPMediaAsset setKs(String ks) {
-        this.ks = ks;
+        super.setKs(ks);
         return this;
     }
 
     public OVPMediaAsset setReferrer(String referrer) {
-        this.referrer = referrer;
+        super.setReferrer(referrer);
         return this;
+    }
+
+    public String getEntryId() {
+        return entryId;
     }
 }

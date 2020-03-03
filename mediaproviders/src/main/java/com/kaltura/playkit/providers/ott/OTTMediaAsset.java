@@ -1,14 +1,13 @@
 package com.kaltura.playkit.providers.ott;
 
+import com.kaltura.playkit.providers.BaseMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 
 import java.util.List;
 
-public class OTTMediaAsset {
+public class OTTMediaAsset extends BaseMediaAsset {
 
     String assetId;
-
-    String ks;
 
     APIDefines.KalturaAssetType assetType;
 
@@ -24,7 +23,6 @@ public class OTTMediaAsset {
 
     String protocol;
 
-    String referrer;
 
     public OTTMediaAsset() {
     }
@@ -35,7 +33,7 @@ public class OTTMediaAsset {
     }
 
     public OTTMediaAsset setKs(String ks) {
-        this.ks = ks;
+        super.setKs(ks);
         return this;
     }
 
@@ -76,8 +74,40 @@ public class OTTMediaAsset {
     }
 
     public OTTMediaAsset setReferrer(String referrer) {
-        this.referrer = referrer;
+        super.setReferrer(referrer);
         return this;
+    }
+
+    public String getAssetId() {
+        return assetId;
+    }
+
+    public APIDefines.KalturaAssetType getAssetType() {
+        return assetType;
+    }
+
+    public APIDefines.AssetReferenceType getAssetReferenceType() {
+        return assetReferenceType;
+    }
+
+    public APIDefines.PlaybackContextType getContextType() {
+        return contextType;
+    }
+
+    public APIDefines.KalturaUrlType getUrlType() {
+        return urlType;
+    }
+
+    public List<String> getFormats() {
+        return formats;
+    }
+
+    public List<String> getMediaFileIds() {
+        return mediaFileIds;
+    }
+
+    public String getProtocol() {
+        return protocol;
     }
 
     public boolean hasFormats() {

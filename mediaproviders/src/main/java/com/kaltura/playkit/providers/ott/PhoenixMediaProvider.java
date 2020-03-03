@@ -134,7 +134,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
      * @return - instance of PhoenixMediaProvider
      */
     public PhoenixMediaProvider setReferrer(String referrer) {
-        mediaAsset.referrer = referrer;
+        mediaAsset.setReferrer(referrer);
         return this;
     }
 
@@ -356,8 +356,8 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                 contextOptions.setMediaProtocol(mediaAsset.protocol);
             }
 
-            if (!TextUtils.isEmpty(mediaAsset.referrer)) {
-                contextOptions.setReferrer(mediaAsset.referrer);
+            if (!TextUtils.isEmpty(mediaAsset.getReferrer())) {
+                contextOptions.setReferrer(mediaAsset.getReferrer());
             }
 
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
