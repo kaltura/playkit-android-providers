@@ -220,8 +220,10 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
             }
 
             for (OTTMediaAsset mediaAsset : playlistRequest.mediaAssets) {
-                builder.add(getPlaylistRequest(baseUrl, multiReqKs, mediaAsset.assetId, mediaAsset.assetReferenceType != null ? mediaAsset.assetReferenceType : APIDefines.AssetReferenceType.Media));
-
+                builder.add(getPlaylistRequest(baseUrl,
+                        multiReqKs,
+                        mediaAsset.assetId,
+                        mediaAsset.assetReferenceType != null ? mediaAsset.assetReferenceType : APIDefines.AssetReferenceType.Media));
             }
             return builder;
         }
