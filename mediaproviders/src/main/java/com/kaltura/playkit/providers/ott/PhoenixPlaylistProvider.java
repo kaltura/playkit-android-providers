@@ -187,7 +187,6 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
 
         private PKPlaylistRequest playlistRequest;
 
-
         public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, PKPlaylistRequest playlistRequest, OnCompletion<ResultElement<PKPlaylist>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
@@ -201,7 +200,6 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
             return EnableEmptyKs || !TextUtils.isEmpty(ks) ? null :
                     ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
         }
-
 
         private RequestBuilder getPlaylistRequest(String baseUrl, String ks, String assetId, APIDefines.AssetReferenceType assetReferenceType) {
             return AssetService.get(baseUrl, ks, assetId, assetReferenceType);
@@ -293,7 +291,6 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
                 KalturaMediaAsset asset = null;
 
                 try {
-
                     log.d(loadId + ": parsing response  [" + Loader.this.toString() + "]");
                     BaseResult loginResult = null;
 
@@ -373,7 +370,6 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
 
             log.w(loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
-
         }
 
         private PKPlaylist getPKPlaylist(String playlistKs, List<KalturaMediaAsset> entriesList, List<Map<String, String>> assetsMetadtaList) {
