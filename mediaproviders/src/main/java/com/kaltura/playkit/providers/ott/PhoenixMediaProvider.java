@@ -542,7 +542,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
-            log.w(loadId + " media load finished, callback passed...notifyCompletion");
+            log.v(loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
         }

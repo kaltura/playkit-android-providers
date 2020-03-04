@@ -237,7 +237,6 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
 
                         try {
                             onAssetGetResponse(response, ks);
-
                         } catch (InterruptedException e) {
                             interrupted();
                         }
@@ -263,7 +262,7 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
         }
 
         /**
-         * Parse and create a {@link PKMediaEntry} object from the API response.
+         * Parse and create a {@link PKPlaylist} object from the API response.
          *
          * @param response - server response
          * @throws InterruptedException - {@link InterruptedException}
@@ -364,7 +363,7 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
                 completion.onComplete(Accessories.buildResult(pkPlaylist, error));
             }
 
-            log.w(loadId + " media load finished, callback passed...notifyCompletion");
+            log.v(loadId + " playlist load finished, callback passed...notifyCompletion");
             notifyCompletion();
         }
 
