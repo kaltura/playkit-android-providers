@@ -216,8 +216,9 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
             }
 
             for (OTTMediaAsset mediaAsset : playlistRequest.mediaAssets) {
+                String requestKS = TextUtils.isEmpty(mediaAsset.getKs()) ? multiReqKs : mediaAsset.getKs();
                 APIDefines.AssetReferenceType assetReferenceType = mediaAsset.assetReferenceType != null ? mediaAsset.assetReferenceType : APIDefines.AssetReferenceType.Media;
-                builder.add((RequestBuilder) AssetService.get(baseUrl, multiReqKs, mediaAsset.assetId, assetReferenceType));
+                builder.add((RequestBuilder) AssetService.get(baseUrl, requestKS, mediaAsset.assetId, assetReferenceType));
             }
             return builder;
         }

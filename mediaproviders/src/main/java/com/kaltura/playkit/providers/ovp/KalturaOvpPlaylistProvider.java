@@ -215,7 +215,8 @@ public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> imple
             }
 
             for (OVPMediaAsset ovpMediaAsset : mediaAssets) {
-                multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, ovpMediaAsset.entryId), MetaDataService.list(baseUrl, ks, ovpMediaAsset.entryId));
+                String requestKS = TextUtils.isEmpty(ovpMediaAsset.getKs()) ? ks : ovpMediaAsset.getKs();
+                multiRequestBuilder.add(BaseEntryService.list(baseUrl, requestKS, ovpMediaAsset.entryId), MetaDataService.list(baseUrl, requestKS, ovpMediaAsset.entryId));
             }
 
             return multiRequestBuilder;

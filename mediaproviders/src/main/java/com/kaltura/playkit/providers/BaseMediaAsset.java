@@ -2,8 +2,8 @@ package com.kaltura.playkit.providers;
 
 public class BaseMediaAsset {
 
-    private String ks;
-    private String referrer;
+    String ks;
+    String referrer;
 
     public String getKs() {
         return ks;
