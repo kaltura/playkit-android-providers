@@ -201,10 +201,6 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
                     ErrorElement.BadRequestError.message(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
         }
 
-        private RequestBuilder getPlaylistRequest(String baseUrl, String ks, String assetId, APIDefines.AssetReferenceType assetReferenceType) {
-            return AssetService.get(baseUrl, ks, assetId, assetReferenceType);
-        }
-
         private RequestBuilder getRemoteRequest(String baseUrl, String ks, String referrer, PKPlaylistRequest playlistRequest) {
 
             String multiReqKs;
@@ -220,10 +216,8 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
             }
 
             for (OTTMediaAsset mediaAsset : playlistRequest.mediaAssets) {
-                builder.add(getPlaylistRequest(baseUrl,
-                        multiReqKs,
-                        mediaAsset.assetId,
-                        mediaAsset.assetReferenceType != null ? mediaAsset.assetReferenceType : APIDefines.AssetReferenceType.Media));
+                APIDefines.AssetReferenceType assetReferenceType = mediaAsset.assetReferenceType != null ? mediaAsset.assetReferenceType : APIDefines.AssetReferenceType.Media;
+                builder.add((RequestBuilder) AssetService.get(baseUrl, multiReqKs, mediaAsset.assetId, assetReferenceType));
             }
             return builder;
         }
