@@ -18,9 +18,6 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringDef;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
@@ -44,7 +41,6 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,13 +48,10 @@ import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.api.SimpleSessionProvider;
 import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
-import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackContext;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackSource;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
 import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
 import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
 import com.kaltura.playkit.providers.api.phoenix.services.PhoenixService;
@@ -67,12 +60,9 @@ import com.kaltura.playkit.providers.base.BECallableLoader;
 import com.kaltura.playkit.providers.base.BEResponseListener;
 import com.kaltura.playkit.providers.base.FormatsHelper;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
-import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.providers.ott.PhoenixProviderUtils.MediaTypeConverter;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.kaltura.playkit.utils.Consts;
 
 import static com.kaltura.playkit.providers.MediaProvidersUtils.buildBadRequestErrorElement;
 import static com.kaltura.playkit.providers.MediaProvidersUtils.buildGeneralErrorElement;
@@ -80,6 +70,13 @@ import static com.kaltura.playkit.providers.MediaProvidersUtils.buildLoadErrorEl
 import static com.kaltura.playkit.providers.MediaProvidersUtils.buildNotFoundlErrorElement;
 import static com.kaltura.playkit.providers.MediaProvidersUtils.isDRMSchemeValid;
 import static com.kaltura.playkit.providers.MediaProvidersUtils.updateDrmParams;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.createOttMetadata;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.is360Supported;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.isAPIExceptionResponse;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.isLiveMediaEntry;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.parseAPIExceptionError;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.parseErrorRersponse;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.updateErrorElement;
 
 
 /**
@@ -101,15 +98,6 @@ import static com.kaltura.playkit.providers.MediaProvidersUtils.updateDrmParams;
 public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implements MediaEntryProvider {
 
     private static final PKLog log = PKLog.get("PhoenixMediaProvider");
-
-    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLiveAsset"; //Might be needed to support in KalturaProgramAsset for EPG
-
-    public static final String KALTURA_API_EXCEPTION = "KalturaAPIException";
-    public static final String ERROR = "error";
-    public static final String OBJECT_TYPE = "objectType";
-    public static final String CODE = "code";
-    public static final String MESSAGE = "message";
-    public static final String RESULT = "result";
 
     private static final boolean EnableEmptyKs = true;
 
@@ -561,7 +549,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
 
         private boolean isValidResponse(ResponseElement response) {
 
-            if (isErrorResponse(response)) {
+            if (PhoenixProviderUtils.isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
                     errorResponse = buildGeneralErrorElement("multirequest response is null");
@@ -587,189 +575,9 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
             return true;
         }
 
-
-        private boolean isAPIExceptionResponse(ResponseElement response) {
-            return response == null || (response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION));
-        }
-
-        private boolean isErrorResponse(ResponseElement response) {
-            return response == null || (!response.isSuccess() && response.getError() != null);
-        }
-
-        private ErrorElement parseErrorRersponse(ResponseElement response) {
-            if (response != null) {
-                return response.getError();
-            }
-            return null;
-        }
-
-        private ErrorElement parseAPIExceptionError(ResponseElement response) {
-
-            if (response != null) {
-
-                try {
-                    JSONObject apiException = new JSONObject(response.getResponse());
-
-                    if (apiException.has(RESULT)) {
-                        String ottError = "OTTError";
-                        if (apiException.get(RESULT) instanceof JSONObject) {
-
-                            JSONObject result = (JSONObject) apiException.get(RESULT);
-                            if (result != null && result.has(ERROR)) {
-                                JSONObject error = (JSONObject) result.get(ERROR);
-                                Map<String, String> errorMap = getAPIExceptionData(error);
-                                if (errorMap != null) {
-                                    return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
-                                }
-                            }
-                        } else if (apiException.get(RESULT) instanceof JSONArray) {
-
-                            JSONArray result = (JSONArray) apiException.get(RESULT);
-                            for(int idx = 0 ; idx < result.length() ; idx++) {
-                                JSONObject error = (JSONObject) result.get(idx);
-                                if (error != null && error.has(ERROR)) {
-                                    JSONObject resultIndexJsonObjectError = (JSONObject) error.get(ERROR);
-                                    Map<String, String> errorMap = getAPIExceptionData(resultIndexJsonObjectError);
-                                    if (errorMap != null) {
-                                        return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                } catch (JSONException | NumberFormatException ex) {
-                    log.e("parseAPIExceptionError Exception = " + ex.getMessage());
-                }
-            }
-
-            return null;
-        }
-
-        private Map<String,String> getAPIExceptionData(JSONObject error) {
-
-            try {
-
-                if (error != null) {
-
-                    Map<String,String> errorMap = new HashMap<>();
-
-                    if (error.has(OBJECT_TYPE)) {
-                        String objectType = error.getString(OBJECT_TYPE);
-                        errorMap.put(OBJECT_TYPE, objectType);
-                    }
-
-                    if (error.has(CODE)) {
-                        String errorCode = error.getString(CODE);
-                        errorMap.put(CODE, errorCode);
-                    }
-
-                    if (error.has(MESSAGE)) {
-                        String errorMessage = error.getString(MESSAGE);
-                        errorMap.put(MESSAGE, errorMessage);
-                    }
-
-                    //log.d("Error objectType = " + objectType + " errorCode = " + errorCode + "errorMessage = " + errorMessage);
-                    return errorMap;
-                }
-            } catch (JSONException | NumberFormatException ex) {
-                log.e("getAPIExceptionData Exception = " + ex.getMessage());
-            }
-
-            return null;
-        }
-
         private boolean isDvrLiveMedia() {
             return mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver;
         }
-    }
-
-    private boolean is360Supported(Map<String, String> metadata) {
-        return ("360".equals(metadata.get("tags")));
-    }
-
-    @NonNull
-    private Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset) {
-        Map<String, String> metadata = new HashMap<>();
-        JsonObject tags = kalturaMediaAsset.getTags();
-        for (Map.Entry<String, JsonElement> entry : tags.entrySet()) {
-            for (Map.Entry<String, JsonElement> object : entry.getValue().getAsJsonObject().entrySet()) {
-                if (object.getValue().isJsonArray()) {
-                    JsonArray objectsArray = object.getValue().getAsJsonArray();
-                    for (int i = 0; i < objectsArray.size(); i++) {
-                        metadata.put(entry.getKey(), safeGetValue(objectsArray.get(i)));
-                    }
-                }
-            }
-        }
-
-        JsonObject metas = kalturaMediaAsset.getMetas();
-        if (metas != null) {
-            for (Map.Entry<String, JsonElement> entry : metas.entrySet()) {
-                metadata.put(entry.getKey(), safeGetValue(entry.getValue()));
-            }
-        }
-
-        for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
-            metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
-        }
-
-        metadata.put("assetId", String.valueOf(kalturaMediaAsset.getId()));
-        if (!TextUtils.isEmpty(kalturaMediaAsset.getEntryId())) {
-            metadata.put("entryId", kalturaMediaAsset.getEntryId());
-        }
-        if (kalturaMediaAsset.getName() != null) {
-            metadata.put("name", kalturaMediaAsset.getName());
-        }
-        if (kalturaMediaAsset.getDescription() != null) {
-            metadata.put("description", kalturaMediaAsset.getDescription());
-        }
-
-        metadata.put("assetType", mediaAsset.assetType.value);
-        if (isRecordingMediaEntry(kalturaMediaAsset)) {
-            metadata.put("recordingId", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingId());
-            metadata.put("recordingType", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingType().name());
-        }
-        return metadata;
-    }
-
-    private String safeGetValue(JsonElement value) {
-        if (value == null || value.isJsonNull() || !value.isJsonObject()) {
-            return null;
-        }
-
-        final JsonElement valueElement = value.getAsJsonObject().get("value");
-        return (valueElement != null && !valueElement.isJsonNull()) ? valueElement.getAsString() : null;
-    }
-
-    private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
-        //error = ErrorElement.LoadError.message("failed to get multirequest responses on load request for asset "+mediaAsset.assetId);
-        ErrorElement error;
-        if (loginResult != null && loginResult.error != null) {
-            error = PhoenixErrorHelper.getErrorElement(loginResult.error); // get predefined error if exists for this error code
-        } else if (playbackContextResult != null && playbackContextResult.error != null) {
-            error = PhoenixErrorHelper.getErrorElement(playbackContextResult.error); // get predefined error if exists for this error code
-        } else if (assetGetResult != null && assetGetResult.error != null) {
-            error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined error if exists for this error code
-        } else {
-            error = response != null && response.getError() != null ? response.getError() : buildLoadErrorElement("either response is null or response.getError() is null");
-        }
-        return error;
-    }
-
-    private boolean isLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
-        if (kalturaMediaAsset == null) {
-            return false;
-        }
-
-        String externalIdsStr = kalturaMediaAsset.getExternalIds();
-        return (LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType()) ||
-                !TextUtils.isEmpty(externalIdsStr) && TextUtils.isDigitsOnly(externalIdsStr) && Long.valueOf(externalIdsStr) != 0) ||
-                (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver);
-    }
-
-    private boolean isRecordingMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
-        return kalturaMediaAsset instanceof KalturaRecordingAsset;
     }
 
     static class ProviderParser {
@@ -851,16 +659,6 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
         }
     }
 
-    static class MediaTypeConverter {
-
-        public static PKMediaEntry.MediaEntryType toMediaEntryType(String mediaType) {
-            switch (mediaType) {
-                default:
-                    return PKMediaEntry.MediaEntryType.Unknown;
-            }
-        }
-    }
-
     @StringDef({HttpProtocol.Http, HttpProtocol.Https, HttpProtocol.All})
     @Retention(RetentionPolicy.SOURCE)
     public @interface HttpProtocol {
@@ -868,5 +666,4 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
         String Https = "https";     // only https sources
         String All = "all";         // do not filter by protocol
     }
-
 }
