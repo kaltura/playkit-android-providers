@@ -7,6 +7,7 @@ import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
+import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
@@ -37,7 +38,6 @@ import com.kaltura.playkit.providers.base.BECallableLoader;
 import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -241,9 +241,7 @@ public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> imple
                         PKPlaylist playlistResult = null;
                         ErrorElement error = null;
 
-                        if (response == null || response.getError() != null) {
-                            error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
-                            completion.onComplete(Accessories.buildResult(null, error));
+                        if (isErrorInResponse(response, error)) {
                             return;
                         }
 
@@ -292,14 +290,12 @@ public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> imple
         }
 
         private void handleByPlaylistAssets(String ks) throws InterruptedException {
-            final RequestBuilder entryRequest = getPlaylistInfoByEntryIdList(getApiBaseUrl(), ks, sessionProvider.partnerId())//getEntryInfo(getApiBaseUrl(), ks, sessionProvider.partnerId())
+            final RequestBuilder entryRequest = getPlaylistInfoByEntryIdList(getApiBaseUrl(), ks, sessionProvider.partnerId())
                     .completion(response -> {
-                        PKPlaylist playlistResult = null;
+                        PKPlaylist playlistResult;
                         ErrorElement error = null;
 
-                        if (response == null || response.getError() != null) {
-                            error = response.getError() != null ? response.getError() : ErrorElement.LoadError;
-                            completion.onComplete(Accessories.buildResult(null, error));
+                        if (isErrorInResponse(response, error)) {
                             return;
                         }
 
@@ -332,7 +328,7 @@ public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> imple
 
                         if (!TextUtils.isEmpty(ks) && responses.size() == mediaAssets.size() * 2 || responses.size() == (mediaAssets.size() * 2 + 1)) {
                             List<KalturaMediaEntry> entriesList = new ArrayList<>();
-                            List<Map<String,String>> metadataList = new ArrayList<Map<String,String>>();
+                            List<Map<String,String>> metadataList = new ArrayList<>();
                             int playlistListIndex = TextUtils.isEmpty(ks) ? 1 : 0;
                             for( ; playlistListIndex < responses.size() ; playlistListIndex++) {
                                 if (responses.get(playlistListIndex).error != null) {
@@ -400,6 +396,20 @@ public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> imple
             if (!isCanceled()) {
                 waitCompletion();
             }
+        }
+
+        private boolean isErrorInResponse(ResponseElement response, ErrorElement error) {
+            if (response == null) {
+                error = ErrorElement.LoadError.message("failed to get valid response, response == null");
+            } else if (response.getError() != null) {
+                error = response.getError();
+            }
+
+            if (error != null) {
+                completion.onComplete(Accessories.buildResult(null, error));
+                return true;
+            }
+            return false;
         }
 
         private String getApiBaseUrl() {

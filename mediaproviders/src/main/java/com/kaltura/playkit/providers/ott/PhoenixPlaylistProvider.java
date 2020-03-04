@@ -304,7 +304,7 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
                     }
 
                     if (loginResult != null && loginResult.error != null) {
-                        error = ErrorElement.LoadError.message("failed to get responses on load requests");
+                        error = loginResult.error;
                         completion.onComplete(Accessories.buildResult(null, error));
                         return;
                     } else {
