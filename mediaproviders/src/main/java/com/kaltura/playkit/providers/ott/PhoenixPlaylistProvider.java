@@ -386,7 +386,6 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
 
                 if (kalturaMediaEntry.getMediaFiles().get(0) != null) {
                     mediaList.add(new PKPlaylistMedia().
-                            setMediaIndex(listIndex).
                             setId(String.valueOf(kalturaMediaEntry.getId())).
                             setName(kalturaMediaEntry.getName()).
                             setDescription(kalturaMediaEntry.getDescription()).
