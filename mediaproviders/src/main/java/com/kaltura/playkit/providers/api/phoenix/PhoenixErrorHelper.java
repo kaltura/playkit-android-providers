@@ -15,7 +15,6 @@ package com.kaltura.playkit.providers.api.phoenix;
 import android.text.TextUtils;
 
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.RestrictionError;
 
 /**
  * @hide

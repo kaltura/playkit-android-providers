@@ -119,14 +119,11 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
         RequestBuilder requestBuilder = MediaMarkService.sendTVPAPIEvent(baseUrl + "m=" + method, initObject, action,
                 currentMediaId, fileId, lastKnownPlayerPosition);
 
-        requestBuilder.completion(new OnRequestCompletion() {
-            @Override
-            public void onComplete(ResponseElement response) {
-                if (response.isSuccess() && response.getResponse().toLowerCase(Locale.ENGLISH).contains("concurrent")){
-                    messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
-                    messageBus.post(new TVPAPIAnalyticsEvent.TVPAPIAnalyticsReport(eventType.toString()));
-                    log.d("onComplete send event: " + eventType);
-                }
+        requestBuilder.completion(response -> {
+            if (response.isSuccess() && response.getResponse().toLowerCase(Locale.ENGLISH).contains("concurrent")){
+                messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
+                messageBus.post(new TVPAPIAnalyticsEvent.TVPAPIAnalyticsReport(eventType.toString()));
+                log.d("onComplete send event: " + eventType);
             }
         });
         requestsExecutor.queue(requestBuilder.build());

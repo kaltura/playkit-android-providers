@@ -12,11 +12,22 @@
 
 package com.kaltura.playkit.providers.api.ovp.model;
 
+import com.google.gson.annotations.SerializedName;
 
-/**
- * @hide
- */
+public enum KalturaMediaType {
 
-public class KalturaLiveStreamEntry extends KalturaMediaEntry {
-
+    @SerializedName("1")
+    VIDEO,
+    @SerializedName("2")
+    IMAGE,
+    @SerializedName("5")
+    AUDIO,
+    @SerializedName("201")
+    LIVE_STREAM_FLASH,
+    @SerializedName("202")
+    LIVE_STREAM_WINDOWS_MEDIA,
+    @SerializedName("203")
+    LIVE_STREAM_REAL_MEDIA,
+    @SerializedName("204")
+    LIVE_STREAM_QUICKTIME
 }
