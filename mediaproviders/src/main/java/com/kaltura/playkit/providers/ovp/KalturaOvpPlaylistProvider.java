@@ -355,7 +355,6 @@ public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> imple
                                 }
                                 Map<String,String> mediaMetadata = metadataList.get(listIndex);
                                 mediaList.add(new PKPlaylistMedia().
-                                        setMediaIndex(listIndex++).
                                         setId(kalturaMediaEntry.getId()).
                                         setName(kalturaMediaEntry.getName()).
                                         setDescription(kalturaMediaEntry.getDescription()).
@@ -421,10 +420,8 @@ public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> imple
 
     private PKPlaylist getPKPlaylist(String playlistKs, KalturaPlaylist kalturaPlaylist,  List<KalturaMediaEntry> entriesList) {
         List<PKPlaylistMedia> mediaList = new ArrayList<>();
-        int listIndex = 0;
         for (KalturaMediaEntry kalturaMediaEntry : entriesList) {
             mediaList.add(new PKPlaylistMedia().
-                    setMediaIndex(listIndex++).
                     setId(kalturaMediaEntry.getId()).
                     setName(kalturaMediaEntry.getName()).
                     setDescription(kalturaMediaEntry.getDescription()).

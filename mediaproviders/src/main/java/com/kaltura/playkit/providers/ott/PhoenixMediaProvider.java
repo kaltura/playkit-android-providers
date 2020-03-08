@@ -115,6 +115,11 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
         setSessionProvider(new SimpleSessionProvider(baseUrl, partnerId, ks));
     }
 
+    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final OTTMediaAsset mediaAsset) {
+        this(baseUrl, partnerId, mediaAsset.getKs());
+        this.mediaAsset = mediaAsset;
+    }
+
     /**
      * NOT MANDATORY! The referrer url, to fetch the data for.
      *
