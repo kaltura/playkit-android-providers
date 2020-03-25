@@ -89,7 +89,7 @@ public class PhoenixTvpapiAndroidTest {
     private void setPhoenixPluginConfig() {
         phoenixPluginConfig = new JsonObject();
         phoenixPluginConfig.addProperty("fileId", "464302");
-        phoenixPluginConfig.addProperty("baseUrl", "http://api-preprod.ott.kaltura.com/v4_1/api_v3/");
+        phoenixPluginConfig.addProperty("baseUrl", "http://api-preprod.ott.kaltura.com/v5_2_8/api_v3/");
         phoenixPluginConfig.addProperty("timerInterval", 30);
         phoenixPluginConfig.addProperty("ks", ks);
         phoenixPluginConfig.addProperty("partnerId", 198);

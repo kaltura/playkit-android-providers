@@ -37,7 +37,7 @@ public class MockParams {
     public static final String OvpAnonymousKS = "djJ8MjIyMjQwMXzXI4NeVu8er1kyU5oUr9CQfR79mb3mpSxSnRM99MaITqbLMQMmATdEhAyESU7-IW7YxYwDdHvd2XPz7xVVCaV1y1fIx34NM69w9pJLcrZPiw==";
 
     //OTT:
-    public static final String PnxBaseUrl = "https://api-preprod.ott.kaltura.com/v4_2/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
+    public static final String PnxBaseUrl = "https://api-preprod.ott.kaltura.com/v5_2_8/api_v3/";//"http://52.210.223.65:8080/v4_1/api_v3/";
 
     public static final String PnxUsername = "albert@gmail.com";
     public static final String PnxPassword = "123456";
