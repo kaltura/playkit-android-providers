@@ -95,13 +95,13 @@ public class APIDefines {
         }
     }
 
-    public enum PKUrlType {
+    public enum KalturaUrlType {
         PlayManifest("PLAYMANIFEST"),
         Direct("DIRECT");
 
         public String value;
 
-        PKUrlType(String value){
+        KalturaUrlType(String value){
             this.value = value;
         }
     }

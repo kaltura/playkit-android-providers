@@ -18,17 +18,14 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringDef;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.MultiRequestBuilder;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.BaseResult;
-import com.kaltura.netkit.connect.response.PrimitiveResult;
 import com.kaltura.netkit.connect.response.ResponseElement;
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.Accessories;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.OnCompletion;
@@ -38,39 +35,34 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 
-import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
-import com.kaltura.playkit.providers.api.phoenix.APIDefines;
-import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
-import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackContext;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackSource;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
-import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
-import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
-import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
-import com.kaltura.playkit.providers.api.phoenix.services.PhoenixService;
-import com.kaltura.playkit.providers.base.BECallableLoader;
-import com.kaltura.playkit.providers.base.BEMediaProvider;
-import com.kaltura.playkit.providers.base.BEResponseListener;
-import com.kaltura.playkit.providers.base.FormatsHelper;
-import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.utils.Consts;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.kaltura.playkit.providers.MediaEntryProvider;
+import com.kaltura.playkit.providers.api.SimpleSessionProvider;
+import com.kaltura.playkit.providers.api.base.model.KalturaDrmPlaybackPluginData;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines;
+import com.kaltura.playkit.providers.api.phoenix.PhoenixParser;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackContext;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackSource;
+import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
+import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
+import com.kaltura.playkit.providers.api.phoenix.services.PhoenixService;
+import com.kaltura.playkit.providers.base.BEBaseProvider;
+import com.kaltura.playkit.providers.base.BECallableLoader;
+import com.kaltura.playkit.providers.base.BEResponseListener;
+import com.kaltura.playkit.providers.base.FormatsHelper;
+import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.providers.ott.PhoenixProviderUtils.MediaTypeConverter;
+
+import com.kaltura.playkit.utils.Consts;
 
 import static com.kaltura.playkit.providers.MediaProvidersUtils.buildBadRequestErrorElement;
 import static com.kaltura.playkit.providers.MediaProvidersUtils.buildGeneralErrorElement;
@@ -78,6 +70,13 @@ import static com.kaltura.playkit.providers.MediaProvidersUtils.buildLoadErrorEl
 import static com.kaltura.playkit.providers.MediaProvidersUtils.buildNotFoundlErrorElement;
 import static com.kaltura.playkit.providers.MediaProvidersUtils.isDRMSchemeValid;
 import static com.kaltura.playkit.providers.MediaProvidersUtils.updateDrmParams;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.createOttMetadata;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.is360Supported;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.isAPIExceptionResponse;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.isLiveMediaEntry;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.parseAPIExceptionError;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.parseErrorRersponse;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.updateErrorElement;
 
 
 /**
@@ -96,80 +95,29 @@ import static com.kaltura.playkit.providers.MediaProvidersUtils.updateDrmParams;
  *
  * */
 
-public class PhoenixMediaProvider extends BEMediaProvider {
+public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implements MediaEntryProvider {
 
     private static final PKLog log = PKLog.get("PhoenixMediaProvider");
 
-    private static String LIVE_ASSET_OBJECT_TYPE = "KalturaLiveAsset"; //Might be needed to support in KalturaProgramAsset for EPG
-
-    public static final String KALTURA_API_EXCEPTION = "KalturaAPIException";
-    public static final String ERROR = "error";
-    public static final String OBJECT_TYPE = "objectType";
-    public static final String CODE = "code";
-    public static final String MESSAGE = "message";
-    public static final String RESULT = "result";
-
     private static final boolean EnableEmptyKs = true;
 
-    private MediaAsset mediaAsset;
+    private OTTMediaAsset mediaAsset;
 
     private BEResponseListener responseListener;
 
-    private String referrer;
-
-    private class MediaAsset {
-
-        public String assetId;
-
-        public APIDefines.KalturaAssetType assetType;
-
-        public APIDefines.AssetReferenceType assetReferenceType;
-
-        public APIDefines.PlaybackContextType contextType;
-
-        public APIDefines.PKUrlType urlType;
-
-        public List<String> formats;
-
-        public List<String> mediaFileIds;
-
-        public String protocol;
-
-        public MediaAsset() {
-        }
-
-        public boolean hasFormats() {
-            return formats != null && formats.size() > 0;
-        }
-
-        public boolean hasFiles() {
-            return mediaFileIds != null && mediaFileIds.size() > 0;
-        }
-    }
-
     public PhoenixMediaProvider() {
         super(log.tag);
-        this.mediaAsset = new MediaAsset();
+        this.mediaAsset = new OTTMediaAsset();
     }
 
     public PhoenixMediaProvider(final String baseUrl, final int partnerId, final String ks) {
         this();
-        setSessionProvider(new SessionProvider() {
-            @Override
-            public String baseUrl() {
-                return baseUrl;
-            }
+        setSessionProvider(new SimpleSessionProvider(baseUrl, partnerId, ks));
+    }
 
-            @Override
-            public void getSessionToken(OnCompletion<PrimitiveResult> completion) {
-                completion.onComplete(new PrimitiveResult(ks));
-            }
-
-            @Override
-            public int partnerId() {
-                return partnerId;
-            }
-        });
+    public PhoenixMediaProvider(final String baseUrl, final int partnerId, final OTTMediaAsset mediaAsset) {
+        this(baseUrl, partnerId, mediaAsset.getKs());
+        this.mediaAsset = mediaAsset;
     }
 
     /**
@@ -179,7 +127,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
      * @return - instance of PhoenixMediaProvider
      */
     public PhoenixMediaProvider setReferrer(String referrer) {
-        this.referrer = referrer;
+        mediaAsset.setReferrer(referrer);
         return this;
     }
 
@@ -244,10 +192,10 @@ public class PhoenixMediaProvider extends BEMediaProvider {
     /**
      * OPTIONAL
      *
-     * @param urlType - can be one of the following types {@link APIDefines.PKUrlType}
+     * @param urlType - can be one of the following types {@link APIDefines.KalturaUrlType}
      * @return - instance of PhoenixMediaProvider
      */
-    public PhoenixMediaProvider setPKUrlType(@NonNull APIDefines.PKUrlType urlType) {
+    public PhoenixMediaProvider setPKUrlType(@NonNull APIDefines.KalturaUrlType urlType) {
         this.mediaAsset.urlType = urlType;
         return this;
     }
@@ -306,7 +254,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return this;
     }
 
-    protected Loader factorNewLoader(OnMediaLoadCompletion completion) {
+    protected Loader createNewLoader(OnCompletion<ResultElement<PKMediaEntry>> completion) {
         return new Loader(requestsExecutor, sessionProvider, mediaAsset, completion);
     }
 
@@ -327,7 +275,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         if (mediaAsset.urlType == null) {
-            mediaAsset.urlType = APIDefines.PKUrlType.PlayManifest;
+            mediaAsset.urlType = APIDefines.KalturaUrlType.PlayManifest;
         }
 
         if (mediaAsset.assetType == null) {
@@ -359,13 +307,17 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         return null;
     }
 
+    @Override
+    public void load(OnMediaLoadCompletion completion) {
+        load((OnCompletion<ResultElement<PKMediaEntry>>)completion);
+    }
 
     class Loader extends BECallableLoader {
 
-        private MediaAsset mediaAsset;
+        private OTTMediaAsset mediaAsset;
 
 
-        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, MediaAsset mediaAsset, OnMediaLoadCompletion completion) {
+        public Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, OTTMediaAsset mediaAsset, OnCompletion<ResultElement<PKMediaEntry>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.mediaAsset = mediaAsset;
@@ -379,7 +331,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                     buildBadRequestErrorElement(ErrorElement.BadRequestError + ": SessionProvider should provide a valid KS token");
         }
 
-        private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
+        private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, OTTMediaAsset mediaAsset) {
             AssetService.KalturaPlaybackContextOptions contextOptions = new AssetService.KalturaPlaybackContextOptions(mediaAsset.contextType);
             if (mediaAsset.mediaFileIds != null) { // else - will fetch all available sources
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
@@ -397,19 +349,19 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 contextOptions.setMediaProtocol(mediaAsset.protocol);
             }
 
-            if (!TextUtils.isEmpty(referrer)) {
-                contextOptions.setReferrer(referrer);
+            if (!TextUtils.isEmpty(mediaAsset.getReferrer())) {
+                contextOptions.setReferrer(mediaAsset.getReferrer());
             }
 
             return AssetService.getPlaybackContext(baseUrl, ks, mediaAsset.assetId,
                     mediaAsset.assetType, contextOptions);
         }
 
-        private RequestBuilder getMediaAssetRequest(String baseUrl, String ks, MediaAsset mediaAsset) {
+        private RequestBuilder getMediaAssetRequest(String baseUrl, String ks, OTTMediaAsset mediaAsset) {
             return AssetService.get(baseUrl, ks, mediaAsset.assetId, mediaAsset.assetReferenceType);
         }
 
-        private RequestBuilder getRemoteRequest(String baseUrl, String ks, String referrer, MediaAsset mediaAsset) {
+        private RequestBuilder getRemoteRequest(String baseUrl, String ks, OTTMediaAsset mediaAsset) {
 
             String multiReqKs;
 
@@ -423,7 +375,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 multiReqKs = ks;
             }
 
-            builder.add(getPlaybackContextRequest(baseUrl, multiReqKs, referrer, mediaAsset));
+            builder.add(getPlaybackContextRequest(baseUrl, multiReqKs, mediaAsset));
 
             if (mediaAsset.assetReferenceType != null) {
                 builder.add(getMediaAssetRequest(baseUrl, multiReqKs, mediaAsset));
@@ -440,7 +392,7 @@ public class PhoenixMediaProvider extends BEMediaProvider {
          */
         @Override
         protected void requestRemote(String ks) throws InterruptedException {
-            final RequestBuilder requestBuilder = getRemoteRequest(getApiBaseUrl(), ks, referrer, mediaAsset)
+            final RequestBuilder requestBuilder = getRemoteRequest(getApiBaseUrl(), ks, mediaAsset)
                     .completion(response -> {
                         log.v(loadId + ": got response to [" + loadReq + "]");
                         loadReq = null;
@@ -595,14 +547,14 @@ public class PhoenixMediaProvider extends BEMediaProvider {
                 completion.onComplete(Accessories.buildResult(mediaEntry, error));
             }
 
-            log.w(loadId + " media load finished, callback passed...notifyCompletion");
+            log.v(loadId + " media load finished, callback passed...notifyCompletion");
             notifyCompletion();
 
         }
 
         private boolean isValidResponse(ResponseElement response) {
 
-            if (isErrorResponse(response)) {
+            if (PhoenixProviderUtils.isErrorResponse(response)) {
                 ErrorElement errorResponse = parseErrorRersponse(response);
                 if (errorResponse == null) {
                     errorResponse = buildGeneralErrorElement("multirequest response is null");
@@ -628,189 +580,9 @@ public class PhoenixMediaProvider extends BEMediaProvider {
             return true;
         }
 
-
-        private boolean isAPIExceptionResponse(ResponseElement response) {
-            return response == null || (response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains(KALTURA_API_EXCEPTION));
-        }
-
-        private boolean isErrorResponse(ResponseElement response) {
-            return response == null || (!response.isSuccess() && response.getError() != null);
-        }
-
-        private ErrorElement parseErrorRersponse(ResponseElement response) {
-            if (response != null) {
-                return response.getError();
-            }
-            return null;
-        }
-
-        private ErrorElement parseAPIExceptionError(ResponseElement response) {
-
-            if (response != null) {
-
-                try {
-                    JSONObject apiException = new JSONObject(response.getResponse());
-
-                    if (apiException.has(RESULT)) {
-                        String ottError = "OTTError";
-                        if (apiException.get(RESULT) instanceof JSONObject) {
-
-                            JSONObject result = (JSONObject) apiException.get(RESULT);
-                            if (result != null && result.has(ERROR)) {
-                                JSONObject error = (JSONObject) result.get(ERROR);
-                                Map<String, String> errorMap = getAPIExceptionData(error);
-                                if (errorMap != null) {
-                                    return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
-                                }
-                            }
-                        } else if (apiException.get(RESULT) instanceof JSONArray) {
-
-                            JSONArray result = (JSONArray) apiException.get(RESULT);
-                            for(int idx = 0 ; idx < result.length() ; idx++) {
-                                JSONObject error = (JSONObject) result.get(idx);
-                                if (error != null && error.has(ERROR)) {
-                                    JSONObject resultIndexJsonObjectError = (JSONObject) error.get(ERROR);
-                                    Map<String, String> errorMap = getAPIExceptionData(resultIndexJsonObjectError);
-                                    if (errorMap != null) {
-                                        return new ErrorElement(errorMap.get(MESSAGE), errorMap.get(CODE), errorMap.get(OBJECT_TYPE)).setName(ottError);
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                } catch (JSONException | NumberFormatException ex) {
-                    log.e("parseAPIExceptionError Exception = " + ex.getMessage());
-                }
-            }
-
-            return null;
-        }
-
-        private Map<String,String> getAPIExceptionData(JSONObject error) {
-
-            try {
-
-                if (error != null) {
-
-                    Map<String,String> errorMap = new HashMap<>();
-
-                    if (error.has(OBJECT_TYPE)) {
-                        String objectType = error.getString(OBJECT_TYPE);
-                        errorMap.put(OBJECT_TYPE, objectType);
-                    }
-
-                    if (error.has(CODE)) {
-                        String errorCode = error.getString(CODE);
-                        errorMap.put(CODE, errorCode);
-                    }
-
-                    if (error.has(MESSAGE)) {
-                        String errorMessage = error.getString(MESSAGE);
-                        errorMap.put(MESSAGE, errorMessage);
-                    }
-
-                    //log.d("Error objectType = " + objectType + " errorCode = " + errorCode + "errorMessage = " + errorMessage);
-                    return errorMap;
-                }
-            } catch (JSONException | NumberFormatException ex) {
-                log.e("getAPIExceptionData Exception = " + ex.getMessage());
-            }
-
-            return null;
-        }
-
         private boolean isDvrLiveMedia() {
             return mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver;
         }
-    }
-
-    private boolean is360Supported(Map<String, String> metadata) {
-        return ("360".equals(metadata.get("tags")));
-    }
-
-    @NonNull
-    private Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset) {
-        Map<String, String> metadata = new HashMap<>();
-        JsonObject tags = kalturaMediaAsset.getTags();
-        for (Map.Entry<String, JsonElement> entry : tags.entrySet()) {
-            for (Map.Entry<String, JsonElement> object : entry.getValue().getAsJsonObject().entrySet()) {
-                if (object.getValue().isJsonArray()) {
-                    JsonArray objectsArray = object.getValue().getAsJsonArray();
-                    for (int i = 0; i < objectsArray.size(); i++) {
-                        metadata.put(entry.getKey(), safeGetValue(objectsArray.get(i)));
-                    }
-                }
-            }
-        }
-
-        JsonObject metas = kalturaMediaAsset.getMetas();
-        if (metas != null) {
-            for (Map.Entry<String, JsonElement> entry : metas.entrySet()) {
-                metadata.put(entry.getKey(), safeGetValue(entry.getValue()));
-            }
-        }
-
-        for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
-            metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
-        }
-
-        metadata.put("assetId", String.valueOf(kalturaMediaAsset.getId()));
-        if (!TextUtils.isEmpty(kalturaMediaAsset.getEntryId())) {
-            metadata.put("entryId", kalturaMediaAsset.getEntryId());
-        }
-        if (kalturaMediaAsset.getName() != null) {
-            metadata.put("name", kalturaMediaAsset.getName());
-        }
-        if (kalturaMediaAsset.getDescription() != null) {
-            metadata.put("description", kalturaMediaAsset.getDescription());
-        }
-
-        metadata.put("assetType", mediaAsset.assetType.value);
-        if (isRecordingMediaEntry(kalturaMediaAsset)) {
-            metadata.put("recordingId", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingId());
-            metadata.put("recordingType", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingType().name());
-        }
-        return metadata;
-    }
-
-    private String safeGetValue(JsonElement value) {
-        if (value == null || value.isJsonNull() || !value.isJsonObject()) {
-            return null;
-        }
-
-        final JsonElement valueElement = value.getAsJsonObject().get("value");
-        return (valueElement != null && !valueElement.isJsonNull()) ? valueElement.getAsString() : null;
-    }
-
-    private ErrorElement updateErrorElement(ResponseElement response, BaseResult loginResult, BaseResult playbackContextResult, BaseResult assetGetResult) {
-        //error = ErrorElement.LoadError.message("failed to get multirequest responses on load request for asset "+mediaAsset.assetId);
-        ErrorElement error;
-        if (loginResult != null && loginResult.error != null) {
-            error = PhoenixErrorHelper.getErrorElement(loginResult.error); // get predefined error if exists for this error code
-        } else if (playbackContextResult != null && playbackContextResult.error != null) {
-            error = PhoenixErrorHelper.getErrorElement(playbackContextResult.error); // get predefined error if exists for this error code
-        } else if (assetGetResult != null && assetGetResult.error != null) {
-            error = PhoenixErrorHelper.getErrorElement(assetGetResult.error); // get predefined error if exists for this error code
-        } else {
-            error = response != null && response.getError() != null ? response.getError() : buildLoadErrorElement("either response is null or response.getError() is null");
-        }
-        return error;
-    }
-
-    private boolean isLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
-        if (kalturaMediaAsset == null) {
-            return false;
-        }
-
-        String externalIdsStr = kalturaMediaAsset.getExternalIds();
-        return (LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType()) ||
-                !TextUtils.isEmpty(externalIdsStr) && TextUtils.isDigitsOnly(externalIdsStr) && Long.valueOf(externalIdsStr) != 0) ||
-                (mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver);
-    }
-
-    private boolean isRecordingMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
-        return kalturaMediaAsset instanceof KalturaRecordingAsset;
     }
 
     static class ProviderParser {
@@ -874,34 +646,21 @@ public class PhoenixMediaProvider extends BEMediaProvider {
 
         // needed to sort the playback source result to be in the same order as in the requested list.
         private static void playbackSourcesSort(final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources) {
-            Collections.sort(playbackSources, new Comparator<KalturaPlaybackSource>() {
-                @Override
-                public int compare(KalturaPlaybackSource o1, KalturaPlaybackSource o2) {
+            Collections.sort(playbackSources, (o1, o2) -> {
 
-                    int valueIndex1 = -1;
-                    int valueIndex2 = -1;
-                    if (sourcesFilter != null) {
-                        valueIndex1 = sourcesFilter.indexOf(o1.getType());
-                        if (valueIndex1 == -1) {
-                            valueIndex1 = sourcesFilter.indexOf(o1.getId() + "");
-                            valueIndex2 = sourcesFilter.indexOf(o2.getId() + "");
-                        } else {
-                            valueIndex2 = sourcesFilter.indexOf(o2.getType());
-                        }
+                int valueIndex1 = -1;
+                int valueIndex2 = -1;
+                if (sourcesFilter != null) {
+                    valueIndex1 = sourcesFilter.indexOf(o1.getType());
+                    if (valueIndex1 == -1) {
+                        valueIndex1 = sourcesFilter.indexOf(o1.getId() + "");
+                        valueIndex2 = sourcesFilter.indexOf(o2.getId() + "");
+                    } else {
+                        valueIndex2 = sourcesFilter.indexOf(o2.getType());
                     }
-                    return valueIndex1 - valueIndex2;
                 }
+                return valueIndex1 - valueIndex2;
             });
-        }
-    }
-
-    static class MediaTypeConverter {
-
-        public static PKMediaEntry.MediaEntryType toMediaEntryType(String mediaType) {
-            switch (mediaType) {
-                default:
-                    return PKMediaEntry.MediaEntryType.Unknown;
-            }
         }
     }
 
@@ -912,5 +671,4 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         String Https = "https";     // only https sources
         String All = "all";         // do not filter by protocol
     }
-
 }

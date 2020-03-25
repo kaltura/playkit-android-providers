@@ -388,23 +388,20 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
                 assetType, currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
 
-        requestBuilder.completion(new OnRequestCompletion() {
-            @Override
-            public void onComplete(ResponseElement response) {
-                log.d("onComplete send event: " + eventType);
-                if (response == null) {
-                    return;
-                }
+        requestBuilder.completion(response -> {
+            log.d("onComplete send event: " + eventType);
+            if (response == null) {
+                return;
+            }
 
-                if (response.getError() != null) { // in case of error from server side
-                    sendGenericErrorEvent(response, eventType);
+            if (response.getError() != null) { // in case of error from server side
+                sendGenericErrorEvent(response, eventType);
+            } else {
+                if (response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains("KalturaAPIException")) {
+                    sendAPIExceptionErrorEvent(response, eventType);
+                    messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString() + " Failed"));
                 } else {
-                    if (response.isSuccess() && response.getError() == null && response.getResponse() != null && response.getResponse().contains("KalturaAPIException")) {
-                        sendAPIExceptionErrorEvent(response, eventType);
-                        messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString() + " Failed"));
-                    } else {
-                        messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
-                    }
+                    messageBus.post(new PhoenixAnalyticsEvent.PhoenixAnalyticsReport(eventType.toString()));
                 }
             }
         });

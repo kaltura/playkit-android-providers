@@ -75,7 +75,7 @@ public class AssetService extends PhoenixService {
     public static class KalturaPlaybackContextOptions{
 
         private APIDefines.PlaybackContextType context;
-        private APIDefines.PKUrlType urlType;
+        private APIDefines.KalturaUrlType urlType;
         private String protocol;
         private String assetFileIds;
         private String referrer;
@@ -94,7 +94,7 @@ public class AssetService extends PhoenixService {
             return this;
         }
 
-        public KalturaPlaybackContextOptions setUrlType(APIDefines.PKUrlType urlType) {
+        public KalturaPlaybackContextOptions setUrlType(APIDefines.KalturaUrlType urlType) {
             this.urlType = urlType;
             return this;
         }

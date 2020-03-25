@@ -10,13 +10,13 @@
  * ============================================================================
  */
 
-package com.kaltura.playkit.providers.api.ovp.model;
+package com.kaltura.playkit.providers;
 
+import com.kaltura.playkit.providers.base.OnPlaylistLoadCompletion;
 
-/**
- * @hide
- */
+public interface PlaylistProvider {
 
-public class KalturaLiveStreamEntry extends KalturaMediaEntry {
+    void load(OnPlaylistLoadCompletion completion);
 
+    void cancel();
 }
