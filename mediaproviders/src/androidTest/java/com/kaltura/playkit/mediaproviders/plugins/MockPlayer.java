@@ -13,6 +13,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
@@ -147,7 +148,30 @@ public class MockPlayer implements Player {
                 return null;
             }
 
+            @Override
+            public Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled) {
+                return this;
+            }
 
+            @Override
+            public Settings setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize) {
+                return this;
+            }
+
+            @Override
+            public Settings setMaxVideoBitrate(@NonNull Integer maxVideoBitrate) {
+                return this;
+            }
+
+            @Override
+            public Settings setMaxAudioBitrate(@NonNull Integer maxAudioBitrate) {
+                return this;
+            }
+
+            @Override
+            public Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
+                return this;
+            }
         };
     }
 
