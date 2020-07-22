@@ -154,7 +154,13 @@ public class PhoenixProviderUtils {
         }
 
         for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
-            metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
+            if (image != null && image.getUrl() != null) {
+                if (image.getWidth() != null && image.getHeight() != null) {
+                    metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
+                } else if (image.getRatio() != null) {
+                    metadata.put(image.getRatio(), image.getUrl());
+                }
+            }
         }
 
         metadata.put("assetIds", String.valueOf(kalturaMediaAsset.getId()));
