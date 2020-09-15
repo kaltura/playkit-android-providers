@@ -61,6 +61,7 @@ import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackContext;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaPlaybackSource;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingType;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
 import com.kaltura.playkit.providers.api.phoenix.services.AssetService;
 import com.kaltura.playkit.providers.api.phoenix.services.OttUserService;
@@ -607,8 +608,15 @@ public class PhoenixMediaProvider extends BEMediaProvider {
         }
 
         if (isRecordingMediaEntry(kalturaMediaAsset)) {
-            metadata.put("recordingId", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingId());
-            metadata.put("recordingType", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingType().name());
+            String recordingId = ((KalturaRecordingAsset) kalturaMediaAsset).getRecordingId();
+            if (recordingId != null){
+                metadata.put("recordingId", recordingId);
+            }
+
+            KalturaRecordingType recordingType = ((KalturaRecordingAsset) kalturaMediaAsset).getRecordingType();
+            if (recordingType != null) {
+                metadata.put("recordingType", recordingType.name());
+            }
         }
 
         return metadata;
