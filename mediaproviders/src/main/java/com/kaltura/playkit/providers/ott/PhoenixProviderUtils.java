@@ -15,6 +15,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingType;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
 
 import org.json.JSONArray;
@@ -134,13 +135,19 @@ public class PhoenixProviderUtils {
     @NonNull
     static Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset) {
         Map<String, String> metadata = new HashMap<>();
+        if (kalturaMediaAsset == null) {
+            return metadata;
+        }
+
         JsonObject tags = kalturaMediaAsset.getTags();
-        for (Map.Entry<String, JsonElement> entry : tags.entrySet()) {
-            for (Map.Entry<String, JsonElement> object : entry.getValue().getAsJsonObject().entrySet()) {
-                if (object.getValue().isJsonArray()) {
-                    JsonArray objectsArray = object.getValue().getAsJsonArray();
-                    for (int i = 0; i < objectsArray.size(); i++) {
-                        metadata.put(entry.getKey(), safeGetValue(objectsArray.get(i)));
+        if (tags != null) {
+            for (Map.Entry<String, JsonElement> entry : tags.entrySet()) {
+                for (Map.Entry<String, JsonElement> object : entry.getValue().getAsJsonObject().entrySet()) {
+                    if (object.getValue().isJsonArray()) {
+                        JsonArray objectsArray = object.getValue().getAsJsonArray();
+                        for (int i = 0; i < objectsArray.size(); i++) {
+                            metadata.put(entry.getKey(), safeGetValue(objectsArray.get(i)));
+                        }
                     }
                 }
             }
@@ -153,30 +160,42 @@ public class PhoenixProviderUtils {
             }
         }
 
-        for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
-            if (image != null && image.getUrl() != null) {
-                if (image.getWidth() != null && image.getHeight() != null) {
-                    metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
-                } else if (image.getRatio() != null) {
-                    metadata.put(image.getRatio(), image.getUrl());
+        if (kalturaMediaAsset.getImages() != null) {
+            for (KalturaThumbnail image : kalturaMediaAsset.getImages()) {
+                if (image != null && image.getUrl() != null) {
+                    if (image.getWidth() != null && image.getHeight() != null) {
+                        metadata.put(image.getWidth() + "X" + image.getHeight(), image.getUrl());
+                    } else if (image.getRatio() != null) {
+                        metadata.put(image.getRatio(), image.getUrl());
+                    }
                 }
             }
         }
 
         metadata.put("assetIds", String.valueOf(kalturaMediaAsset.getId()));
+
         if (!TextUtils.isEmpty(kalturaMediaAsset.getEntryId())) {
             metadata.put("entryId", kalturaMediaAsset.getEntryId());
         }
+
         if (kalturaMediaAsset.getName() != null) {
             metadata.put("name", kalturaMediaAsset.getName());
         }
+
         if (kalturaMediaAsset.getDescription() != null) {
             metadata.put("description", kalturaMediaAsset.getDescription());
         }
 
         if (isRecordingMediaEntry(kalturaMediaAsset)) {
-            metadata.put("recordingId", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingId());
-            metadata.put("recordingType", ((KalturaRecordingAsset)kalturaMediaAsset).getRecordingType().name());
+            String recordingId = ((KalturaRecordingAsset) kalturaMediaAsset).getRecordingId();
+            if (recordingId != null){
+                metadata.put("recordingId", recordingId);
+            }
+
+            KalturaRecordingType recordingType = ((KalturaRecordingAsset) kalturaMediaAsset).getRecordingType();
+            if (recordingType != null) {
+                metadata.put("recordingType", recordingType.name());
+            }
         }
         return metadata;
     }
