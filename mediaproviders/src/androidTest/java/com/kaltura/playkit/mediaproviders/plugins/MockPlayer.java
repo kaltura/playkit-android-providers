@@ -3,19 +3,24 @@ package com.kaltura.playkit.mediaproviders.plugins;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
 
@@ -139,6 +144,16 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings setPreferredVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
+                return null;
+            }
+
+            @Override
+            public Settings setPreferredAudioCodecSettings(AudioCodecSettings audioCodecSettings) {
+                return null;
+            }
+
+            @Override
             public Settings setCustomLoadControlStrategy(Object o) {
                 return null;
             }
@@ -151,6 +166,11 @@ public class MockPlayer implements Player {
             @Override
             public Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled) {
                 return this;
+            }
+
+            @Override
+            public Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
+                return null;
             }
 
             @Override
@@ -172,6 +192,11 @@ public class MockPlayer implements Player {
             public Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
                 return this;
             }
+
+            @Override
+            public Settings setMulticastSettings(MulticastSettings multicastSettings) {
+                return null;
+            }
         };
     }
 
@@ -182,6 +207,11 @@ public class MockPlayer implements Player {
 
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+
+    }
+
+    @Override
+    public void setDownloadCache(Cache downloadCache) {
 
     }
 
