@@ -3,7 +3,6 @@ package com.kaltura.playkit.mediaproviders.plugins;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
@@ -169,6 +168,11 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings setHandleAudioFocus(boolean handleAudioFocus) {
+                return this;
+            }
+
+            @Override
             public Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
                 return null;
             }
@@ -207,11 +211,6 @@ public class MockPlayer implements Player {
 
     @Override
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
-
-    }
-
-    @Override
-    public void setDownloadCache(Cache downloadCache) {
 
     }
 
