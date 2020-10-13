@@ -2,7 +2,6 @@ package com.kaltura.playkit.mediaproviders.plugins;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
