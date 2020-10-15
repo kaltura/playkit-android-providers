@@ -1,9 +1,12 @@
 package com.kaltura.playkit.providers;
 
+import com.kaltura.playkit.PKMediaEntry;
+
 public class BaseMediaAsset {
 
     String ks;
     String referrer;
+    PKMediaEntry.MediaEntryType mediaEntryType;
 
     public String getKs() {
         return ks;
@@ -20,6 +23,15 @@ public class BaseMediaAsset {
 
     public BaseMediaAsset setReferrer(String referrer) {
         this.referrer = referrer;
+        return  this;
+    }
+
+    public PKMediaEntry.MediaEntryType getMediaEntryType() {
+        return  mediaEntryType;
+    }
+
+    public BaseMediaAsset setMediaEntryType(PKMediaEntry.MediaEntryType mediaEntryType) {
+        this.mediaEntryType = mediaEntryType;
         return  this;
     }
 }

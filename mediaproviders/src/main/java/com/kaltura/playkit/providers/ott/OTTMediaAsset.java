@@ -2,6 +2,7 @@ package com.kaltura.playkit.providers.ott;
 
 import androidx.annotation.NonNull;
 
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.providers.BaseMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.AssetReferenceType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaAssetType;
@@ -104,6 +105,11 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     public OTTMediaAsset setReferrer(String referrer) {
         super.setReferrer(referrer);
+        return this;
+    }
+
+    public OTTMediaAsset setMediaEntryType(PKMediaEntry.MediaEntryType mediaEntryType) {
+        super.setMediaEntryType(mediaEntryType);
         return this;
     }
 

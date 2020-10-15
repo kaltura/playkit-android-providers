@@ -201,6 +201,17 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
     }
 
     /**
+     * OPTIONAL Force the MediaEntryType
+     *
+     * @param mediaEntryType - can be one of the following types {@link PKMediaEntry.MediaEntryType}
+     * @return - instance of PhoenixMediaProvider
+     */
+    public PhoenixMediaProvider setMediaEntryType(@NonNull PKMediaEntry.MediaEntryType mediaEntryType) {
+        this.mediaAsset.setMediaEntryType(mediaEntryType);
+        return this;
+    }
+
+    /**
      * OPTIONAL
      *
      * @param protocol - the desired protocol (http/https) for the playback sources
@@ -520,7 +531,10 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                                 kalturaPlaybackContext.getSources(), is360Content);
                         mediaEntry.setMetadata(metadata);
                         mediaEntry.setName(kalturaMediaAsset.getName());
-                        if (isDvrLiveMedia()) {
+                        
+                        if (mediaAsset.getMediaEntryType() != null) {
+                            mediaEntry.setMediaType(mediaAsset.getMediaEntryType());
+                        } else if (isDvrLiveMedia()) {
                             mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.DvrLive);
                         } else if (isLiveMediaEntry(kalturaMediaAsset)) {
                             mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);

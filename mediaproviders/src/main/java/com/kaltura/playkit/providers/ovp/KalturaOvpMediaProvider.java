@@ -75,6 +75,8 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
     private String uiConfId;
     private String referrer;
     private boolean useApiCaptions;
+    private PKMediaEntry.MediaEntryType mediaEntryType;
+
 
     private int maxBitrate;
     private Map<String, Object> flavorsFilter;
@@ -107,6 +109,17 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
      */
     public KalturaOvpMediaProvider setReferrer(String referrer) {
         this.referrer = referrer;
+        return this;
+    }
+
+    /**
+     * NOT MANDATORY! Force the MediaEntryType
+     *
+     * @param mediaEntryType - can be one of the following types {@link PKMediaEntry.MediaEntryType}
+     * @return - instance of KalturaOvpMediaProvider
+     */
+    public KalturaOvpMediaProvider setMediaEntryType(PKMediaEntry.MediaEntryType mediaEntryType) {
+        this.mediaEntryType = mediaEntryType;
         return this;
     }
 
@@ -301,7 +314,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
 
                             if ((error = kalturaPlaybackContext.hasError()) == null) { // check for error or unauthorized content
                                 mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId, useApiCaptions,
-                                        ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
+                                        ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList, mediaEntryType);
 
                                 if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
                                     error = KalturaOvpErrorHelper.getErrorElement("NoFilesFound");
@@ -372,11 +385,10 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
          * source - if none meets the restriction, source should not be added to the mediaEntrys sources.)
          */
         public static PKMediaEntry getMediaEntry(String baseUrl, String ks, String partnerId, String uiConfId, boolean useApiCaptions, KalturaMediaEntry entry,
-                                                 KalturaPlaybackContext playbackContext, KalturaMetadataListResponse metadataList) throws InvalidParameterException {
+                                                 KalturaPlaybackContext playbackContext, KalturaMetadataListResponse metadataList, PKMediaEntry.MediaEntryType mediaEntryType) throws InvalidParameterException {
 
             ArrayList<KalturaPlaybackSource> kalturaSources = playbackContext.getSources();
             List<PKMediaSource> sources;
-
 
             if (kalturaSources != null && kalturaSources.size() > 0) {
                 sources = parseFromSources(baseUrl, ks, partnerId, uiConfId, entry, playbackContext);
@@ -399,10 +411,8 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
                     .setDuration(entry.getMsDuration())
                     .setMetadata(metadata)
                     .setName(entry.getName())
-                    .setMediaType(MediaTypeConverter.toMediaEntryType(entry));
-        }
-
-
+                    .setMediaType(mediaEntryType != null ? mediaEntryType : MediaTypeConverter.toMediaEntryType(entry));
+            }
 
         /**
          * Parse PKMediaSource objects from the getPlaybackContext API response.
