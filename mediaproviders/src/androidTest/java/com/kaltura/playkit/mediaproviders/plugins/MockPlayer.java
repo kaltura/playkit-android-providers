@@ -13,7 +13,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
-import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
@@ -194,11 +193,6 @@ public class MockPlayer implements Player {
             @Override
             public Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
                 return this;
-            }
-
-            @Override
-            public Settings setMulticastSettings(MulticastSettings multicastSettings) {
-                return null;
             }
         };
     }
