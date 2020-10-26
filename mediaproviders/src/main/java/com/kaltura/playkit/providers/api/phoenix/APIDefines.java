@@ -105,5 +105,19 @@ public class APIDefines {
             this.value = value;
         }
     }
+
+    public enum KalturaStreamerType {
+        Applehttp("applehttp"),
+        Mpegdash("mpegdash"),
+        Url("url"),
+        Smothstreaming("smothstreaming"),
+        None("none");
+
+        public String value;
+
+        KalturaStreamerType(String value){
+            this.value = value;
+        }
+    }
 }
 

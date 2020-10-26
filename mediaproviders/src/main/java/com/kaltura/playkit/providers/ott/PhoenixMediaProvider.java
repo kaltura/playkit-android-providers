@@ -203,6 +203,17 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
     /**
      * OPTIONAL
      *
+     * @param streamerType - can be one of the following types {@link APIDefines.KalturaStreamerType}
+     * @return - instance of PhoenixMediaProvider
+     */
+    public PhoenixMediaProvider setPKStreamerType(@NonNull APIDefines.KalturaStreamerType streamerType) {
+        this.mediaAsset.streamerType = streamerType;
+        return this;
+    }
+
+    /**
+     * OPTIONAL
+     *
      * @param protocol - the desired protocol (http/https) for the playback sources
      *                 The default is null, which makes the provider filter by server protocol.
      * @return - instance of PhoenixMediaProvider
