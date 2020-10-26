@@ -76,6 +76,7 @@ public class AssetService extends PhoenixService {
 
         private APIDefines.PlaybackContextType context;
         private APIDefines.KalturaUrlType urlType;
+        private APIDefines.KalturaStreamerType streamerType;
         private String protocol;
         private String assetFileIds;
         private String referrer;
@@ -99,6 +100,11 @@ public class AssetService extends PhoenixService {
             return this;
         }
 
+        public KalturaPlaybackContextOptions setStreamerType(APIDefines.KalturaStreamerType streamerType) {
+            this.streamerType = streamerType;
+            return this;
+        }
+
         public KalturaPlaybackContextOptions setMediaFileIds(String ids){
             this.assetFileIds = ids;
             return this;
@@ -117,6 +123,10 @@ public class AssetService extends PhoenixService {
 
             if (urlType != null) {
                 params.addProperty("urlType", urlType.value);
+            }
+
+            if (streamerType != null) {
+                params.addProperty("streamerType", streamerType.value);
             }
 
             if (!TextUtils.isEmpty(protocol)) {
