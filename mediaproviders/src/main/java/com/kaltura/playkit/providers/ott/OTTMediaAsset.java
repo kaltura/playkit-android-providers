@@ -6,6 +6,7 @@ import com.kaltura.playkit.providers.BaseMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.AssetReferenceType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaAssetType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaUrlType;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaStreamerType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.PlaybackContextType;
 
 import java.util.List;
@@ -23,6 +24,8 @@ public class OTTMediaAsset extends BaseMediaAsset {
     PlaybackContextType contextType;
 
     KalturaUrlType urlType;
+
+    KalturaStreamerType streamerType;
 
     List<String> formats;
 
@@ -87,6 +90,11 @@ public class OTTMediaAsset extends BaseMediaAsset {
         return this;
     }
 
+    public OTTMediaAsset setStreamerType(KalturaStreamerType streamerType) {
+        this.streamerType = streamerType;
+        return this;
+    }
+
     public OTTMediaAsset setFormats(List<String> formats) {
         this.formats = formats;
         return this;
@@ -125,6 +133,10 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     public KalturaUrlType getUrlType() {
         return urlType;
+    }
+
+    public KalturaStreamerType getStreamerType() {
+        return streamerType;
     }
 
     public List<String> getFormats() {
