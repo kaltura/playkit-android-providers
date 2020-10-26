@@ -352,6 +352,10 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                 contextOptions.setUrlType(mediaAsset.urlType);
             }
 
+            if (mediaAsset.streamerType != null) {
+                contextOptions.setStreamerType(mediaAsset.streamerType);
+            }
+
             // protocol will be added only if no protocol was give or http/https was set
             // for All no filter will be done via protocol and it will not be added to the request.
             if (mediaAsset.protocol == null) {
