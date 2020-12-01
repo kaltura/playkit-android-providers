@@ -29,9 +29,7 @@ public class PhoenixAnalyticsConfig {
     private String ks;
     private int timerInterval;
 
-    public PhoenixAnalyticsConfig() {
-
-    }
+    public PhoenixAnalyticsConfig() {}
 
     public PhoenixAnalyticsConfig(int partnerId, String baseUrl, String ks, int timerInterval) {
         this.partnerId = partnerId;
