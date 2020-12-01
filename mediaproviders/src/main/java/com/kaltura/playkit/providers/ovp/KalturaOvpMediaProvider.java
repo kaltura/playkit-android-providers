@@ -1,5 +1,6 @@
 package com.kaltura.playkit.providers.ovp;
 
+import android.net.UrlQuerySanitizer;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -472,6 +473,15 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
 
                 } else {
                     playUrl = playbackSource.getUrl();
+                    
+                    if (!TextUtils.isEmpty(ks)) {
+                        UrlQuerySanitizer urlQuerySanitizer = new UrlQuerySanitizer(playUrl);
+                        if (urlQuerySanitizer.getParameterList().isEmpty()) {
+                            playUrl += "/ks/" + ks;
+                        } else {
+                            playUrl += "&ks=" + ks;
+                        }
+                    }
                 }
 
                 if (playUrl == null) {
