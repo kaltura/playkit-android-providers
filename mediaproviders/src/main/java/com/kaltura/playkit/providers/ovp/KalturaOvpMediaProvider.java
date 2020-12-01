@@ -472,7 +472,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
                     playUrl = playUrlBuilder.build();
 
                 } else {
-                    playUrl = KalturaOvpProviderUtils.appendUserKS(playbackSource.getUrl(), ks);  
+                    playUrl = KalturaOvpProviderUtils.appendUserKS(playbackSource.getUrl(), ks);
                 }
 
                 if (playUrl == null) {
