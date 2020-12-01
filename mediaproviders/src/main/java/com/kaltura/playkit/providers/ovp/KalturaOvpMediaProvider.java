@@ -390,7 +390,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
             PKMediaEntry mediaEntry = initPKMediaEntry(entry.getTags());
 
             if (useApiCaptions && playbackContext.getPlaybackCaptions() != null && !playbackContext.getPlaybackCaptions().isEmpty()) {
-                List<PKExternalSubtitle> subtitleList = createExternalSubtitles(playbackContext);
+                List<PKExternalSubtitle> subtitleList = createExternalSubtitles(playbackContext, ks);
                 if (!subtitleList.isEmpty()) {
                     mediaEntry.setExternalSubtitleList(subtitleList);
                 }
