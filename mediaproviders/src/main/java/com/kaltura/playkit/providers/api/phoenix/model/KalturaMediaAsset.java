@@ -25,6 +25,7 @@ public class KalturaMediaAsset extends BaseResult {
     private int id;
     private String entryId;
     private int type;
+    private String typeDescription;
 
     private long endDate;
     private long startDate;
@@ -50,6 +51,10 @@ public class KalturaMediaAsset extends BaseResult {
 
     public int getType() {
         return type;
+    }
+
+    public String getTypeDescription() {
+        return typeDescription;
     }
 
     public long getEndDate() {
