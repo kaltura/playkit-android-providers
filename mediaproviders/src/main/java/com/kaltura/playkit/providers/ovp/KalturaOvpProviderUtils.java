@@ -210,14 +210,7 @@ public class KalturaOvpProviderUtils {
                     }
                 }
 
-                if (!TextUtils.isEmpty(ks)) {
-                    UrlQuerySanitizer urlQuerySanitizer = new UrlQuerySanitizer(subtitleURL);
-                    if (urlQuerySanitizer.getParameterList().isEmpty()) {
-                        subtitleURL += "/ks/" + ks;
-                    } else {
-                        subtitleURL += "&ks=" + ks;
-                    }
-                }
+                subtitleURL = appendUserKS(subtitleURL, ks);
 
                 PKExternalSubtitle pkExternalSubtitle = new PKExternalSubtitle()
                         .setUrl(subtitleURL)
@@ -232,6 +225,18 @@ public class KalturaOvpProviderUtils {
             }
         }
         return subtitleList;
+    }
+
+    protected static String appendUserKS(String url, String ks) {
+        if (!TextUtils.isEmpty(url) && !TextUtils.isEmpty(ks)) {
+            UrlQuerySanitizer urlQuerySanitizer = new UrlQuerySanitizer(url);
+            if (urlQuerySanitizer.getParameterList().isEmpty()) {
+                url += "/ks/" + ks;
+            } else {
+                url += "&ks=" + ks;
+            }
+        }
+        return url;
     }
 
     static boolean isValidPlaybackCaption(KalturaPlaybackCaption kalturaPlaybackCaption) {
