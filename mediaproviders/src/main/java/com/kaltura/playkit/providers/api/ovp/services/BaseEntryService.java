@@ -45,20 +45,24 @@ public class BaseEntryService extends OvpService {
                 MetaDataService.list(baseUrl,ks,entryId));
     }*/
 
-    public static OvpRequestBuilder list(String baseUrl, String ks, String entryId) {
+    public static OvpRequestBuilder list(String baseUrl, String ks, String entryId, String referenceId) {
         return new OvpRequestBuilder()
                 .service("baseEntry")
                 .action("list")
                 .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("baseEntry-list")
-                .params(getEntryListReqParams(ks, entryId));
+                .params(getEntryListReqParams(ks, entryId, referenceId));
     }
 
-    private static JsonObject getEntryListReqParams(String ks, String entryId) {
+    private static JsonObject getEntryListReqParams(String ks, String entryId, String referenceId) {
 
         BaseEntryListParams baseEntryListParams = new BaseEntryListParams(ks);
-        baseEntryListParams.filter.redirectFromEntryId = entryId;
+        if (!TextUtils.isEmpty(entryId)) {
+            baseEntryListParams.filter.redirectFromEntryId = entryId;
+        } else if (!TextUtils.isEmpty(referenceId)) {
+            baseEntryListParams.filter.referenceIdEqual = referenceId;
+        }
         baseEntryListParams.responseProfile.fields = "id,name,description,thumbnailUrl,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags,dvrStatus";
         baseEntryListParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
 
@@ -118,7 +122,9 @@ public class BaseEntryService extends OvpService {
         }
 
         class Filter {
+            String idEqual;
             String redirectFromEntryId;
+            String referenceIdEqual;
         }
     }
 

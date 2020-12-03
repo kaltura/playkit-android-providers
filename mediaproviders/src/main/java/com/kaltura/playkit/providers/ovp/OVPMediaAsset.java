@@ -5,12 +5,18 @@ import com.kaltura.playkit.providers.BaseMediaAsset;
 public class OVPMediaAsset extends BaseMediaAsset {
 
     String entryId;
+    String referenceId;
 
     public OVPMediaAsset() {
     }
 
     public OVPMediaAsset setEntryId(String entryId) {
         this.entryId = entryId;
+        return this;
+    }
+
+    public OVPMediaAsset setReferenceId(String referenceId) {
+        this.referenceId = referenceId;
         return this;
     }
 
@@ -26,5 +32,9 @@ public class OVPMediaAsset extends BaseMediaAsset {
 
     public String getEntryId() {
         return entryId;
+    }
+
+    public String getReferenceId() {
+        return referenceId;
     }
 }
