@@ -170,7 +170,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
 
     @Override
     protected ErrorElement validateParams() {
-        return TextUtils.isEmpty(this.entryId) &&  TextUtils.isEmpty(this.referenceId)?
+        return TextUtils.isEmpty(this.entryId) && TextUtils.isEmpty(this.referenceId)?
                 buildBadRequestErrorElement(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
