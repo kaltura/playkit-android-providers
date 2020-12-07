@@ -73,6 +73,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
     public static final boolean CanBeEmpty = true;
 
     private String entryId;
+    private String referenceId;
     private String uiConfId;
     private String referrer;
     private boolean useApiCaptions;
@@ -112,13 +113,24 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
     }
 
     /**
-     * MANDATORY! the entry id, to fetch the data for.
+     * MANDATORY! if referenceId not set -  the entry id, to fetch the data for.
      *
      * @param entryId - Kaltura entryID
      * @return - instance of KalturaOvpMediaProvider
      */
     public KalturaOvpMediaProvider setEntryId(String entryId) {
         this.entryId = entryId;
+        return this;
+    }
+
+    /**
+     * MANDATORY! if entryId not set - the reference id, to fetch the data for.
+     *
+     * @param referenceId - Kaltura reference Id
+     * @return - instance of KalturaOvpMediaProvider
+     */
+    public KalturaOvpMediaProvider setReferenceId(String referenceId) {
+        this.referenceId = referenceId;
         return this;
     }
 
@@ -153,12 +165,12 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
 
     @Override
     protected Loader createNewLoader(OnCompletion<ResultElement<PKMediaEntry>> completion) {
-        return new Loader(requestsExecutor, sessionProvider, entryId, uiConfId, referrer, completion);
+        return new Loader(requestsExecutor, sessionProvider, entryId, referenceId, uiConfId, referrer, completion);
     }
 
     @Override
     protected ErrorElement validateParams() {
-        return TextUtils.isEmpty(this.entryId) ?
+        return TextUtils.isEmpty(this.entryId) && TextUtils.isEmpty(this.referenceId)?
                 buildBadRequestErrorElement(ErrorElement.BadRequestError + ": Missing required parameters, entryId") :
                 null;
     }
@@ -171,13 +183,15 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
     class Loader extends BECallableLoader {
 
         private String entryId;
+        private String referenceId;
         private String uiConfId;
         private String referrer;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String uiConfId, String referrer, OnCompletion<ResultElement<PKMediaEntry>> completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String referenceId, String uiConfId, String referrer, OnCompletion<ResultElement<PKMediaEntry>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.entryId = entryId;
+            this.referenceId = referenceId;
             this.uiConfId = uiConfId;
             this.referrer = referrer;
 
@@ -210,7 +224,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
                 baseEntryServiceEntryId = "{2:result:objects:0:id}";
             }
 
-            return multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, entryId),
+            return multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, entryId, referenceId),
                     BaseEntryService.getPlaybackContext(baseUrl, ks, baseEntryServiceEntryId, referrer),
                     MetaDataService.list(baseUrl, ks, baseEntryServiceEntryId));
         }
