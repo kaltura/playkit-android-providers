@@ -74,6 +74,7 @@ import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.createOttMe
 import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.is360Supported;
 import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.isAPIExceptionResponse;
 import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.isLiveMediaEntry;
+import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.isDvrLiveMediaEntry;
 import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.parseAPIExceptionError;
 import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.parseErrorRersponse;
 import static com.kaltura.playkit.providers.ott.PhoenixProviderUtils.updateErrorElement;
@@ -535,7 +536,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                                 kalturaPlaybackContext.getSources(), is360Content);
                         mediaEntry.setMetadata(metadata);
                         mediaEntry.setName(kalturaMediaAsset.getName());
-                        if (isDvrLiveMedia()) {
+                        if (isDvrLiveMediaEntry(kalturaMediaAsset, mediaAsset)) {
                             mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.DvrLive);
                         } else if (isLiveMediaEntry(kalturaMediaAsset)) {
                             mediaEntry.setMediaType(PKMediaEntry.MediaEntryType.Live);
@@ -593,10 +594,6 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                 return false;
             }
             return true;
-        }
-
-        private boolean isDvrLiveMedia() {
-            return mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver;
         }
     }
 

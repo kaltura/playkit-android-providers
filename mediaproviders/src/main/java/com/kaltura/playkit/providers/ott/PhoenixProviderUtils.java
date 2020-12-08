@@ -12,6 +12,7 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
@@ -222,6 +223,14 @@ public class PhoenixProviderUtils {
             error = response != null && response.getError() != null ? response.getError() : ErrorElement.LoadError;
         }
         return error;
+    }
+
+    static boolean isDvrLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset, OTTMediaAsset mediaAsset) {
+
+        if (LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType()) && kalturaMediaAsset.getEnableTrickPlay()) {
+            return true;
+        }
+        return mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver;
     }
 
     static boolean isLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
