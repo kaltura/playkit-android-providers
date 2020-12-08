@@ -35,6 +35,7 @@ public class KalturaMediaAsset extends BaseResult {
     private JsonObject metas;
     private String objectType;
     private String description;
+    private boolean enableTrickPlay;
 
     private List<KalturaThumbnail> images;
     private List<KalturaMediaFile> mediaFiles;
@@ -82,6 +83,10 @@ public class KalturaMediaAsset extends BaseResult {
 
     public String getDescription() {
         return description;
+    }
+
+    public boolean getEnableTrickPlay() {
+        return enableTrickPlay;
     }
 
     public List<KalturaThumbnail> getImages() {
