@@ -377,12 +377,13 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
 
             int listIndex = 0;
             for (KalturaMediaAsset kalturaMediaEntry : entriesList) {
-                if (kalturaMediaEntry == null || kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty() ||
-                        kalturaMediaEntry.getImages() == null || kalturaMediaEntry.getImages().isEmpty()) {
+                if (kalturaMediaEntry == null || kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty()) {
                     mediaList.add(null);
                     listIndex++;
                     continue;
                 }
+
+                String thumbnailUrl = (kalturaMediaEntry.getImages() != null && !kalturaMediaEntry.getImages().isEmpty()) ? kalturaMediaEntry.getImages().get(0).getUrl() : "";
 
                 if (kalturaMediaEntry.getMediaFiles().get(0) != null) {
                     mediaList.add(new PKPlaylistMedia().
@@ -391,7 +392,7 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
                             setDescription(kalturaMediaEntry.getDescription()).
                             setType(getMediaEntryType(listIndex, kalturaMediaEntry)).
                             setMsDuration(kalturaMediaEntry.getMediaFiles().get(0).getDuration() * Consts.MILLISECONDS_MULTIPLIER).
-                            setThumbnailUrl(kalturaMediaEntry.getImages().get(0).getUrl()).
+                            setThumbnailUrl(thumbnailUrl).
                             setTags(assetsMetadtaList.get(listIndex).get("tags")).
                             setMetadata(assetsMetadtaList.get(listIndex)));
                 }
