@@ -377,13 +377,13 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
 
             int listIndex = 0;
             for (KalturaMediaAsset kalturaMediaEntry : entriesList) {
-                String thumbnailUrl = (kalturaMediaEntry.getImages() != null && !kalturaMediaEntry.getImages().isEmpty()) ? kalturaMediaEntry.getImages().get(0).getUrl() : "";
-
                 if (kalturaMediaEntry == null || kalturaMediaEntry.getMediaFiles() == null || kalturaMediaEntry.getMediaFiles().isEmpty()) {
                     mediaList.add(null);
                     listIndex++;
                     continue;
                 }
+
+                String thumbnailUrl = (kalturaMediaEntry.getImages() != null && !kalturaMediaEntry.getImages().isEmpty()) ? kalturaMediaEntry.getImages().get(0).getUrl() : "";
 
                 if (kalturaMediaEntry.getMediaFiles().get(0) != null) {
                     mediaList.add(new PKPlaylistMedia().
