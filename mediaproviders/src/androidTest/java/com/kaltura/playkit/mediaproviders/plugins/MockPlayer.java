@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
+import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
@@ -20,6 +21,8 @@ import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
+
+import java.util.List;
 
 
 /**
@@ -162,6 +165,11 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings setHandleAudioBecomingNoisy(boolean handleAudioBecomingNoisyEnabled) {
+                return this;
+            }
+
+            @Override
+            public Settings setWakeMode(PKWakeMode wakeMode) {
                 return this;
             }
 
@@ -310,6 +318,12 @@ public class MockPlayer implements Player {
     @Override
     public void removeListener(@NonNull PKEvent.Listener listener) {
 
+    }
+
+    @NonNull
+    @Override
+    public <PluginType> List<PluginType> getLoadedPluginsByType(Class<PluginType> pluginClass) {
+        return null;
     }
 
     @Override
