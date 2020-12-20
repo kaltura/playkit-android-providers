@@ -10,6 +10,7 @@ import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaStreamerType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.PlaybackContextType;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.kaltura.playkit.providers.ott.PhoenixMediaProvider.*;
 
@@ -32,6 +33,8 @@ public class OTTMediaAsset extends BaseMediaAsset {
     List<String> mediaFileIds;
 
     @HttpProtocol String protocol;
+
+    Map<String, String> adapterData;
 
     public OTTMediaAsset() {
     }
@@ -115,6 +118,11 @@ public class OTTMediaAsset extends BaseMediaAsset {
         return this;
     }
 
+    public OTTMediaAsset setAdapterData(Map<String, String> adapterData) {
+        this.adapterData = adapterData;
+        return this;
+    }
+
     public String getAssetId() {
         return assetId;
     }
@@ -151,11 +159,19 @@ public class OTTMediaAsset extends BaseMediaAsset {
         return protocol;
     }
 
+    public Map<String, String> getAdapterData() {
+        return adapterData;
+    }
+
     public boolean hasFormats() {
         return formats != null && formats.size() > 0;
     }
 
     public boolean hasFileIds() {
         return mediaFileIds != null && mediaFileIds.size() > 0;
+    }
+
+    public boolean hasAdapterData() {
+        return adapterData != null && !adapterData.isEmpty();
     }
 }
