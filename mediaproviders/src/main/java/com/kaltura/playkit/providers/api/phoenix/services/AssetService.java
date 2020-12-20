@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -56,7 +56,7 @@ public class AssetService extends PhoenixService {
      * @return
      */
     public static PhoenixRequestBuilder getPlaybackContext(String baseUrl, String ks, String assetId,
-                           APIDefines.KalturaAssetType assetType, KalturaPlaybackContextOptions contextOptions){
+                                                           APIDefines.KalturaAssetType assetType, KalturaPlaybackContextOptions contextOptions){
 
         JsonObject params = new JsonObject();
         params.addProperty("ks", ks);
@@ -149,23 +149,23 @@ public class AssetService extends PhoenixService {
                 params.addProperty("referrer", referrer);
             }
 
-            if (adapterData != null && !adapterData.isEmpty()) {
-                JsonObject adapterDataJson = new JsonObject();
-                for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
-                    JsonObject adapterDataItemJsonExternal = new JsonObject();
-                    JsonObject adapterDataItemJsonInternal = new JsonObject();
-                    if (adapterDataEntry == null || TextUtils.isEmpty(adapterDataEntry.getValue())) {
-                        continue;
-                    }
-                    adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
-                    adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
-                    adapterDataJson.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
-                }
-                params.add("adapterData", adapterDataJson);
-            }
+//            if (adapterData != null && !adapterData.isEmpty()) {
+//                JsonObject adapterDataJson = new JsonObject();
+//                for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
+//                    JsonObject adapterDataItemJsonExternal = new JsonObject();
+//                    JsonObject adapterDataItemJsonInternal = new JsonObject();
+//                    if (adapterDataEntry == null || TextUtils.isEmpty(adapterDataEntry.getValue())) {
+//                        continue;
+//                    }
+//                    adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
+//                    adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
+//                    adapterDataJson.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
+//                }
+//                params.add("adapterData", adapterDataJson);
+//            }
 
 //            if (adapterData != null && !adapterData.isEmpty()) {
-//                JsonArray adapterDataAttay = new JsonArray();
+//                JsonArray adapterDataArray = new JsonArray();
 //                for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
 //                    JsonObject adapterDataItemJsonExternal = new JsonObject();
 //                    JsonObject adapterDataItemJsonInternal = new JsonObject();
@@ -175,12 +175,29 @@ public class AssetService extends PhoenixService {
 //                    adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
 //                    adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
 //                    adapterDataItemJsonExternal.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
-//                    adapterDataAttay.add(adapterDataItemJsonExternal);
+//                    adapterDataArray.add(adapterDataItemJsonExternal);
 //                }
-//                params.add("adapterData", adapterDataAttay);
+//                params.add("adapterData", adapterDataArray);
 //            }
+
+            if (adapterData != null && !adapterData.isEmpty()) {
+                JsonArray adapterDataArray = new JsonArray();
+                JsonObject adapterDataJson = new JsonObject();
+
+                for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
+                    JsonObject adapterDataItemJsonInternal = new JsonObject();
+                    if (adapterDataEntry == null || TextUtils.isEmpty(adapterDataEntry.getValue())) {
+                        continue;
+                    }
+                    adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
+                    adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
+                    adapterDataJson.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
+
+                }
+                adapterDataArray.add(adapterDataJson);
+                params.add("adapterData", adapterDataArray);
+            }
             return params;
         }
     }
-
 }
