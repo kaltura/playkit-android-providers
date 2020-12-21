@@ -152,12 +152,10 @@ public class AssetService extends PhoenixService {
             if (adapterData != null && !adapterData.isEmpty()) {
                 JsonObject adapterDataJson = new JsonObject();
                 for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
-                    JsonObject adapterDataItemJsonExternal = new JsonObject();
                     JsonObject adapterDataItemJsonInternal = new JsonObject();
                     if (adapterDataEntry == null || TextUtils.isEmpty(adapterDataEntry.getValue())) {
                         continue;
                     }
-                    //adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
                     adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
                     adapterDataJson.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
                 }
