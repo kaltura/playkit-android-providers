@@ -249,6 +249,18 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
         return this;
     }
 
+    /**
+     * OPTIONAL - if not available will not be used
+     * Provide a Map<String,String> for providers adapter data                                                                                                 .
+     *
+     * @param adapterData - map of adapter key and value
+     * @return - instance of PhoenixMediaProvider
+     */
+    public PhoenixMediaProvider setAdapterData(@NonNull Map<String,String> adapterData) {
+        this.mediaAsset.adapterData = adapterData;
+        return this;
+    }
+
     public PhoenixMediaProvider setResponseListener(BEResponseListener responseListener) {
         this.responseListener = responseListener;
         return this;
@@ -345,7 +357,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
 
         private RequestBuilder getPlaybackContextRequest(String baseUrl, String ks, OTTMediaAsset mediaAsset) {
             AssetService.KalturaPlaybackContextOptions contextOptions = new AssetService.KalturaPlaybackContextOptions(mediaAsset.contextType);
-            if (mediaAsset.mediaFileIds != null) { // else - will fetch all available sources
+            if (mediaAsset.hasFileIds()) { // else - will fetch all available sources
                 contextOptions.setMediaFileIds(mediaAsset.mediaFileIds);
             }
 
@@ -355,6 +367,10 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
 
             if (mediaAsset.streamerType != null) {
                 contextOptions.setStreamerType(mediaAsset.streamerType);
+            }
+            
+            if (mediaAsset.hasAdapterData()) {
+                contextOptions.setAdapterData(mediaAsset.adapterData);
             }
 
             // protocol will be added only if no protocol was give or http/https was set

@@ -1,10 +1,10 @@
 /*
  * ============================================================================
  * Copyright (C) 2017 Kaltura Inc.
- * 
+ *
  * Licensed under the AGPLv3 license, unless a different license for a
  * particular library is specified in the applicable library path.
- * 
+ *
  * You may obtain a copy of the License at
  * https://www.gnu.org/licenses/agpl-3.0.html
  * ============================================================================
@@ -14,9 +14,11 @@ package com.kaltura.playkit.providers.api.phoenix.services;
 
 import android.text.TextUtils;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.List;
+import java.util.Map;
 
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
@@ -54,7 +56,7 @@ public class AssetService extends PhoenixService {
      * @return
      */
     public static PhoenixRequestBuilder getPlaybackContext(String baseUrl, String ks, String assetId,
-                           APIDefines.KalturaAssetType assetType, KalturaPlaybackContextOptions contextOptions){
+                                                           APIDefines.KalturaAssetType assetType, KalturaPlaybackContextOptions contextOptions){
 
         JsonObject params = new JsonObject();
         params.addProperty("ks", ks);
@@ -80,6 +82,7 @@ public class AssetService extends PhoenixService {
         private String protocol;
         private String assetFileIds;
         private String referrer;
+        private Map<String,String> adapterData;
 
         public KalturaPlaybackContextOptions(APIDefines.PlaybackContextType context){
             this.context = context;
@@ -115,6 +118,11 @@ public class AssetService extends PhoenixService {
             return this;
         }
 
+        public KalturaPlaybackContextOptions setAdapterData(Map<String,String> adapterData){
+            this.adapterData = adapterData;
+            return this;
+        }
+
         public JsonObject toJson(){
             JsonObject params = new JsonObject();
             if (context != null) {
@@ -141,8 +149,19 @@ public class AssetService extends PhoenixService {
                 params.addProperty("referrer", referrer);
             }
 
+            if (adapterData != null && !adapterData.isEmpty()) {
+                JsonObject adapterDataJson = new JsonObject();
+                for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
+                    JsonObject adapterDataItemJsonInternal = new JsonObject();
+                    if (adapterDataEntry == null || TextUtils.isEmpty(adapterDataEntry.getValue())) {
+                        continue;
+                    }
+                    adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
+                    adapterDataJson.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
+                }
+                params.add("adapterData", adapterDataJson);
+            }
             return params;
         }
     }
-
 }
