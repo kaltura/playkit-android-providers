@@ -149,53 +149,19 @@ public class AssetService extends PhoenixService {
                 params.addProperty("referrer", referrer);
             }
 
-//            if (adapterData != null && !adapterData.isEmpty()) {
-//                JsonObject adapterDataJson = new JsonObject();
-//                for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
-//                    JsonObject adapterDataItemJsonExternal = new JsonObject();
-//                    JsonObject adapterDataItemJsonInternal = new JsonObject();
-//                    if (adapterDataEntry == null || TextUtils.isEmpty(adapterDataEntry.getValue())) {
-//                        continue;
-//                    }
-//                    adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
-//                    adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
-//                    adapterDataJson.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
-//                }
-//                params.add("adapterData", adapterDataJson);
-//            }
-
-//            if (adapterData != null && !adapterData.isEmpty()) {
-//                JsonArray adapterDataArray = new JsonArray();
-//                for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
-//                    JsonObject adapterDataItemJsonExternal = new JsonObject();
-//                    JsonObject adapterDataItemJsonInternal = new JsonObject();
-//                    if (adapterDataEntry == null || TextUtils.isEmpty(adapterDataEntry.getValue())) {
-//                        continue;
-//                    }
-//                    adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
-//                    adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
-//                    adapterDataItemJsonExternal.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
-//                    adapterDataArray.add(adapterDataItemJsonExternal);
-//                }
-//                params.add("adapterData", adapterDataArray);
-//            }
-
             if (adapterData != null && !adapterData.isEmpty()) {
-                JsonArray adapterDataArray = new JsonArray();
                 JsonObject adapterDataJson = new JsonObject();
-
                 for (Map.Entry<String,String> adapterDataEntry : adapterData.entrySet()) {
+                    JsonObject adapterDataItemJsonExternal = new JsonObject();
                     JsonObject adapterDataItemJsonInternal = new JsonObject();
                     if (adapterDataEntry == null || TextUtils.isEmpty(adapterDataEntry.getValue())) {
                         continue;
                     }
-                    adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
+                    //adapterDataItemJsonInternal.addProperty("objectType", "KalturaStringValue");
                     adapterDataItemJsonInternal.addProperty("value", adapterDataEntry.getValue());
                     adapterDataJson.add(adapterDataEntry.getKey(), adapterDataItemJsonInternal);
-
                 }
-                adapterDataArray.add(adapterDataJson);
-                params.add("adapterData", adapterDataArray);
+                params.add("adapterData", adapterDataJson);
             }
             return params;
         }
