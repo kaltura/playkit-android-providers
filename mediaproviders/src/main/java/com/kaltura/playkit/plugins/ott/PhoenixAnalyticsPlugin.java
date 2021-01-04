@@ -340,6 +340,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * Media Hit analytics event
      */
     private void startMediaHitInterval() {
+        if (!isValidAnalytics("startMediaHitInterval")) {
+            return;
+        }
+
         if (disableMediaHit || (getMediaEntry() != null && getMediaEntry().getMediaType() != PKMediaEntry.MediaEntryType.Vod)) {
             return;
         }
@@ -369,6 +373,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
+        if (!isValidAnalytics("sendAnalyticsEvent")) {
+            return;
+        }
+
         if (!shouldSendAnalyticsEvent(eventType)) {
             return;
         }
@@ -406,7 +414,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         requestsExecutor.queue(requestBuilder.build());
     }
 
-    private boolean shouldSendAnalyticsEvent(final PhoenixActionType eventType) {
+    private boolean isValidAnalytics(String methodName) {
+        log.d("from method: " + methodName);
         if (TextUtils.isEmpty(this.baseUrl)) {
             log.w("Blocking AnalyticsEvent baseUrl is not valid");
             return false;
@@ -417,6 +426,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             return false;
         }
 
+        if (getMediaEntry() == null || getMediaEntry().getId() == null) {
+            log.e("Error mediaConfig is not valid");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean shouldSendAnalyticsEvent(final PhoenixActionType eventType) {
         if (eventType == PhoenixActionType.HIT && disableMediaHit) {
             log.w("Blocking MediaHit report");
             return false;
@@ -429,11 +447,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         if (isAdPlaying && (eventType != PhoenixActionType.STOP && eventType != PhoenixActionType.FINISH)) {
             log.d("Blocking AnalyticsEvent: " + eventType + " while ad is playing");
-            return false;
-        }
-
-        if (getMediaEntry() == null || getMediaEntry().getId() == null) {
-            log.e("Error mediaConfig is not valid");
             return false;
         }
 
