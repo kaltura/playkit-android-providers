@@ -35,6 +35,15 @@ public class PhoenixAnalyticsConfig {
 
     public PhoenixAnalyticsConfig() {}
 
+    public PhoenixAnalyticsConfig(int partnerId, String baseUrl, String ks, int timerInterval) {
+        this.partnerId = partnerId;
+        this.baseUrl = baseUrl;
+        this.ks = ks;
+        this.timerInterval = timerInterval;
+        this.disableMediaHit = false;
+        this.disableMediaMark = false;
+    }
+
     public PhoenixAnalyticsConfig(int partnerId, String baseUrl, String ks, int timerInterval, boolean disableMediaHit, boolean disableMediaMark) {
         this.partnerId = partnerId;
         this.baseUrl = baseUrl;
@@ -91,11 +100,11 @@ public class PhoenixAnalyticsConfig {
         return timerInterval;
     }
 
-    public boolean isDisableMediaHit() {
+    public boolean getDisableMediaHit() {
         return disableMediaHit;
     }
 
-    public boolean isDisableMediaMark() {
+    public boolean getDisableMediaMark() {
         return disableMediaMark;
     }
 

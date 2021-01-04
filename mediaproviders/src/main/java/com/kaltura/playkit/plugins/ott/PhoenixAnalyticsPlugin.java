@@ -264,8 +264,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
         this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
-        this.disableMediaHit = pluginConfig.isDisableMediaHit();
-        this.disableMediaMark = pluginConfig.isDisableMediaMark();
+        this.disableMediaHit = pluginConfig.getDisableMediaHit();
+        this.disableMediaMark = pluginConfig.getDisableMediaMark();
     }
 
     @Override
@@ -340,7 +340,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * Media Hit analytics event
      */
     private void startMediaHitInterval() {
-        if (getMediaEntry() != null && getMediaEntry().getMediaType() != PKMediaEntry.MediaEntryType.Vod) {
+        if (disableMediaHit || (getMediaEntry() != null && getMediaEntry().getMediaType() != PKMediaEntry.MediaEntryType.Vod)) {
             return;
         }
 
@@ -423,7 +423,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
 
         if (eventType != PhoenixActionType.HIT && disableMediaMark) {
-            log.w("Blocking MediaMark report");
+            log.w("Blocking MediaMark report for event: " + eventType);
             return false;
         }
 
