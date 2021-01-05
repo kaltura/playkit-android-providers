@@ -344,7 +344,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             return;
         }
 
-        if (disableMediaHit || (getMediaEntry() != null && getMediaEntry().getMediaType() != PKMediaEntry.MediaEntryType.Vod)) {
+        if (disableMediaHit || isLiveMedia()) {
             return;
         }
 
@@ -415,7 +415,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     private boolean isValidAnalytics(String methodName) {
-        log.d("from method: " + methodName);
+        log.d("Calling from method: " + methodName);
         if (TextUtils.isEmpty(this.baseUrl)) {
             log.w("Blocking AnalyticsEvent baseUrl is not valid");
             return false;
@@ -487,6 +487,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         } catch (JSONException | NumberFormatException ex ) {
             return;
         }
+    }
+
+    private boolean isLiveMedia() {
+        return (player != null && player.isLive()) || (getMediaEntry() != null && getMediaEntry().getMediaType() != PKMediaEntry.MediaEntryType.Vod);
     }
 
     private void sendConcurrencyErrorEvent(String errorMessage) {
