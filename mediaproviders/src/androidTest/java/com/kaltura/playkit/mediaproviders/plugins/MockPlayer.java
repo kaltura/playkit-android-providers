@@ -286,6 +286,11 @@ public class MockPlayer implements Player {
     }
 
     @Override
+    public long getCurrentLiveOffset() {
+        return Consts.TIME_UNSET;
+    }
+
+    @Override
     public void setVolume(float volume) {
 
     }
