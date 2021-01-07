@@ -489,6 +489,14 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     }
 
+    /**
+     * Checks if the media is Live
+     * If PKMediaEntry.MediaEntryType is Unknown then also it will return true, which will not start the TimerTask.
+     * Because Unknown is not being monitored in BE.
+     * Only if it is VOD, TimerTask will be started.
+     *
+     * @return isLive or not
+     */
     private boolean isLiveMedia() {
         return (player != null && player.isLive()) || (getMediaEntry() != null && getMediaEntry().getMediaType() != PKMediaEntry.MediaEntryType.Vod);
     }
