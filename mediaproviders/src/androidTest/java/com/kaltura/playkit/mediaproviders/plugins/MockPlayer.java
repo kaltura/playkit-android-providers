@@ -342,6 +342,11 @@ public class MockPlayer implements Player {
     }
 
     @Override
+    public void seekToLiveDefaultPosition() {
+
+    }
+
+    @Override
     public String getSessionId() {
         return null;
     }
