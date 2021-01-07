@@ -20,13 +20,13 @@ import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
 import com.kaltura.netkit.connect.request.RequestBuilder;
 import com.kaltura.netkit.connect.response.ResponseElement;
-import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
@@ -69,7 +69,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean intervalOn = false;
     private boolean isFirstPlay = true;
     private boolean isMediaFinished = false;
-
+    private boolean disableMediaHit = false;
+    private boolean disableMediaMark = false;
 
     enum PhoenixActionType {
         HIT,
@@ -182,8 +183,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             printReceivedEvent(event);
             fileId = event.source.getId();
 
-            if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
-                currentMediaId = mediaConfig.getMediaEntry().getId();
+            if (getMediaEntry() != null) {
+                currentMediaId = getMediaEntry().getId();
             }
             lastKnownPlayerPosition = 0;
             if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
@@ -263,6 +264,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
         this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
+        this.disableMediaHit = pluginConfig.getDisableMediaHit();
+        this.disableMediaMark = pluginConfig.getDisableMediaMark();
     }
 
     @Override
@@ -326,10 +329,25 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         timer = new Timer();
     }
 
+    private PKMediaEntry getMediaEntry() {
+        if (mediaConfig != null && mediaConfig.getMediaEntry() != null) {
+            return mediaConfig.getMediaEntry();
+        }
+        return null;
+    }
+
     /**
      * Media Hit analytics event
      */
     private void startMediaHitInterval() {
+        if (!isValidAnalytics("startMediaHitInterval")) {
+            return;
+        }
+
+        if (disableMediaHit || isLiveMedia()) {
+            return;
+        }
+
         log.d("startMediaHitInterval - Timer");
         if (timer == null) {
             timer = new Timer();
@@ -355,34 +373,22 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      * @param eventType - Enum stating the event type to send
      */
     protected void sendAnalyticsEvent(final PhoenixActionType eventType) {
-
-        if (TextUtils.isEmpty(this.baseUrl)) {
-            log.w("Blocking AnalyticsEvent baseUrl is not valid");
+        if (!isValidAnalytics("sendAnalyticsEvent")) {
             return;
         }
 
-        if (TextUtils.isEmpty(this.ks)) {
-            log.w("Blocking AnalyticsEvent KS is not valid");
+        if (!shouldSendAnalyticsEvent(eventType)) {
             return;
         }
 
-        if (isAdPlaying && (eventType != PhoenixActionType.STOP && eventType != PhoenixActionType.FINISH)) {
-            log.d("Blocking AnalyticsEvent: " + eventType + " while ad is playing");
-            return;
-        }
-
-        if (mediaConfig == null || mediaConfig.getMediaEntry() == null || mediaConfig.getMediaEntry().getId() == null) {
-            log.e("Error mediaConfig is not valid");
-            return;
-        }
         if (eventType == PhoenixActionType.FINISH) {
             lastKnownPlayerPosition = lastKnownPlayerDuration;
         }
         log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying + " position = " + lastKnownPlayerPosition);
 
         String assetType = APIDefines.KalturaAssetType.Media.value;
-        if (mediaConfig.getMediaEntry().getMetadata() != null && mediaConfig.getMediaEntry().getMetadata().containsKey("assetType")) {
-            assetType = mediaConfig.getMediaEntry().getMetadata().get("assetType");
+        if (getMediaEntry() != null && getMediaEntry().getMetadata() != null && getMediaEntry().getMetadata().containsKey("assetType")) {
+            assetType = getMediaEntry().getMetadata().get("assetType");
         }
 
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
@@ -406,6 +412,45 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             }
         });
         requestsExecutor.queue(requestBuilder.build());
+    }
+
+    private boolean isValidAnalytics(String methodName) {
+        log.d("Calling from method: " + methodName);
+        if (TextUtils.isEmpty(this.baseUrl)) {
+            log.w("Blocking AnalyticsEvent baseUrl is not valid");
+            return false;
+        }
+
+        if (TextUtils.isEmpty(this.ks)) {
+            log.w("Blocking AnalyticsEvent KS is not valid");
+            return false;
+        }
+
+        if (getMediaEntry() == null || getMediaEntry().getId() == null) {
+            log.e("Error mediaConfig is not valid");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean shouldSendAnalyticsEvent(final PhoenixActionType eventType) {
+        if (eventType == PhoenixActionType.HIT && disableMediaHit) {
+            log.w("Blocking MediaHit report");
+            return false;
+        }
+
+        if (eventType != PhoenixActionType.HIT && disableMediaMark) {
+            log.w("Blocking MediaMark report for event: " + eventType);
+            return false;
+        }
+
+        if (isAdPlaying && (eventType != PhoenixActionType.STOP && eventType != PhoenixActionType.FINISH)) {
+            log.d("Blocking AnalyticsEvent: " + eventType + " while ad is playing");
+            return false;
+        }
+
+        return true;
     }
 
     private void sendGenericErrorEvent(ResponseElement response, PhoenixActionType eventType) {
@@ -444,6 +489,18 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
     }
 
+    /**
+     * Checks if the media is Live
+     * If PKMediaEntry.MediaEntryType is Unknown then also it will return true, which will not start the TimerTask.
+     * Because Unknown is not being monitored in BE.
+     * Only if it is VOD, TimerTask will be started.
+     *
+     * @return isLive or not
+     */
+    private boolean isLiveMedia() {
+        return (player != null && player.isLive()) || (getMediaEntry() != null && getMediaEntry().getMediaType() != PKMediaEntry.MediaEntryType.Vod);
+    }
+
     private void sendConcurrencyErrorEvent(String errorMessage) {
         messageBus.post(new OttEvent(OttEvent.OttEventType.Concurrency));
         messageBus.post(new PhoenixAnalyticsEvent.ConcurrencyErrorEvent(Integer.parseInt(CONCURRENCY_ERROR_CODE), errorMessage));
@@ -464,7 +521,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             int partnerId = (params.has("partnerId") && !params.get("partnerId").isJsonNull()) ? params.get("partnerId").getAsInt() : Integer.MAX_VALUE;
             int timerInterval = (params.has("timerInterval") && !params.get("timerInterval").isJsonNull()) ? params.get("timerInterval").getAsInt() : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
             String ks = (!params.has("ks") || params.get("ks").isJsonNull()) ? "" : params.get("ks").getAsString();
-            return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval);
+            boolean disableMediaHit = (params.has("disableMediaHit") && !params.get("disableMediaHit").isJsonNull()) && params.get("disableMediaHit").getAsBoolean();
+            boolean disableMediaMark = (params.has("disableMediaMark") && !params.get("disableMediaMark").isJsonNull()) && params.get("disableMediaMark").getAsBoolean();
+            return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval, disableMediaHit, disableMediaMark);
         }
         return null;
     }
