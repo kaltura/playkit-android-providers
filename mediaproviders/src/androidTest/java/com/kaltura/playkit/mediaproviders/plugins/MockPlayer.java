@@ -202,6 +202,11 @@ public class MockPlayer implements Player {
             public Settings setMaxAudioChannelCount(int maxAudioChannelCount) {
                 return this;
             }
+
+            @Override
+            public Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
+                return this;
+            }
         };
     }
 
