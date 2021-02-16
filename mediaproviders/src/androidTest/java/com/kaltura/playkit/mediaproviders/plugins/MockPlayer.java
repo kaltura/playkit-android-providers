@@ -18,6 +18,7 @@ import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.ThumbnailInfo;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
@@ -404,6 +405,11 @@ public class MockPlayer implements Player {
     @Override
     public float getPlaybackRate() {
         return Consts.DEFAULT_PLAYBACK_RATE_SPEED;
+    }
+
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+        return null;
     }
 
     public void setDuration(int duration) {
