@@ -408,7 +408,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public ThumbnailInfo getThumbnailInfo(long positionMS) {
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
         return null;
     }
     
