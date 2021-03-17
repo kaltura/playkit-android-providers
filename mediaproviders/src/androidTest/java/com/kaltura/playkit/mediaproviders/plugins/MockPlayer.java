@@ -15,9 +15,11 @@ import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.PlayerView;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.playkit.utils.Consts;
@@ -207,6 +209,11 @@ public class MockPlayer implements Player {
             public Settings forceWidevineL3Playback(boolean forceWidevineL3Playback) {
                 return this;
             }
+
+            @Override
+            public Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+                return null;
+            }
         };
     }
 
@@ -382,6 +389,21 @@ public class MockPlayer implements Player {
     }
 
     @Override
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        
+    }
+
+    @Override
+    public void updateABRSettings(ABRSettings abrSettings) {
+
+    }
+
+    @Override
+    public void resetABRSettings() {
+
+    }
+
+    @Override
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
 
     }
@@ -406,6 +428,11 @@ public class MockPlayer implements Player {
         return Consts.DEFAULT_PLAYBACK_RATE_SPEED;
     }
 
+    @Override
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
+        return null;
+    }
+    
     public void setDuration(int duration) {
         this.duration = duration;
     }
