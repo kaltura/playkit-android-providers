@@ -62,26 +62,41 @@ public class PlaySourceUrlBuilder {
         sessionId = builder.sessionId;
     }
 
+    /**
+     * setBaseUrl url parameter.
+     * @param baseUrl
+     * @return PlaySourceUrlBuilder
+     */
     public PlaySourceUrlBuilder setBaseUrl(@NonNull String baseUrl) {
         this.baseUrl = baseUrl;
         return this;
     }
 
+    /**
+     * setPartnerId url parameter.
+     * @param partnerId
+     * @return PlaySourceUrlBuilder
+     */
     public PlaySourceUrlBuilder setPartnerId(@NonNull String partnerId) {
         this.partnerId = partnerId;
         return this;
     }
 
+    /**
+     * setEntryId url parameter.
+     * @param entryId
+     * @return PlaySourceUrlBuilder
+     */
     public PlaySourceUrlBuilder setEntryId(@NonNull String entryId) {
         this.entryId = entryId;
         return this;
     }
 
     /**
-     * optional - anonymous user don't need to pass ks.
+     * setKs optional - anonymous user don't need to pass ks.
      *
      * @param ks
-     * @return
+     * @return PlaySourceUrlBuilder
      */
     public PlaySourceUrlBuilder setKs(@NonNull String ks) {
         this.ks = ks;
@@ -90,10 +105,10 @@ public class PlaySourceUrlBuilder {
 
     /**
      * if flavors are not provided will be added to the url base structure otherwise will be added as
-     * url parameter.
+     * setUiConfId url parameter.
      *
      * @param uiConfId
-     * @return
+     * @return PlaySourceUrlBuilder
      */
     public PlaySourceUrlBuilder setUiConfId(@NonNull String uiConfId) {
         this.uiConfId = uiConfId;
@@ -108,31 +123,41 @@ public class PlaySourceUrlBuilder {
 
     /**
      * we support http or https. defaults to DefaultHttpProtocol
-     *
+     * setProtocol url parameter
      * @param protocol
-     * @return
+     * @return PlaySourceUrlBuilder
      */
     public PlaySourceUrlBuilder setProtocol(@NonNull String protocol) {
         this.protocol = protocol;
         return this;
     }
 
+    /**
+     * setExtension url parameter
+     * @param extension
+     * @return PlaySourceUrlBuilder
+     */
     public PlaySourceUrlBuilder setExtension(@NonNull String extension) {
         this.extension = extension;
         return this;
     }
 
     /**
-     * optional
+     * setFlavorIds url parameter optional
      *
      * @param flavorIds
-     * @return
+     * @return PlaySourceUrlBuilder
      */
     public PlaySourceUrlBuilder setFlavorIds(@NonNull String flavorIds) {
         this.flavorIds = flavorIds;
         return this;
     }
-
+    /**
+     * setFlavorIds url parameter
+     *
+     * @param  flavorIds list of flavorIds
+     * @return PlaySourceUrlBuilder
+     */
     public PlaySourceUrlBuilder setFlavorIds(@NonNull List<String> flavorIds) {
         setFlavorIds(TextUtils.join(",", flavorIds));
         return this;

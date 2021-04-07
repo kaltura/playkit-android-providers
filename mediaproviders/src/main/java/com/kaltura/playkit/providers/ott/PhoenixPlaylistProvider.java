@@ -129,9 +129,9 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
     /**
      * MANDATORY! the playlist metadata and the media assets to fetch the data for.
      *
-     * @param mediaAssets - assets configuration of requested entry.
-     * @param   - assets configuration of requested entry.
-     * @return - instance of PhoenixMediaProvider
+     * @param  playlistMetadata configuration of requested playlistMetadata.
+     * @param mediaAssets assets configuration of requested entry.
+     * @return PhoenixPlaylistProvider instance of PhoenixMediaProvider
      */
     public PhoenixPlaylistProvider setPlaylistParams(@NonNull PlaylistMetadata playlistMetadata, @NonNull List<OTTMediaAsset> mediaAssets) {
         if (playlist != null) {

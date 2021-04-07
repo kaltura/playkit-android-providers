@@ -26,12 +26,12 @@ public class LicensedUrlService extends PhoenixService {
 
     /**
      * both VOD and live content uses the media license request
-     * @param baseUrl
-     * @param ks
-     * @param assetId
-     * @param mediaId
-     * @param mediaBaseUrl
-     * @return
+     * @param baseUrl String
+     * @param ks String
+     * @param assetId String
+     * @param mediaId String
+     * @param mediaBaseUrl String
+     * @return PhoenixRequestBuilder
      */
     public static PhoenixRequestBuilder getForMedia(String baseUrl, String ks, String assetId, String mediaId, String mediaBaseUrl) {
         JsonObject requestProperty = new JsonObject();
@@ -44,11 +44,11 @@ public class LicensedUrlService extends PhoenixService {
     }
 
     /**
-     * @param baseUrl
-     * @param ks
-     * @param streamType: catchup / start_over / trick_play
-     * @param startDate
-     * @return
+     * @param baseUrl String
+     * @param ks String
+     * @param streamType catchup / start_over / trick_play
+     * @param startDate long
+     * @return PhoenixRequestBuilder
      */
     public static PhoenixRequestBuilder getForShiftedLive(String baseUrl, String ks, String assetId, String streamType, long startDate) {
 
