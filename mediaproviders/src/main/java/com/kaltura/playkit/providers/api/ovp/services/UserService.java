@@ -26,11 +26,11 @@ import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
 public class UserService extends OvpService {
 
     /**
-     * @param baseUrl
-     * @param loginId   -mandatory - user's email address that identifies the user for login
-     * @param password  -mandatory - user's password
-     * @param partnerId -optional - if value = 0, won't be used
-     * @return
+     * @param baseUrl baseURL
+     * @param loginId  mandatory  user's email address that identifies the user for login
+     * @param password mandatory  user's password
+     * @param partnerId optional  if value = 0, won't be used
+     * @return OvpRequestBuilder
      */
     public static OvpRequestBuilder loginByLoginId(@NonNull String baseUrl, @NonNull String loginId, @NonNull String password, int partnerId) {
         JsonObject params = new JsonObject();

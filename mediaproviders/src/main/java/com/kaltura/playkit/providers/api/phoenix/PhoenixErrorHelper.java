@@ -29,7 +29,7 @@ public class PhoenixErrorHelper {
      * in case specific error codes should be parsed to predefined errors.
      * @param code
      * @param message
-     * @return
+     * @return ErrorElement
      */
     public static ErrorElement getErrorElement(String code, String message){
         ErrorElement errorElement = getDefinedErrorElement(code, message);

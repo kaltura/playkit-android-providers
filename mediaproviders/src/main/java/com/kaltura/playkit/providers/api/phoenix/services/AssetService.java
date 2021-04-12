@@ -53,7 +53,7 @@ public class AssetService extends PhoenixService {
      * @param assetId - Asset id
      * @param assetType - {@link APIDefines.KalturaAssetType}
      * @param contextOptions - list of extra details to narrow search of sources
-     * @return
+     * @return PhoenixRequestBuilder
      */
     public static PhoenixRequestBuilder getPlaybackContext(String baseUrl, String ks, String assetId,
                                                            APIDefines.KalturaAssetType assetType, KalturaPlaybackContextOptions contextOptions){
