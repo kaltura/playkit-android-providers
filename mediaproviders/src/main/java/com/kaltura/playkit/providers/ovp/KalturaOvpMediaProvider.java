@@ -1,6 +1,5 @@
 package com.kaltura.playkit.providers.ovp;
 
-import android.net.UrlQuerySanitizer;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -76,6 +75,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
     private String referenceId;
     private String uiConfId;
     private String referrer;
+    private boolean redirectFromEntryId = true;
     private boolean useApiCaptions;
 
     private int maxBitrate;
@@ -109,6 +109,17 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
      */
     public KalturaOvpMediaProvider setReferrer(String referrer) {
         this.referrer = referrer;
+        return this;
+    }
+
+    /**
+     * NOT MANDATORY! The disableEntryRedirect.
+     *
+     * @param redirectFromEntryId - application filter by redirectFromEntryId of EntryId default = true.
+     * @return - instance of KalturaOvpMediaProvider
+     */
+    public KalturaOvpMediaProvider setRedirectFromEntryId(boolean redirectFromEntryId) {
+        this.redirectFromEntryId = redirectFromEntryId;
         return this;
     }
 
@@ -165,7 +176,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
 
     @Override
     protected Loader createNewLoader(OnCompletion<ResultElement<PKMediaEntry>> completion) {
-        return new Loader(requestsExecutor, sessionProvider, entryId, referenceId, uiConfId, referrer, completion);
+        return new Loader(requestsExecutor, sessionProvider, entryId, referenceId, uiConfId, referrer, redirectFromEntryId, completion);
     }
 
     @Override
@@ -184,14 +195,16 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
 
         private String entryId;
         private String referenceId;
+        private boolean disableEntryRedirect = true;
         private String uiConfId;
         private String referrer;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String referenceId, String uiConfId, String referrer, OnCompletion<ResultElement<PKMediaEntry>> completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String referenceId, String uiConfId, String referrer, boolean disableEntryRedirect, OnCompletion<ResultElement<PKMediaEntry>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.entryId = entryId;
             this.referenceId = referenceId;
+            this.disableEntryRedirect = disableEntryRedirect;
             this.uiConfId = uiConfId;
             this.referrer = referrer;
 
@@ -224,7 +237,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
                 baseEntryServiceEntryId = "{2:result:objects:0:id}";
             }
 
-            return multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, entryId, referenceId),
+            return multiRequestBuilder.add(BaseEntryService.list(baseUrl, ks, entryId, referenceId, redirectFromEntryId),
                     BaseEntryService.getPlaybackContext(baseUrl, ks, baseEntryServiceEntryId, referrer),
                     MetaDataService.list(baseUrl, ks, baseEntryServiceEntryId));
         }
