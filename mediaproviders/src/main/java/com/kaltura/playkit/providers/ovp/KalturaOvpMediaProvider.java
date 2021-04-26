@@ -113,7 +113,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
     }
 
     /**
-     * NOT MANDATORY! The disableEntryRedirect.
+     * NOT MANDATORY! The redirectFromEntryId.
      *
      * @param redirectFromEntryId - application filter by redirectFromEntryId of EntryId default = true.
      * @return - instance of KalturaOvpMediaProvider
@@ -195,16 +195,16 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
 
         private String entryId;
         private String referenceId;
-        private boolean disableEntryRedirect = true;
+        private boolean redirectFromEntryId = true;
         private String uiConfId;
         private String referrer;
 
-        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String referenceId, String uiConfId, String referrer, boolean disableEntryRedirect, OnCompletion<ResultElement<PKMediaEntry>> completion) {
+        Loader(RequestQueue requestsExecutor, SessionProvider sessionProvider, String entryId, String referenceId, String uiConfId, String referrer, boolean redirectFromEntryId, OnCompletion<ResultElement<PKMediaEntry>> completion) {
             super(log.tag + "#Loader", requestsExecutor, sessionProvider, completion);
 
             this.entryId = entryId;
             this.referenceId = referenceId;
-            this.disableEntryRedirect = disableEntryRedirect;
+            this.redirectFromEntryId = redirectFromEntryId;
             this.uiConfId = uiConfId;
             this.referrer = referrer;
 
