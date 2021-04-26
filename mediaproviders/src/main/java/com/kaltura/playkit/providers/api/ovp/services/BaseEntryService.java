@@ -45,21 +45,26 @@ public class BaseEntryService extends OvpService {
                 MetaDataService.list(baseUrl,ks,entryId));
     }*/
 
-    public static OvpRequestBuilder list(String baseUrl, String ks, String entryId, String referenceId) {
+    public static OvpRequestBuilder list(String baseUrl, String ks, String entryId, String referenceId, boolean redirectFromEntryId) {
         return new OvpRequestBuilder()
                 .service("baseEntry")
                 .action("list")
                 .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("baseEntry-list")
-                .params(getEntryListReqParams(ks, entryId, referenceId));
+                .params(getEntryListReqParams(ks, entryId, referenceId, redirectFromEntryId));
     }
 
-    private static JsonObject getEntryListReqParams(String ks, String entryId, String referenceId) {
+    private static JsonObject getEntryListReqParams(String ks, String entryId, String referenceId, boolean redirectFromEntryId) {
 
         BaseEntryListParams baseEntryListParams = new BaseEntryListParams(ks);
+
         if (!TextUtils.isEmpty(entryId)) {
-            baseEntryListParams.filter.redirectFromEntryId = entryId;
+            if (redirectFromEntryId) {
+                baseEntryListParams.filter.redirectFromEntryId = entryId;
+            } else {
+                baseEntryListParams.filter.idEqual = entryId;
+            }
         } else if (!TextUtils.isEmpty(referenceId)) {
             baseEntryListParams.filter.referenceIdEqual = referenceId;
         }

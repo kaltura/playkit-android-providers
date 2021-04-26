@@ -6,6 +6,7 @@ public class OVPMediaAsset extends BaseMediaAsset {
 
     String entryId;
     String referenceId;
+    Boolean redirectFromEntryId = true;
 
     public OVPMediaAsset() {
     }
@@ -30,11 +31,22 @@ public class OVPMediaAsset extends BaseMediaAsset {
         return this;
     }
 
+    public OVPMediaAsset setRedirectFromEntryId(Boolean redirectFromEntryId) {
+        if (redirectFromEntryId != null) {
+            this.redirectFromEntryId = redirectFromEntryId;
+        }
+        return this;
+    }
+
     public String getEntryId() {
         return entryId;
     }
 
     public String getReferenceId() {
         return referenceId;
+    }
+
+    public Boolean getRedirectFromEntryId() {
+        return redirectFromEntryId;
     }
 }

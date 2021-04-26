@@ -147,7 +147,10 @@ public class OvpMediaProviderAndroidTest extends BaseTest {
     @Test
     public void testEmptyResponseRequest() {
 
-        kalturaOvpMediaProvider = new KalturaOvpMediaProvider().setSessionProvider(ksSessionProvider).setEntryId(MockEmptyEntryId).setRequestExecutor(testExecutor);
+        kalturaOvpMediaProvider = new KalturaOvpMediaProvider()
+                .setSessionProvider(ksSessionProvider)
+                .setEntryId(MockEmptyEntryId)
+                .setRequestExecutor(testExecutor);
         final AtomicReference<AssertionError> failure = new AtomicReference<>();
 
         kalturaOvpMediaProvider.load(response -> {
