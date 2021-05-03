@@ -23,6 +23,6 @@ public class PhoenixConfigs {
     //public static String ApiPrefix = "api_v3/";
 
     public static String ClientTag = PlayKitManager.CLIENT_TAG;
-    public static String ApiVersion = "5.2.6";
+    public static String ApiVersion = "6.3.0";
 
 }
