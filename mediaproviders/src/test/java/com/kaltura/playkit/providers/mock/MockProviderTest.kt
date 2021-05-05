@@ -1,22 +1,22 @@
-package com.kaltura.playkit.mediaproviders
+package com.kaltura.playkit.mock
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaltura.netkit.utils.ErrorElement
 import com.kaltura.playkit.providers.mock.MockMediaProvider
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class MockProviderTest {
-    val InputFile = "mock/entries.playkit.json"
+    val inputFile = "mock/entries.playkit.json"
 
     @Test
     fun testMockProvider() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val mockMediaProvider = MockMediaProvider(InputFile, context, "harold")
+        val mockMediaProvider = MockMediaProvider(inputFile, context, "harold")
         mockMediaProvider.load { response ->
 
             if (response.isSuccess) {
