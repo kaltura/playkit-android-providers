@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 apply from: 'version.gradle'
 
 android {
@@ -26,7 +27,9 @@ android {
     }
 
     testOptions {
-        unitTests.returnDefaultValues = true
+        unitTests {
+            includeAndroidResources = true
+        }
     }
 }
 
@@ -42,11 +45,18 @@ dependencies {
 
     implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
     //implementation project(":playkit")
-
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation "androidx.test.ext:junit:1.1.2"
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'androidx.annotation:annotation:1.2.0'
+
+    // Tests
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.hamcrest:hamcrest-library:1.3'
+    testImplementation "org.mockito:mockito-core:2.28.2"
+    testImplementation 'org.robolectric:robolectric:4.5'
+    testImplementation "androidx.test.ext:junit:1.1.2"
+    testImplementation 'androidx.test:runner:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
 repositories {
