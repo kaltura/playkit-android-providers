@@ -536,6 +536,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
 
                         Map<String, String> metadata = createOttMetadata(kalturaMediaAsset);
                         boolean is360Content = is360Supported(metadata);
+                        boolean isMulticastContent = (mediaAsset.streamerType == APIDefines.KalturaStreamerType.Multicast);
 
                         error = kalturaPlaybackContext.hasError(); // check for error or unauthorized content
 
@@ -549,7 +550,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
 
                         mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
                                 mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
-                                kalturaPlaybackContext.getSources(), is360Content);
+                                kalturaPlaybackContext.getSources(), is360Content, isMulticastContent);
                         mediaEntry.setMetadata(metadata);
                         mediaEntry.setName(kalturaMediaAsset.getName());
                         if (isDvrLiveMediaEntry(kalturaMediaAsset, mediaAsset)) {
@@ -615,7 +616,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
 
     static class ProviderParser {
 
-        public static PKMediaEntry getMedia(String assetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources, boolean is360Content) {
+        public static PKMediaEntry getMedia(String assetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources, boolean is360Content, boolean isMulticastContent) {
             PKMediaEntry mediaEntry = new PKMediaEntry();
             if (is360Content) {
                 mediaEntry.setIsVRMediaType(true);
@@ -645,6 +646,10 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                     }
 
                     PKMediaFormat mediaFormat = FormatsHelper.getPKMediaFormat(playbackSource.getFormat(), playbackSource.hasDrmData());
+
+                    if (isMulticastContent) {
+                        mediaFormat = PKMediaFormat.udp;
+                    }
 
                     if (mediaFormat == null) {
                         continue;
