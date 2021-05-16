@@ -111,6 +111,7 @@ public class APIDefines {
         Mpegdash("mpegdash"),
         Url("url"),
         Smothstreaming("smothstreaming"),
+        Multicast("multicast"),
         None("none");
 
         public String value;
