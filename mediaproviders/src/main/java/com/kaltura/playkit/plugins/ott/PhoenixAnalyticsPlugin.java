@@ -255,8 +255,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             log.e("Error, pluginConfig == null");
             return;
         }
-        if ( (TextUtils.isEmpty(baseUrl) && !TextUtils.isEmpty(pluginConfig.getBaseUrl())) &&
-             (partnerId == 0 && pluginConfig.getPartnerId() > 0) ) {
+        if ((TextUtils.isEmpty(baseUrl) && !TextUtils.isEmpty(pluginConfig.getBaseUrl())) &&
+                (partnerId == 0 && pluginConfig.getPartnerId() > 0)) {
             addListeners();
         } else {
             log.w("Listeners were not added");
