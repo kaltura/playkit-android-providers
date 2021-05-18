@@ -256,16 +256,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             return;
         }
         if ((TextUtils.isEmpty(baseUrl) && !TextUtils.isEmpty(pluginConfig.getBaseUrl())) &&
-                (partnerId == 0 && pluginConfig.getPartnerId() > 0)) {
+                (partnerId == 0 && pluginConfig.getPartnerId() > 0 || partnerId > 0)) {
             addListeners();
         } else {
             log.w("Listeners were not added");
         }
 
         this.baseUrl = pluginConfig.getBaseUrl();
-        if (!TextUtils.isEmpty(baseUrl)) {
-            this.partnerId = pluginConfig.getPartnerId();
-        }
+        this.partnerId = pluginConfig.getPartnerId();
+        
         this.ks = pluginConfig.getKS();
         this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         this.disableMediaHit = pluginConfig.getDisableMediaHit();
