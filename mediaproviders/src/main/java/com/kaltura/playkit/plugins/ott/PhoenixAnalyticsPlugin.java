@@ -124,6 +124,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     public void addListeners() {
+        log.d(" addListeners");
+
         messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
             if (!isAdPlaying) {
                 if (event != null) {
@@ -259,7 +261,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 (partnerId == 0 && pluginConfig.getPartnerId() > 0 || partnerId > 0)) {
             addListeners();
         } else {
-            log.w("Listeners were not added");
+            if (!TextUtils.isEmpty(baseUrl) && partnerId > 0) {
+                log.d("Listeners were already added");
+            } else {
+                log.w("Listeners were not added, invalid baseUrl or partnerId (" + pluginConfig.getBaseUrl() + ", " + pluginConfig.getPartnerId() + ")");
+
+            }
         }
 
         this.baseUrl = pluginConfig.getBaseUrl();
