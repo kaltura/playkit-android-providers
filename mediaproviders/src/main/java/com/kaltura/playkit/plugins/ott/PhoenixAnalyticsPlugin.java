@@ -264,7 +264,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         this.baseUrl = pluginConfig.getBaseUrl();
         this.partnerId = pluginConfig.getPartnerId();
-        
         this.ks = pluginConfig.getKS();
         this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         this.disableMediaHit = pluginConfig.getDisableMediaHit();
