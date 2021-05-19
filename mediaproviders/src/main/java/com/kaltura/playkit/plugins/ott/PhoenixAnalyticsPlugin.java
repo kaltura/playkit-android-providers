@@ -290,7 +290,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         setConfigMembers(config);
-        if (baseUrl == null || baseUrl.isEmpty() || partnerId <= 0) {
+        if (TextUtils.isEmpty(baseUrl) || partnerId <= 0) {
             cancelTimer();
             if (messageBus != null) {
                 messageBus.removeListeners(this);
