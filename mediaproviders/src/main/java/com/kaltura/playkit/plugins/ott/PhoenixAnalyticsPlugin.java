@@ -259,13 +259,15 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         if ((TextUtils.isEmpty(baseUrl) && !TextUtils.isEmpty(pluginConfig.getBaseUrl())) &&
                 (partnerId == 0 && pluginConfig.getPartnerId() > 0 || partnerId > 0)) {
+            if (!pluginConfig.getBaseUrl().endsWith("/")) {
+                pluginConfig.setBaseUrl(pluginConfig.getBaseUrl() + "/");
+            }
             addListeners();
         } else {
             if (!TextUtils.isEmpty(baseUrl) && partnerId > 0) {
                 log.d("Listeners were already added");
             } else {
                 log.w("Listeners were not added, invalid baseUrl or partnerId (" + pluginConfig.getBaseUrl() + ", " + pluginConfig.getPartnerId() + ")");
-
             }
         }
 
@@ -518,7 +520,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static PhoenixAnalyticsConfig parseConfig(Object config) {
         if (config instanceof PhoenixAnalyticsConfig) {
             return ((PhoenixAnalyticsConfig) config);
-
         } else if (config instanceof JsonObject) {
             JsonObject params = (JsonObject) config;
             String baseUrl = "";
