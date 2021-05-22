@@ -58,6 +58,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     String fileId;
     String currentMediaId = "UnKnown";
+    String currentAssetType = APIDefines.KalturaAssetType.Media.value;
     String baseUrl;
     long lastKnownPlayerPosition = 0;
     long lastKnownPlayerDuration = 0;
@@ -182,6 +183,12 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
             if (getMediaEntry() != null) {
                 currentMediaId = getMediaEntry().getId();
+                currentAssetType = APIDefines.KalturaAssetType.Media.value;
+                if (getMediaEntry().getMetadata() != null && getMediaEntry().getMetadata().containsKey("assetType")) {
+                    if (getMediaEntry().getMetadata().get("assetType") != null) {
+                        currentAssetType = getMediaEntry().getMetadata().get("assetType");
+                    }
+                }
             }
             lastKnownPlayerPosition = 0;
             if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
@@ -397,13 +404,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying + " position = " + lastKnownPlayerPosition);
 
-        String assetType = APIDefines.KalturaAssetType.Media.value;
-        if (getMediaEntry() != null && getMediaEntry().getMetadata() != null && getMediaEntry().getMetadata().containsKey("assetType")) {
-            assetType = getMediaEntry().getMetadata().get("assetType");
-        }
+
 
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                assetType, currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
+                currentAssetType, currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(response -> {
             log.d("onComplete send event: " + eventType);
