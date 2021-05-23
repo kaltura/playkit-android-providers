@@ -121,14 +121,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.messageBus = messageBus;
         this.timer = new Timer();
         setConfigMembers(config);
-        if (!TextUtils.isEmpty(baseUrl) && partnerId > 0) {
-            addListeners();
-        } else {
-            log.e("Error, base url/partner - incorrect");
-        }
     }
 
     public void addListeners() {
+        log.d("addListeners");
+
         messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
             if (!isAdPlaying) {
                 if (event != null) {
@@ -260,6 +257,20 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             log.e("Error, pluginConfig == null");
             return;
         }
+        if ((TextUtils.isEmpty(baseUrl) && !TextUtils.isEmpty(pluginConfig.getBaseUrl())) &&
+                (partnerId == 0 && pluginConfig.getPartnerId() > 0 || partnerId > 0)) {
+            if (!pluginConfig.getBaseUrl().endsWith("/")) {
+                pluginConfig.setBaseUrl(pluginConfig.getBaseUrl() + "/");
+            }
+            addListeners();
+        } else {
+            if (!TextUtils.isEmpty(baseUrl) && partnerId > 0) {
+                log.d("Listeners were already added");
+            } else {
+                log.w("Listeners were not added, invalid baseUrl or partnerId (" + pluginConfig.getBaseUrl() + ", " + pluginConfig.getPartnerId() + ")");
+            }
+        }
+
         this.baseUrl = pluginConfig.getBaseUrl();
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
@@ -279,7 +290,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         setConfigMembers(config);
-        if (baseUrl == null || baseUrl.isEmpty() || partnerId <= 0) {
+        if (TextUtils.isEmpty(baseUrl) || partnerId <= 0) {
             cancelTimer();
             if (messageBus != null) {
                 messageBus.removeListeners(this);
@@ -509,7 +520,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static PhoenixAnalyticsConfig parseConfig(Object config) {
         if (config instanceof PhoenixAnalyticsConfig) {
             return ((PhoenixAnalyticsConfig) config);
-
         } else if (config instanceof JsonObject) {
             JsonObject params = (JsonObject) config;
             String baseUrl = "";
