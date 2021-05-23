@@ -124,7 +124,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     public void addListeners() {
-        log.d(" addListeners");
+        log.d("addListeners");
 
         messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
             if (!isAdPlaying) {
