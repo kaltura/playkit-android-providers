@@ -185,8 +185,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 currentMediaId = getMediaEntry().getId();
                 currentAssetType = APIDefines.KalturaAssetType.Media.value;
                 if (getMediaEntry().getMetadata() != null && getMediaEntry().getMetadata().containsKey("assetType")) {
-                    if (getMediaEntry().getMetadata().get("assetType") != null) {
-                        currentAssetType = getMediaEntry().getMetadata().get("assetType");
+                    String assetType = getMediaEntry().getMetadata().get("assetType");
+                    if (assetType != null) {
+                        currentAssetType = assetType;
                     }
                 }
             }
