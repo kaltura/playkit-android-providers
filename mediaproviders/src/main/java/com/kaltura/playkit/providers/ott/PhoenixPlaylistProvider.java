@@ -329,10 +329,11 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
 
                     kalturaMediaAssets = new ArrayList<>();
                     assetsMetadtaList = new ArrayList<>();
-                    for (; mediaAssetsStartIndex < parsedResponses.size(); mediaAssetsStartIndex++) {
+                    for (int playlistMediaIndex = 0; mediaAssetsStartIndex < parsedResponses.size(); mediaAssetsStartIndex++) {
                         if (parsedResponses.get(mediaAssetsStartIndex).error == null) {
                             KalturaMediaAsset kalturaMediaAsset = (KalturaMediaAsset) parsedResponses.get(mediaAssetsStartIndex);
-                            Map<String, String> metadata = createOttMetadata(kalturaMediaAsset);
+                            OTTMediaAsset ottMediaAsset = (playlistRequest != null && playlistRequest.mediaAssets != null && playlistMediaIndex < playlistRequest.mediaAssets.size()) ? playlistRequest.mediaAssets.get(playlistMediaIndex++) : null;
+                            Map<String, String> metadata = createOttMetadata(kalturaMediaAsset, ottMediaAsset);
                             metadata.put("is360Content", String.valueOf(is360Supported(metadata)));
                             assetsMetadtaList.add(metadata);
                             kalturaMediaAssets.add(kalturaMediaAsset);

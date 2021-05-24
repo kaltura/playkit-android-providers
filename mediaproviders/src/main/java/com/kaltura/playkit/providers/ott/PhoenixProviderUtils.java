@@ -134,7 +134,7 @@ public class PhoenixProviderUtils {
     }
 
     @NonNull
-    static Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset) {
+    static Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset, OTTMediaAsset ottMediaAsset) {
         Map<String, String> metadata = new HashMap<>();
         if (kalturaMediaAsset == null) {
             return metadata;
@@ -171,6 +171,10 @@ public class PhoenixProviderUtils {
                     }
                 }
             }
+        }
+
+        if (ottMediaAsset != null && ottMediaAsset.assetType != null) {
+            metadata.put("assetType", ottMediaAsset.assetType.value);
         }
 
         metadata.put("assetIds", String.valueOf(kalturaMediaAsset.getId()));
