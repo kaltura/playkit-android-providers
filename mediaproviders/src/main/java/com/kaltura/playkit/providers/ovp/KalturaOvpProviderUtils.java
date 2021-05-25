@@ -249,6 +249,7 @@ public class KalturaOvpProviderUtils {
     static void populateMetadata(Map<String, String> metadata, KalturaMediaEntry entry) {
         if (entry.hasId()) {
             metadata.put("entryId", entry.getId());
+            metadata.put("mediaAssetUUID", entry.getId());
         }
         if (entry.hasName()) {
             metadata.put("name", entry.getName());

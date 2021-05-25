@@ -173,8 +173,11 @@ public class PhoenixProviderUtils {
             }
         }
 
-        if (ottMediaAsset != null && ottMediaAsset.assetType != null) {
-            metadata.put("assetType", ottMediaAsset.assetType.value);
+        if (ottMediaAsset != null) {
+            metadata.put("mediaAssetUUID", ottMediaAsset.getUUID() + "");
+            if (!metadata.containsKey("assetType") && ottMediaAsset.assetType != null) {
+                metadata.put("assetType", ottMediaAsset.assetType.value);
+            }
         }
 
         metadata.put("assetIds", String.valueOf(kalturaMediaAsset.getId()));
