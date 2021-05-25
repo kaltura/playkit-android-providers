@@ -3,6 +3,7 @@ package com.kaltura.playkit.providers.ott;
 import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.providers.BaseMediaAsset;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.AssetReferenceType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaAssetType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaUrlType;
@@ -173,5 +174,48 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     public boolean hasAdapterData() {
         return adapterData != null && !adapterData.isEmpty();
+    }
+
+    public String getUUID(){
+        StringBuffer sb = new StringBuffer();
+        sb.append(assetId).append("-");
+
+        if (contextType == null) {
+            contextType = PlaybackContextType.Playback;
+        }
+
+        if (assetType == null) {
+            switch (contextType) {
+                case Playback:
+                case Trailer:
+                    assetType = APIDefines.KalturaAssetType.Media;
+                    break;
+
+                case StartOver:
+                case Catchup:
+                    assetType = APIDefines.KalturaAssetType.Epg;
+                    break;
+            }
+        }
+
+        if (assetReferenceType == null) {
+            assetReferenceType = AssetReferenceType.Media;
+            if (assetType == KalturaAssetType.Epg) {
+                assetReferenceType = AssetReferenceType.InternalEpg;
+            }
+        }
+
+        if (urlType == null) {
+            urlType = urlType.PlayManifest;
+        }
+
+        sb.append(contextType.value).append("-");
+        sb.append(assetType.value).append("-");
+        if (streamerType != null) {
+            sb.append(streamerType.value).append("-"); 
+        }
+        sb.append(assetReferenceType.value).append("-");
+        sb.append(urlType.value);
+        return sb.toString();
     }
 }
