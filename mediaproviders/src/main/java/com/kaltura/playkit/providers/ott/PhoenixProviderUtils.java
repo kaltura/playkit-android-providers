@@ -174,7 +174,6 @@ public class PhoenixProviderUtils {
         }
 
         if (ottMediaAsset != null) {
-            metadata.put("mediaAssetUUID", ottMediaAsset.getUUID() + "");
             if (!metadata.containsKey("assetType") && ottMediaAsset.assetType != null) {
                 metadata.put("assetType", ottMediaAsset.assetType.value);
             }
