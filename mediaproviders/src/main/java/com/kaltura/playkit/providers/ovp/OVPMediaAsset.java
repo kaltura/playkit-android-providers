@@ -1,5 +1,7 @@
 package com.kaltura.playkit.providers.ovp;
 
+import android.text.TextUtils;
+
 import com.kaltura.playkit.providers.BaseMediaAsset;
 
 public class OVPMediaAsset extends BaseMediaAsset {
@@ -48,5 +50,9 @@ public class OVPMediaAsset extends BaseMediaAsset {
 
     public Boolean getRedirectFromEntryId() {
         return redirectFromEntryId;
+    }
+
+    public String getUUID() {
+        return  !TextUtils.isEmpty(getEntryId()) ? getEntryId() : getReferenceId();
     }
 }
