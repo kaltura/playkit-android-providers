@@ -333,7 +333,7 @@ public class PhoenixPlaylistProvider extends BEBaseProvider<PKPlaylist> implemen
                         if (parsedResponses.get(mediaAssetsStartIndex).error == null) {
                             KalturaMediaAsset kalturaMediaAsset = (KalturaMediaAsset) parsedResponses.get(mediaAssetsStartIndex);
                             OTTMediaAsset ottMediaAsset = (playlistRequest != null && playlistRequest.mediaAssets != null && playlistMediaIndex < playlistRequest.mediaAssets.size()) ? playlistRequest.mediaAssets.get(playlistMediaIndex++) : null;
-                            Map<String, String> metadata = createOttMetadata(kalturaMediaAsset, ottMediaAsset);
+                            Map<String, String> metadata = createOttMetadata(kalturaMediaAsset, ottMediaAsset, sessionProvider.partnerId());
                             metadata.put("is360Content", String.valueOf(is360Supported(metadata)));
                             assetsMetadtaList.add(metadata);
                             kalturaMediaAssets.add(kalturaMediaAsset);

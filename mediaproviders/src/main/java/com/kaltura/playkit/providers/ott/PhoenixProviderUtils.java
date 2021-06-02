@@ -134,10 +134,14 @@ public class PhoenixProviderUtils {
     }
 
     @NonNull
-    static Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset, OTTMediaAsset ottMediaAsset) {
+    static Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset, OTTMediaAsset ottMediaAsset, int partnerId) {
         Map<String, String> metadata = new HashMap<>();
         if (kalturaMediaAsset == null) {
             return metadata;
+        }
+
+        if (partnerId > 0) {
+            metadata.put("kavaPartnerId", String.valueOf(partnerId));
         }
 
         JsonObject tags = kalturaMediaAsset.getTags();
