@@ -176,12 +176,17 @@ public class OTTMediaAsset extends BaseMediaAsset {
         return adapterData != null && !adapterData.isEmpty();
     }
 
-    public String getUUID(){
-        StringBuffer sb = new StringBuffer();
-        sb.append(assetId).append("-");
+    public String getUUID() {
+        if (protocol == null) {
+            protocol = HttpProtocol.Https;
+        }
 
         if (contextType == null) {
             contextType = PlaybackContextType.Playback;
+        }
+
+        if (urlType == null) {
+            urlType = urlType.PlayManifest;
         }
 
         if (assetType == null) {
@@ -205,17 +210,11 @@ public class OTTMediaAsset extends BaseMediaAsset {
             }
         }
 
-        if (urlType == null) {
-            urlType = urlType.PlayManifest;
+        if (gson == null) {
+            createGsonObject();
         }
 
-        sb.append(contextType.value).append("-");
-        sb.append(assetType.value).append("-");
-        if (streamerType != null) {
-            sb.append(streamerType.value).append("-"); 
-        }
-        sb.append(assetReferenceType.value).append("-");
-        sb.append(urlType.value);
-        return sb.toString();
+        String mediaAssetJson = gson.toJson(this);
+        return toBase64(mediaAssetJson);
     }
 }

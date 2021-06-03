@@ -1,7 +1,5 @@
 package com.kaltura.playkit.providers.ovp;
 
-import android.text.TextUtils;
-
 import com.kaltura.playkit.providers.BaseMediaAsset;
 
 public class OVPMediaAsset extends BaseMediaAsset {
@@ -53,6 +51,12 @@ public class OVPMediaAsset extends BaseMediaAsset {
     }
 
     public String getUUID() {
-        return  !TextUtils.isEmpty(getEntryId()) ? getEntryId() : getReferenceId();
+
+        if (gson == null) {
+            createGsonObject();
+        }
+
+        String mediaAssetJson = gson.toJson(this);
+        return toBase64(mediaAssetJson);
     }
 }
