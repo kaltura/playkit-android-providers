@@ -3,6 +3,7 @@ package com.kaltura.playkit.providers.ott;
 import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.providers.BaseMediaAsset;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.AssetReferenceType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaAssetType;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines.KalturaUrlType;
@@ -173,5 +174,47 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     public boolean hasAdapterData() {
         return adapterData != null && !adapterData.isEmpty();
+    }
+
+    public String getUUID() {
+        if (protocol == null) {
+            protocol = HttpProtocol.Https;
+        }
+
+        if (contextType == null) {
+            contextType = PlaybackContextType.Playback;
+        }
+
+        if (urlType == null) {
+            urlType = urlType.PlayManifest;
+        }
+
+        if (assetType == null) {
+            switch (contextType) {
+                case Playback:
+                case Trailer:
+                    assetType = APIDefines.KalturaAssetType.Media;
+                    break;
+
+                case StartOver:
+                case Catchup:
+                    assetType = APIDefines.KalturaAssetType.Epg;
+                    break;
+            }
+        }
+
+        if (assetReferenceType == null) {
+            assetReferenceType = AssetReferenceType.Media;
+            if (assetType == KalturaAssetType.Epg) {
+                assetReferenceType = AssetReferenceType.InternalEpg;
+            }
+        }
+
+        if (gson == null) {
+            createGsonObject();
+        }
+
+        String mediaAssetJson = gson.toJson(this);
+        return toBase64(mediaAssetJson);
     }
 }
