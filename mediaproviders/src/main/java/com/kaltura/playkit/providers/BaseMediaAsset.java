@@ -12,6 +12,9 @@ import java.io.UnsupportedEncodingException;
 
 public class BaseMediaAsset {
 
+    private static final String KS = "ks";
+    private static final String GSON = "gson";
+
     String ks;
     String referrer;
 
@@ -44,10 +47,10 @@ public class BaseMediaAsset {
         ExclusionStrategy strategy = new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes field) {
-                if (field.getDeclaringClass() == BaseMediaAsset.class && field.getName().equals("ks")) {
+                if (field.getDeclaringClass() == BaseMediaAsset.class && KS.equals(field.getName())) {
                     return true;
                 }
-                if (field.getDeclaringClass() == BaseMediaAsset.class && field.getName().equals("gson")) {
+                if (field.getDeclaringClass() == BaseMediaAsset.class && GSON.equals(field.getName())) {
                     return true;
                 }
                 return false;
