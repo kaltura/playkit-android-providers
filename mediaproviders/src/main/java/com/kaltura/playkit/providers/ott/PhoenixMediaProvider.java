@@ -534,7 +534,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                         KalturaPlaybackContext kalturaPlaybackContext = (KalturaPlaybackContext) playbackContextResult;
                         KalturaMediaAsset kalturaMediaAsset = (KalturaMediaAsset) assetGetResult;
 
-                        Map<String, String> metadata = createOttMetadata(kalturaMediaAsset, mediaAsset, sessionProvider.partnerId());
+                        Map<String, String> metadata = createOttMetadata(kalturaMediaAsset, mediaAsset);
                         boolean is360Content = is360Supported(metadata);
                         boolean isMulticastContent = (mediaAsset.streamerType == APIDefines.KalturaStreamerType.Multicast);
 
