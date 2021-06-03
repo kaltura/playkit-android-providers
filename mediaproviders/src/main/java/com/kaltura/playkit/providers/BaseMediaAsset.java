@@ -44,6 +44,7 @@ public class BaseMediaAsset {
         if (gson != null) {
             return;
         }
+        
         ExclusionStrategy strategy = new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes field) {
