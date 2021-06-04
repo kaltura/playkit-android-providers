@@ -40,37 +40,30 @@ public class BaseMediaAsset {
     }
 
     public Gson getGson() {
-        createGsonObject();
-        return gson;
-    }
+        if (gson == null) {
+            ExclusionStrategy strategy = new ExclusionStrategy() {
+                @Override
+                public boolean shouldSkipField(FieldAttributes field) {
+                    if (field.getDeclaringClass() == BaseMediaAsset.class && KS.equals(field.getName())) {
+                        return true;
+                    }
+                    if (field.getDeclaringClass() == BaseMediaAsset.class && GSON.equals(field.getName())) {
+                        return true;
+                    }
+                    return false;
+                }
 
-    public void createGsonObject() {
+                @Override
+                public boolean shouldSkipClass(Class<?> clazz) {
+                    return false;
+                }
+            };
 
-        if (gson != null) {
-            return;
+            gson = new GsonBuilder()
+                    .addSerializationExclusionStrategy(strategy)
+                    .create();
         }
-        
-        ExclusionStrategy strategy = new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipField(FieldAttributes field) {
-                if (field.getDeclaringClass() == BaseMediaAsset.class && KS.equals(field.getName())) {
-                    return true;
-                }
-                if (field.getDeclaringClass() == BaseMediaAsset.class && GSON.equals(field.getName())) {
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-        };
-
-        gson = new GsonBuilder()
-                .addSerializationExclusionStrategy(strategy)
-                .create();
+        return gson;
     }
 
     @Nullable
