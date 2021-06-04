@@ -18,7 +18,7 @@ public class BaseMediaAsset {
     String ks;
     String referrer;
 
-    public Gson gson;
+    Gson gson;
 
 
     public String getKs() {
@@ -37,6 +37,10 @@ public class BaseMediaAsset {
     public BaseMediaAsset setReferrer(String referrer) {
         this.referrer = referrer;
         return  this;
+    }
+
+    public Gson getGson() {
+        return gson;
     }
 
     public void createGsonObject() {
