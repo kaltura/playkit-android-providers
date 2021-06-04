@@ -40,6 +40,7 @@ public class BaseMediaAsset {
     }
 
     public Gson getGson() {
+        createGsonObject();
         return gson;
     }
 

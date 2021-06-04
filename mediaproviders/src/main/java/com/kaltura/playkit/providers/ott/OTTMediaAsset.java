@@ -210,10 +210,6 @@ public class OTTMediaAsset extends BaseMediaAsset {
             }
         }
 
-        if (getGson() == null) {
-            createGsonObject();
-        }
-
         String mediaAssetJson = getGson().toJson(this);
         return toBase64(mediaAssetJson);
     }

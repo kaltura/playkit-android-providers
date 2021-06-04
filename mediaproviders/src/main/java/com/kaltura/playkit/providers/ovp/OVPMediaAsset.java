@@ -51,11 +51,6 @@ public class OVPMediaAsset extends BaseMediaAsset {
     }
 
     public String getUUID() {
-
-        if (getGson() == null) {
-            createGsonObject();
-        }
-
         String mediaAssetJson = getGson().toJson(this);
         return toBase64(mediaAssetJson);
     }
