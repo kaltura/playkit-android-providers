@@ -18,7 +18,7 @@ public class BaseMediaAsset {
     String ks;
     String referrer;
 
-    public Gson gson;
+    Gson gson;
 
 
     public String getKs() {
@@ -39,33 +39,31 @@ public class BaseMediaAsset {
         return  this;
     }
 
-    public void createGsonObject() {
+    public Gson getGson() {
+        if (gson == null) {
+            ExclusionStrategy strategy = new ExclusionStrategy() {
+                @Override
+                public boolean shouldSkipField(FieldAttributes field) {
+                    if (field.getDeclaringClass() == BaseMediaAsset.class && KS.equals(field.getName())) {
+                        return true;
+                    }
+                    if (field.getDeclaringClass() == BaseMediaAsset.class && GSON.equals(field.getName())) {
+                        return true;
+                    }
+                    return false;
+                }
 
-        if (gson != null) {
-            return;
+                @Override
+                public boolean shouldSkipClass(Class<?> clazz) {
+                    return false;
+                }
+            };
+
+            gson = new GsonBuilder()
+                    .addSerializationExclusionStrategy(strategy)
+                    .create();
         }
-        
-        ExclusionStrategy strategy = new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipField(FieldAttributes field) {
-                if (field.getDeclaringClass() == BaseMediaAsset.class && KS.equals(field.getName())) {
-                    return true;
-                }
-                if (field.getDeclaringClass() == BaseMediaAsset.class && GSON.equals(field.getName())) {
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-        };
-
-        gson = new GsonBuilder()
-                .addSerializationExclusionStrategy(strategy)
-                .create();
+        return gson;
     }
 
     @Nullable
