@@ -272,8 +272,13 @@ public class KalturaOvpProviderUtils {
         return pkMediaEntry;
     }
 
-    static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList) {
+    static Map<String, String> parseMetadata(KalturaMetadataListResponse metadataList, int partnerId) {
         Map<String, String> metadata = new HashMap<>();
+
+        if (partnerId > 0) {
+            metadata.put("kavaPartnerId", String.valueOf(partnerId));
+        }
+        
         if (metadataList != null && metadataList.objects != null && metadataList.objects.size() > 0) {
             for (KalturaMetadata metadataItem : metadataList.objects) {
                 extractMetadata(metadataItem.xml, metadata);
