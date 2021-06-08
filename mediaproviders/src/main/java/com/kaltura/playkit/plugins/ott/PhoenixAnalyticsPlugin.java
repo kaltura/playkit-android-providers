@@ -58,6 +58,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     String fileId;
     String currentMediaId = "UnKnown";
+    String currentAssetType = APIDefines.KalturaAssetType.Media.value;
     String baseUrl;
     long lastKnownPlayerPosition = 0;
     long lastKnownPlayerDuration = 0;
@@ -121,14 +122,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.messageBus = messageBus;
         this.timer = new Timer();
         setConfigMembers(config);
-        if (!TextUtils.isEmpty(baseUrl) && partnerId > 0) {
-            addListeners();
-        } else {
-            log.e("Error, base url/partner - incorrect");
-        }
     }
 
     public void addListeners() {
+        log.d("addListeners");
+
         messageBus.addListener(this, PlayerEvent.playheadUpdated, event -> {
             if (!isAdPlaying) {
                 if (event != null) {
@@ -185,6 +183,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
             if (getMediaEntry() != null) {
                 currentMediaId = getMediaEntry().getId();
+                currentAssetType = APIDefines.KalturaAssetType.Media.value;
+                if (getMediaEntry().getMetadata() != null && getMediaEntry().getMetadata().containsKey("assetType")) {
+                    String assetType = getMediaEntry().getMetadata().get("assetType");
+                    if (assetType != null) {
+                        currentAssetType = assetType;
+                    }
+                }
             }
             lastKnownPlayerPosition = 0;
             if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
@@ -260,6 +265,20 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             log.e("Error, pluginConfig == null");
             return;
         }
+        if ((TextUtils.isEmpty(baseUrl) && !TextUtils.isEmpty(pluginConfig.getBaseUrl())) &&
+                (partnerId == 0 && pluginConfig.getPartnerId() > 0 || partnerId > 0)) {
+            if (!pluginConfig.getBaseUrl().endsWith("/")) {
+                pluginConfig.setBaseUrl(pluginConfig.getBaseUrl() + "/");
+            }
+            addListeners();
+        } else {
+            if (!TextUtils.isEmpty(baseUrl) && partnerId > 0) {
+                log.d("Listeners were already added");
+            } else {
+                log.w("Listeners were not added, invalid baseUrl or partnerId (" + pluginConfig.getBaseUrl() + ", " + pluginConfig.getPartnerId() + ")");
+            }
+        }
+
         this.baseUrl = pluginConfig.getBaseUrl();
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
@@ -279,7 +298,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         setConfigMembers(config);
-        if (baseUrl == null || baseUrl.isEmpty() || partnerId <= 0) {
+        if (TextUtils.isEmpty(baseUrl) || partnerId <= 0) {
             cancelTimer();
             if (messageBus != null) {
                 messageBus.removeListeners(this);
@@ -386,13 +405,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying + " position = " + lastKnownPlayerPosition);
 
-        String assetType = APIDefines.KalturaAssetType.Media.value;
-        if (getMediaEntry() != null && getMediaEntry().getMetadata() != null && getMediaEntry().getMetadata().containsKey("assetType")) {
-            assetType = getMediaEntry().getMetadata().get("assetType");
-        }
+
 
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                assetType, currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
+                currentAssetType, currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(response -> {
             log.d("onComplete send event: " + eventType);
@@ -509,7 +525,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private static PhoenixAnalyticsConfig parseConfig(Object config) {
         if (config instanceof PhoenixAnalyticsConfig) {
             return ((PhoenixAnalyticsConfig) config);
-
         } else if (config instanceof JsonObject) {
             JsonObject params = (JsonObject) config;
             String baseUrl = "";

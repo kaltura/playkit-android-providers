@@ -412,7 +412,7 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
                 sources = new ArrayList<>();
             }
 
-            Map<String, String> metadata = parseMetadata(metadataList);
+            Map<String, String> metadata = parseMetadata(metadataList, Integer.parseInt(partnerId));
             populateMetadata(metadata, entry);
             PKMediaEntry mediaEntry = initPKMediaEntry(entry.getTags());
 

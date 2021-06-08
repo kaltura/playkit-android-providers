@@ -49,4 +49,9 @@ public class OVPMediaAsset extends BaseMediaAsset {
     public Boolean getRedirectFromEntryId() {
         return redirectFromEntryId;
     }
+
+    public String getUUID() {
+        String mediaAssetJson = getGson().toJson(this);
+        return toBase64(mediaAssetJson);
+    }
 }

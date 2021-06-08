@@ -342,7 +342,7 @@ public class KalturaOvpPlaylistProvider extends BEBaseProvider<PKPlaylist> imple
                                     entriesList.add(((KalturaBaseEntryListResponse) responses.get(playlistListIndex)).objects.get(0));
                                 }
                                 if (responses.get(playlistListIndex) instanceof KalturaMetadataListResponse) {
-                                    metadataList.add(parseMetadata((KalturaMetadataListResponse) responses.get(playlistListIndex)));
+                                    metadataList.add(parseMetadata((KalturaMetadataListResponse) responses.get(playlistListIndex), sessionProvider.partnerId()));
                                 }
                             }
 
