@@ -14,7 +14,6 @@ package com.kaltura.playkit.providers.api.phoenix.services;
 
 import android.text.TextUtils;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.List;
