@@ -17,8 +17,6 @@ import android.content.Context;
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.request.RequestBuilder;
-import com.kaltura.netkit.connect.response.ResponseElement;
-import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.BuildConfig;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKLog;

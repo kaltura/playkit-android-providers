@@ -31,9 +31,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.kaltura.playkit.player.PKHttpClientManager;
-import com.kaltura.playkit.providers.MediaEntryProvider;
-
-
 
 public abstract class BEBaseProvider<OutputType> {
 
