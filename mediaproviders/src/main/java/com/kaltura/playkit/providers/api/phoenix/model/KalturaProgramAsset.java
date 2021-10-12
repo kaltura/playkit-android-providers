@@ -13,5 +13,20 @@
 package com.kaltura.playkit.providers.api.phoenix.model;
 
 public class KalturaProgramAsset extends KalturaMediaAsset {
+    
+    private String epgId;
+    private long epgChannelId;
+    private long linearAssetId;
 
+    public String getEpgId() {
+        return epgId;
+    }
+
+    public long getEpgChannelId() {
+        return epgChannelId;
+    }
+
+    public long getLinearAssetId() {
+        return linearAssetId;
+    }
 }

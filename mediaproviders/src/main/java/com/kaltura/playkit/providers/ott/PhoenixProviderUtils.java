@@ -15,6 +15,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaProgramAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingType;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaThumbnail;
@@ -191,6 +192,20 @@ public class PhoenixProviderUtils {
             metadata.put("description", kalturaMediaAsset.getDescription());
         }
 
+        String metadataEpgId = ottMediaAsset.getEpgId();
+        
+        if (TextUtils.isEmpty(metadataEpgId)) {
+            if (isRecordingMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Recording) {
+                metadataEpgId = ((KalturaRecordingAsset) kalturaMediaAsset).getEpgId();
+            } else if (isProgramMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Epg) {
+                metadataEpgId = ((KalturaProgramAsset) kalturaMediaAsset).getEpgId();
+            }
+        }
+
+        if (!TextUtils.isEmpty(metadataEpgId)) {
+            metadata.put("epgId", metadataEpgId);
+        }
+
         if (isRecordingMediaEntry(kalturaMediaAsset)) {
             String recordingId = ((KalturaRecordingAsset) kalturaMediaAsset).getRecordingId();
             if (recordingId != null){
@@ -202,6 +217,7 @@ public class PhoenixProviderUtils {
                 metadata.put("recordingType", recordingType.name());
             }
         }
+
         return metadata;
     }
 
@@ -249,6 +265,10 @@ public class PhoenixProviderUtils {
 
     static boolean isRecordingMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
         return kalturaMediaAsset instanceof KalturaRecordingAsset;
+    }
+
+    static boolean isProgramMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
+        return kalturaMediaAsset instanceof KalturaProgramAsset;
     }
 
     static class MediaTypeConverter {

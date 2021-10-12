@@ -12,6 +12,8 @@
 
 package com.kaltura.playkit.providers.api.phoenix.services;
 
+import android.text.TextUtils;
+
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
@@ -24,17 +26,17 @@ import static com.kaltura.playkit.utils.Consts.HTTP_METHOD_POST;
 
 public class BookmarkService extends PhoenixService {
 
-    public static PhoenixRequestBuilder actionAdd(String baseUrl, int partnerId, String ks, String type, String assetId, String actionType, long position, String fileId) {
+    public static PhoenixRequestBuilder actionAdd(String baseUrl, int partnerId, String ks, String type, String assetId, String epgId, String actionType, long position, String fileId) {
         return new PhoenixRequestBuilder()
                 .service("bookmark")
                 .action("add")
                 .method(HTTP_METHOD_POST)
                 .url(baseUrl)
                 .tag("bookmark-action-add")
-                .params(addBookmarkGetReqParams(ks, assetId,  type, actionType, position, fileId));
+                .params(addBookmarkGetReqParams(ks, assetId, epgId, type, actionType, position, fileId));
     }
 
-    private static JsonObject addBookmarkGetReqParams(String ks, String assetId, String type, String actionType, long position, String fileId) {
+    private static JsonObject addBookmarkGetReqParams(String ks, String assetId, String epgId, String type, String actionType, long position, String fileId) {
         JsonObject playerData = new JsonObject();
         playerData.addProperty("objectType", "KalturaBookmarkPlayerData");
         playerData.addProperty("action", actionType);
@@ -43,6 +45,9 @@ public class BookmarkService extends PhoenixService {
         JsonObject bookmark = new JsonObject();
         bookmark.addProperty("objectType", "KalturaBookmark");
         bookmark.addProperty("id", assetId);
+        if (!TextUtils.isEmpty(epgId)) {
+            bookmark.addProperty("programId", epgId);
+        }
         bookmark.addProperty("type", type);
         bookmark.addProperty("position", position);
         bookmark.add("playerData", playerData);

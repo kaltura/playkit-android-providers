@@ -58,6 +58,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     String fileId;
     String currentMediaId = "UnKnown";
+    String currentEpgId;
     String currentAssetType = APIDefines.KalturaAssetType.Media.value;
     String baseUrl;
     long lastKnownPlayerPosition = 0;
@@ -184,13 +185,27 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             if (getMediaEntry() != null) {
                 currentMediaId = getMediaEntry().getId();
                 currentAssetType = APIDefines.KalturaAssetType.Media.value;
+
                 if (getMediaEntry().getMetadata() != null && getMediaEntry().getMetadata().containsKey("assetType")) {
                     String assetType = getMediaEntry().getMetadata().get("assetType");
-                    if (assetType != null) {
+                    if (!TextUtils.isEmpty(assetType)) {
                         currentAssetType = assetType;
                     }
                 }
+
+                if (APIDefines.KalturaAssetType.Recording.value.equals(currentAssetType)) {
+                    String recordingId = getMediaEntry().getMetadata().get("recordingId");
+                    if (!TextUtils.isEmpty(recordingId)) {
+                        currentMediaId = recordingId;
+                    }
+                }
+
+                String epgId = getMediaEntry().getMetadata().get("epgId");
+                if (!TextUtils.isEmpty(epgId)) {
+                    currentEpgId = epgId;
+                }
             }
+
             lastKnownPlayerPosition = 0;
             if (mediaConfig != null && mediaConfig.getStartPosition() != null) {
                 lastKnownPlayerPosition = mediaConfig.getStartPosition();
@@ -293,6 +308,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         isFirstPlay = true;
         playEventWasFired = false;
         isMediaFinished = false;
+        currentMediaId = "UnKnown";
+        currentEpgId = null;
+        currentAssetType = APIDefines.KalturaAssetType.Media.value;
+        lastKnownPlayerPosition = 0;
+        lastKnownPlayerDuration = 0;
     }
 
     @Override
@@ -408,7 +428,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
 
         RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                currentAssetType, currentMediaId, eventType.name(), lastKnownPlayerPosition, fileId);
+                currentAssetType, currentMediaId, currentEpgId, eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(response -> {
             log.d("onComplete send event: " + eventType);

@@ -213,6 +213,17 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
     }
 
     /**
+     * OPTIONAL Force the epgId
+     *
+     * @param epgId - used for live media only, epgId is a specific program id in that channel
+     * @return - instance of PhoenixMediaProvider
+     */
+    public PhoenixMediaProvider setEpgId(@NonNull String epgId) {
+        this.mediaAsset.epgId = epgId;
+        return this;
+    }
+
+    /**
      * OPTIONAL
      *
      * @param protocol - the desired protocol (http/https) for the playback sources
