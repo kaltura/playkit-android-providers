@@ -12,15 +12,10 @@
 
 package com.kaltura.playkit.providers.api.phoenix.model;
 
-public class KalturaRecordingAsset extends KalturaMediaAsset {
+public class KalturaRecordingAsset extends KalturaProgramAsset {
+    
     private String recordingId;
     private KalturaRecordingType recordingType;
-    private boolean enableCatchUp;
-    private boolean enableCdvr;
-    private String epgId;
-    private long epgChannelId;
-    private long linearAssetId;
-    private boolean enableStartOver;
 
     public String getRecordingId() {
         return recordingId;
@@ -28,29 +23,5 @@ public class KalturaRecordingAsset extends KalturaMediaAsset {
 
     public KalturaRecordingType getRecordingType() {
         return recordingType;
-    }
-
-    public boolean isEnableCatchUp() {
-        return enableCatchUp;
-    }
-
-    public boolean isEnableCdvr() {
-        return enableCdvr;
-    }
-
-    public String getEpgId() {
-        return epgId;
-    }
-
-    public long getEpgChannelId() {
-        return epgChannelId;
-    }
-
-    public long getLinearAssetId() {
-        return linearAssetId;
-    }
-
-    public boolean isEnableStartOver() {
-        return enableStartOver;
     }
 }

@@ -13,4 +13,10 @@
 package com.kaltura.playkit.providers.api.phoenix.model;
 
 public class KalturaLiveAsset extends KalturaMediaAsset {
+
+    private boolean enableTrickPlay;
+
+    public boolean isEnableTrickPlay() {
+        return enableTrickPlay;
+    }
 }
