@@ -14,6 +14,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.api.phoenix.PhoenixErrorHelper;
+import com.kaltura.playkit.providers.api.phoenix.model.KalturaLiveAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaMediaAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaProgramAsset;
 import com.kaltura.playkit.providers.api.phoenix.model.KalturaRecordingAsset;
@@ -193,7 +194,7 @@ public class PhoenixProviderUtils {
         }
 
         String metadataEpgId = ottMediaAsset.getEpgId();
-        
+
         if (TextUtils.isEmpty(metadataEpgId)) {
             if (isRecordingMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Recording) {
                 metadataEpgId = ((KalturaRecordingAsset) kalturaMediaAsset).getEpgId();
@@ -247,9 +248,10 @@ public class PhoenixProviderUtils {
 
     static boolean isDvrLiveMediaEntry(KalturaMediaAsset kalturaMediaAsset, OTTMediaAsset mediaAsset) {
 
-        if (LIVE_ASSET_OBJECT_TYPE.equals(kalturaMediaAsset.getObjectType()) && kalturaMediaAsset.getEnableTrickPlay()) {
+        if (kalturaMediaAsset instanceof KalturaLiveAsset && ((KalturaLiveAsset)kalturaMediaAsset).isEnableTrickPlay()) {
             return true;
         }
+
         return mediaAsset.assetType == APIDefines.KalturaAssetType.Epg && mediaAsset.contextType == APIDefines.PlaybackContextType.StartOver;
     }
 
@@ -270,7 +272,7 @@ public class PhoenixProviderUtils {
     static boolean isProgramMediaEntry(KalturaMediaAsset kalturaMediaAsset) {
         return kalturaMediaAsset instanceof KalturaProgramAsset;
     }
-
+    
     static class MediaTypeConverter {
 
         public static PKMediaEntry.MediaEntryType toMediaEntryType(String mediaType) {

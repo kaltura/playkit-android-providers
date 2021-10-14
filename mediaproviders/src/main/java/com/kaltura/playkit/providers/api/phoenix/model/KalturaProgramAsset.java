@@ -16,10 +16,20 @@ public class KalturaProgramAsset extends KalturaMediaAsset {
     
     private String epgId;
     private long epgChannelId;
+    private long relatedMediaId;
     private long linearAssetId;
-
+    private boolean enableCatchUp;
+    private boolean enableCdvr;
+    private boolean enableStartOver;
+    private boolean enableTrickPlay;
+    private String crid;
+    
     public String getEpgId() {
         return epgId;
+    }
+
+    public long getRelatedMediaId() {
+        return relatedMediaId;
     }
 
     public long getEpgChannelId() {
@@ -28,5 +38,25 @@ public class KalturaProgramAsset extends KalturaMediaAsset {
 
     public long getLinearAssetId() {
         return linearAssetId;
+    }
+
+    public boolean isEnableCatchUp() {
+        return enableCatchUp;
+    }
+
+    public boolean isEnableCdvr() {
+        return enableCdvr;
+    }
+
+    public boolean isEnableStartOver() {
+        return enableStartOver;
+    }
+
+    public boolean isEnableTrickPlay() {
+        return enableTrickPlay;
+    }
+
+    public String getCrid() {
+        return crid;
     }
 }
