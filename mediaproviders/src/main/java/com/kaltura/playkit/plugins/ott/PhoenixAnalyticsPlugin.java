@@ -186,23 +186,25 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 currentMediaId = getMediaEntry().getId();
                 currentAssetType = APIDefines.KalturaAssetType.Media.value;
 
-                if (getMediaEntry().getMetadata() != null && getMediaEntry().getMetadata().containsKey("assetType")) {
-                    String assetType = getMediaEntry().getMetadata().get("assetType");
-                    if (!TextUtils.isEmpty(assetType)) {
-                        currentAssetType = assetType;
+                if (getMediaEntry().getMetadata() != null) {
+                    if (getMediaEntry().getMetadata().containsKey("assetType")) {
+                        String assetType = getMediaEntry().getMetadata().get("assetType");
+                        if (!TextUtils.isEmpty(assetType)) {
+                            currentAssetType = assetType;
+                        }
                     }
-                }
 
-                if (APIDefines.KalturaAssetType.Recording.value.equals(currentAssetType)) {
-                    String recordingId = getMediaEntry().getMetadata().get("recordingId");
-                    if (!TextUtils.isEmpty(recordingId)) {
-                        currentMediaId = recordingId;
+                    if (APIDefines.KalturaAssetType.Recording.value.equals(currentAssetType)) {
+                        String recordingId = getMediaEntry().getMetadata().get("recordingId");
+                        if (!TextUtils.isEmpty(recordingId)) {
+                            currentMediaId = recordingId;
+                        }
                     }
-                }
 
-                String epgId = getMediaEntry().getMetadata().get("epgId");
-                if (!TextUtils.isEmpty(epgId)) {
-                    currentEpgId = epgId;
+                    String epgId = getMediaEntry().getMetadata().get("epgId");
+                    if (!TextUtils.isEmpty(epgId)) {
+                        currentEpgId = epgId;
+                    }
                 }
             }
 
