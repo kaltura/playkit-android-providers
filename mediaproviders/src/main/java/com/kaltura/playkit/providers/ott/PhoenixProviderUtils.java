@@ -193,14 +193,11 @@ public class PhoenixProviderUtils {
             metadata.put("description", kalturaMediaAsset.getDescription());
         }
 
-        String metadataEpgId = ottMediaAsset.getEpgId();
-
-        if (TextUtils.isEmpty(metadataEpgId)) {
-            if (isRecordingMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Recording) {
-                metadataEpgId = ((KalturaRecordingAsset) kalturaMediaAsset).getEpgId();
-            } else if (isProgramMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Epg) {
-                metadataEpgId = ((KalturaProgramAsset) kalturaMediaAsset).getEpgId();
-            }
+        String metadataEpgId = null;
+        if (isRecordingMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Recording) {
+            metadataEpgId = ((KalturaRecordingAsset) kalturaMediaAsset).getEpgId();
+        } else if (isProgramMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Epg) {
+            metadataEpgId = ((KalturaProgramAsset) kalturaMediaAsset).getEpgId();
         }
 
         if (!TextUtils.isEmpty(metadataEpgId)) {

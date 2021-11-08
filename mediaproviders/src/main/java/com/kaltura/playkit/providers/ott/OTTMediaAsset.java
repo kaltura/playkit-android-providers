@@ -19,8 +19,6 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     String assetId;
 
-    String epgId;
-
     KalturaAssetType assetType;
 
     AssetReferenceType assetReferenceType;
@@ -67,11 +65,6 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     public OTTMediaAsset setAssetId(String assetId) {
         this.assetId = assetId;
-        return this;
-    }
-
-    public OTTMediaAsset setEpgId(String epgId) {
-        this.epgId = epgId;
         return this;
     }
 
@@ -134,11 +127,7 @@ public class OTTMediaAsset extends BaseMediaAsset {
     public String getAssetId() {
         return assetId;
     }
-
-    public String getEpgId() {
-        return epgId;
-    }
-
+    
     public KalturaAssetType getAssetType() {
         return assetType;
     }
