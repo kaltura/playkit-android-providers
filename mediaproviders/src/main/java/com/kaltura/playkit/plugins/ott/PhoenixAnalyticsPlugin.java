@@ -205,6 +205,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     String epgId = getMediaEntry().getMetadata().get("epgId");
                     if (!TextUtils.isEmpty(epgId)) {
                         currentEpgId = epgId;
+                    } if (!isLiveMedia() && APIDefines.KalturaAssetType.Media.value.equals(currentAssetType)) {
+                        currentEpgId = null;
                     }
                 }
             }
