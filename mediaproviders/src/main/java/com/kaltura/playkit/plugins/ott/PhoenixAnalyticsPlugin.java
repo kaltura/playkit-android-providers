@@ -73,6 +73,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean isMediaFinished = false;
     private boolean disableMediaHit = false;
     private boolean disableMediaMark = false;
+    private boolean isExperimentalLiveMediaHit = false;
 
     enum PhoenixActionType {
         HIT,
@@ -205,6 +206,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                     if (!TextUtils.isEmpty(epgId)) {
                         currentEpgId = epgId;
                     }
+                    if (!isLiveMedia() && APIDefines.KalturaAssetType.Media.value.equals(currentAssetType)) {
+                        currentEpgId = null;
+                    }
                 }
             }
 
@@ -302,6 +306,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
         this.disableMediaHit = pluginConfig.getDisableMediaHit();
         this.disableMediaMark = pluginConfig.getDisableMediaMark();
+        this.currentEpgId = pluginConfig.getEpgId();
+        this.isExperimentalLiveMediaHit = pluginConfig.getExperimentalLiveMediaHit();
     }
 
     @Override
@@ -311,7 +317,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         playEventWasFired = false;
         isMediaFinished = false;
         currentMediaId = "UnKnown";
-        currentEpgId = null;
         currentAssetType = APIDefines.KalturaAssetType.Media.value;
         lastKnownPlayerPosition = 0;
         lastKnownPlayerDuration = 0;
@@ -385,7 +390,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             return;
         }
 
-        if (disableMediaHit || isLiveMedia()) {
+        if (disableMediaHit || (isLiveMedia() && !isExperimentalLiveMediaHit)) {
             return;
         }
 
@@ -560,7 +565,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             String ks = (!params.has("ks") || params.get("ks").isJsonNull()) ? "" : params.get("ks").getAsString();
             boolean disableMediaHit = (params.has("disableMediaHit") && !params.get("disableMediaHit").isJsonNull()) && params.get("disableMediaHit").getAsBoolean();
             boolean disableMediaMark = (params.has("disableMediaMark") && !params.get("disableMediaMark").isJsonNull()) && params.get("disableMediaMark").getAsBoolean();
-            return new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval, disableMediaHit, disableMediaMark);
+            String epgId = (params.has("epgId") && !params.get("epgId").isJsonNull()) ? params.get("epgId").getAsString() : null;
+            PhoenixAnalyticsConfig phoenixAnalyticsConfig = new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval, disableMediaHit, disableMediaMark, epgId);
+            boolean experimentalLiveMediaHit = (params.has("experimentalLiveMediaHit") && !params.get("experimentalLiveMediaHit").isJsonNull()) && params.get("experimentalLiveMediaHit").getAsBoolean();
+            phoenixAnalyticsConfig.setExperimentalLiveMediaHit(experimentalLiveMediaHit);
+            return phoenixAnalyticsConfig;
         }
         return null;
     }
