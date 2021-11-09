@@ -562,7 +562,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             String ks = (!params.has("ks") || params.get("ks").isJsonNull()) ? "" : params.get("ks").getAsString();
             boolean disableMediaHit = (params.has("disableMediaHit") && !params.get("disableMediaHit").isJsonNull()) && params.get("disableMediaHit").getAsBoolean();
             boolean disableMediaMark = (params.has("disableMediaMark") && !params.get("disableMediaMark").isJsonNull()) && params.get("disableMediaMark").getAsBoolean();
-            String epgId = (params.has("epgId") && !params.get("epgId").isJsonNull()) ? params.get("epgId").getAsString() :null;
+            String epgId = (params.has("epgId") && !params.get("epgId").isJsonNull()) ? params.get("epgId").getAsString() : null;
             PhoenixAnalyticsConfig phoenixAnalyticsConfig = new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval, disableMediaHit, disableMediaMark, epgId);
             boolean experimentalLiveMediaHit = (params.has("experimentalLiveMediaHit") && !params.get("experimentalLiveMediaHit").isJsonNull()) && params.get("experimentalLiveMediaHit").getAsBoolean();
             phoenixAnalyticsConfig.setExperimentalLiveMediaHit(experimentalLiveMediaHit);
