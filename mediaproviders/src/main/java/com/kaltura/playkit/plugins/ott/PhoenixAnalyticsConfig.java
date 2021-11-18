@@ -116,12 +116,14 @@ public class PhoenixAnalyticsConfig {
         return this;
     }
 
-    public void setEpgId(String epgId) {
+    public PhoenixAnalyticsConfig setEpgId(String epgId) {
         this.epgId = epgId;
+        return this;
     }
 
-    public void setExperimentalLiveMediaHit(boolean experimentalLiveMediaHit) {
+    public PhoenixAnalyticsConfig setExperimentalLiveMediaHit(boolean experimentalLiveMediaHit) {
         this.experimentalLiveMediaHit = experimentalLiveMediaHit;
+        return this;
     }
 
     public int getPartnerId() {
@@ -131,7 +133,6 @@ public class PhoenixAnalyticsConfig {
     public String getKS() {
         return ks;
     }
-
 
     public String getBaseUrl() {
         return baseUrl;
