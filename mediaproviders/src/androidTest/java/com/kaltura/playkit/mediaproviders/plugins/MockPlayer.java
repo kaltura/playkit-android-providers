@@ -14,8 +14,11 @@ import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
+import com.kaltura.playkit.player.DRMSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -220,6 +223,11 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings setDRMSettings(DRMSettings drmSettings) {
+                return null;
+            }
+
+            @Override
             public Settings setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
                 return null;
             }
@@ -233,6 +241,11 @@ public class MockPlayer implements Player {
 
     @Override
     public void prepare(@NonNull PKMediaConfig playerConfig) {
+
+    }
+
+    @Override
+    public void setAdvertising(@NonNull PKAdvertisingController pkAdvertisingController, @Nullable AdvertisingConfig advertisingConfig) {
 
     }
 

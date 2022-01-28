@@ -14,6 +14,7 @@ package com.kaltura.playkit.plugins.ott;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.webkit.URLUtil;
 
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
@@ -286,17 +287,17 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             log.e("Error, pluginConfig == null");
             return;
         }
-        if ((TextUtils.isEmpty(baseUrl) && !TextUtils.isEmpty(pluginConfig.getBaseUrl())) &&
+        if ((!URLUtil.isValidUrl(baseUrl) && URLUtil.isValidUrl(pluginConfig.getBaseUrl())) &&
                 (partnerId == 0 && pluginConfig.getPartnerId() > 0 || partnerId > 0)) {
             if (!pluginConfig.getBaseUrl().endsWith("/")) {
                 pluginConfig.setBaseUrl(pluginConfig.getBaseUrl() + "/");
             }
             addListeners();
         } else {
-            if (!TextUtils.isEmpty(baseUrl) && partnerId > 0) {
+            if (URLUtil.isValidUrl(baseUrl) && partnerId > 0) {
                 log.d("Listeners were already added");
             } else {
-                log.w("Listeners were not added, invalid baseUrl or partnerId (" + pluginConfig.getBaseUrl() + ", " + pluginConfig.getPartnerId() + ")");
+                log.e("Listeners were not added, invalid baseUrl or partnerId (" + pluginConfig.getBaseUrl() + ", " + pluginConfig.getPartnerId() + ")");
             }
         }
 
@@ -325,7 +326,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onUpdateConfig(Object config) {
         setConfigMembers(config);
-        if (TextUtils.isEmpty(baseUrl) || partnerId <= 0) {
+        if (!URLUtil.isValidUrl(baseUrl) || partnerId <= 0) {
+            log.e("Invalid baseUrl or partnerId (" + baseUrl + ", " + partnerId + ")");
             cancelTimer();
             if (messageBus != null) {
                 messageBus.removeListeners(this);
@@ -459,13 +461,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     private boolean isValidAnalytics(String methodName) {
         log.d("Calling from method: " + methodName);
-        if (TextUtils.isEmpty(this.baseUrl)) {
-            log.w("Blocking AnalyticsEvent baseUrl is not valid");
+        if (!URLUtil.isValidUrl(baseUrl)) {
+            log.e("Blocking PhoenixAnalyticsEvent baseUrl is not valid baseUrl = [" + baseUrl + "]");
             return false;
         }
 
-        if (TextUtils.isEmpty(this.ks)) {
-            log.w("Blocking AnalyticsEvent KS is not valid");
+        if (TextUtils.isEmpty(ks)) {
+            log.e("Blocking PhoenixAnalyticsEvent KS is not valid");
             return false;
         }
 
