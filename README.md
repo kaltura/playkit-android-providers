@@ -374,11 +374,19 @@ For more info, please connect with your CSM.
 
 ### Samples
 
-[OVP Sample](https://github.com/kaltura/playkit-android-samples/tree/develop/OVPStarter) 
+> Kaltura Player Samples
+
+[OTT Samples](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/OTTSamples)
+
+[OVP Samples](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/OVPSamples)
+
+> Playkit Samples
 
 Please take our [FullDemo Sample](https://github.com/kaltura/playkit-android-samples/tree/develop/FullDemo). It has module [playkitdemo](https://github.com/kaltura/playkit-android-samples/tree/develop/FullDemo/playkitdemo) which can be imported in Android Studio. It has examples for OVP and OTT media samples. It can be a quick starter code.
 
-### BE API Tools,
+[OVP Sample](https://github.com/kaltura/playkit-android-samples/tree/develop/OVPStarter) 
+
+### BE API Tools
 
 [OVP API Tester](https://kaltura.github.io/playkit/tools/gpc)
 
