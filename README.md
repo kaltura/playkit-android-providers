@@ -268,6 +268,10 @@ And pass this object it to `KalturaOvpMediaProvider` object created in Step-1.
 
 `mediaProvider.load(playLoadedEntry);`
 
+### Error Code handling
+
+For more info, please connect with our integration team via your CSM. 
+
 ### Samples
 
 [OVP Sample](https://github.com/kaltura/playkit-android-samples/tree/develop/OVPStarter) 
