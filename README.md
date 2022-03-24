@@ -357,9 +357,9 @@ NOT MANDATORY! The referrer url, to fetch the data for.
 
 NOT MANDATORY! The redirectFromEntryId. Application filter by redirectFromEntryId of EntryId default is `true`.
 
-## Concurrency
+## Phoenix Analytics
 
-Let's suppose you want to do the device management where you want to track how many concurrent users are logged it or playing the media. Means Stream level concurrency, here you can take benefit of this feature. 
+Let's suppose you want to track how many concurrent users are logged-in or playing the media. Means Stream level concurrency, here you can take benefit of this feature. 
 
 For this first you need to register the plugin,
 
@@ -370,10 +370,30 @@ After this, simply setup the Phoenix Analytics,
 ```java
 String ks = "Kaltura_Session_Token";
 PhoenixAnalyticsConfig phoenixAnalyticsConfig = new PhoenixAnalyticsConfig(INT_PARTNER_ID, "BASE_URL", ks, INT_timerInterval);
-        config.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalyticsConfig);
+config.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalyticsConfig);
 ``` 
 
 Here `timerInterval` field is the frequency of "Hit" or "Ping" going to the server for tracking.
+
+> ##### Listen to the PhoenixAnalyticsEvents
+
+After using the analytics, you can listen to the events which will tell when the concurrency is exceeded, if there is a bookmmark event error. 
+
+```
+player?.addListener(this, PhoenixAnalyticsEvent.concurrencyError) { event ->
+	// Event payload has errorCode and errorMessage
+}
+player?.addListener(this, PhoenixAnalyticsEvent.bookmarkError) { event ->
+	// Event payload has errorCode and errorMessage
+}
+player?.addListener(this, PhoenixAnalyticsEvent.error) { event -> 
+	// Event payload has errorCode and errorMessage
+}
+player?.addListener(this, PhoenixAnalyticsEvent.reportSent) { event -> 
+	// Event payload has the reported event name
+}
+
+```
 
 ### Error Code handling
 
