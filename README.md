@@ -21,13 +21,20 @@ For more info, please connect with Kaltura CSM.
 
 ### Setup
 
+If You are a Kaltura-Player developer then no setup is required.
+Kaltura-Player dependency is enough to use the Providers.
+
+`implementation 'com.kaltura.player:tvplayer:x.x.x'`
+
+> [kaltura-Player Latest Release](https://github.com/kaltura/kaltura-player-android/releases)
+
 Add Provider plugin dependency to `build.gradle`. In android, we keep all plugins aligned with same version.
 
 `implementation 'com.kaltura.playkit:playkitproviders:x.x.x'`
 
 **You can find the latest version here:**
 
-[Latest Release](https://github.com/kaltura/playkit-android-providers/releases)
+> [Providers Latest Release](https://github.com/kaltura/playkit-android-providers/releases)
 
 Moving ahead about the plugin,
 
