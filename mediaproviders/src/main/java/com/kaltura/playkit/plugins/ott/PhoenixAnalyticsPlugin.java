@@ -289,18 +289,19 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         if ((!URLUtil.isValidUrl(baseUrl) && URLUtil.isValidUrl(pluginConfig.getBaseUrl())) &&
                 (partnerId == 0 && pluginConfig.getPartnerId() > 0 || partnerId > 0)) {
-            modifyBaseUrlIfRequired(pluginConfig);
             addListeners();
         } else {
             if (URLUtil.isValidUrl(baseUrl) && partnerId > 0) {
-                modifyBaseUrlIfRequired(pluginConfig);
                 log.d("Listeners were already added");
             } else {
                 log.e("Listeners were not added, invalid baseUrl or partnerId (" + pluginConfig.getBaseUrl() + ", " + pluginConfig.getPartnerId() + ")");
             }
         }
 
-        this.baseUrl = pluginConfig.getBaseUrl();
+        String updatedBaseUrl = getUpdatedBaseUrlIfRequired(pluginConfig.getBaseUrl());
+        pluginConfig.setBaseUrl(updatedBaseUrl);
+
+        this.baseUrl = updatedBaseUrl;
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
         this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
@@ -312,14 +313,13 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     /**
      * Append "/" in baseUrl if it does not end with it.
-     * Get the base URL from the plugin and do the operation if required.
-     *
-     * @param pluginConfig PhoenixAnalyticsConfig
+     * @param baseUrl String URL for phoenix analytics
      */
-    private void modifyBaseUrlIfRequired(PhoenixAnalyticsConfig pluginConfig) {
-        if (!pluginConfig.getBaseUrl().endsWith("/")) {
-            pluginConfig.setBaseUrl(pluginConfig.getBaseUrl() + "/");
+    private String getUpdatedBaseUrlIfRequired(String baseUrl) {
+        if (!TextUtils.isEmpty(baseUrl) && !baseUrl.endsWith("/")) {
+            baseUrl = baseUrl + "/";
         }
+        return baseUrl;
     }
 
     @Override
