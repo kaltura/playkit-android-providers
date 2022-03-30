@@ -318,7 +318,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
      */
     private void modifyBaseUrlIfRequired(PhoenixAnalyticsConfig pluginConfig) {
         if (!pluginConfig.getBaseUrl().endsWith("/")) {
-            pluginConfig.setBaseUrl(baseUrl + "/");
+            pluginConfig.setBaseUrl(pluginConfig.getBaseUrl() + "/");
         }
     }
 
