@@ -289,9 +289,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         if ((!URLUtil.isValidUrl(baseUrl) && URLUtil.isValidUrl(pluginConfig.getBaseUrl())) &&
                 (partnerId == 0 && pluginConfig.getPartnerId() > 0 || partnerId > 0)) {
-            if (!pluginConfig.getBaseUrl().endsWith("/")) {
-                pluginConfig.setBaseUrl(pluginConfig.getBaseUrl() + "/");
-            }
             addListeners();
         } else {
             if (URLUtil.isValidUrl(baseUrl) && partnerId > 0) {
@@ -301,7 +298,10 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             }
         }
 
-        this.baseUrl = pluginConfig.getBaseUrl();
+        String updatedBaseUrl = getUpdatedBaseUrlIfRequired(pluginConfig.getBaseUrl());
+        pluginConfig.setBaseUrl(updatedBaseUrl);
+
+        this.baseUrl = updatedBaseUrl;
         this.partnerId = pluginConfig.getPartnerId();
         this.ks = pluginConfig.getKS();
         this.mediaHitInterval = (pluginConfig.getTimerInterval() > 0) ? pluginConfig.getTimerInterval() * (int) Consts.MILLISECONDS_MULTIPLIER : Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH;
@@ -309,6 +309,17 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.disableMediaMark = pluginConfig.getDisableMediaMark();
         this.currentEpgId = pluginConfig.getEpgId();
         this.isExperimentalLiveMediaHit = pluginConfig.getExperimentalLiveMediaHit();
+    }
+
+    /**
+     * Append "/" in baseUrl if it does not end with it.
+     * @param baseUrl String URL for phoenix analytics
+     */
+    private String getUpdatedBaseUrlIfRequired(String baseUrl) {
+        if (!TextUtils.isEmpty(baseUrl) && !baseUrl.endsWith("/")) {
+            baseUrl = baseUrl + "/";
+        }
+        return baseUrl;
     }
 
     @Override
