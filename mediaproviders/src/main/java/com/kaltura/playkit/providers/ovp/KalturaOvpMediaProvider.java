@@ -521,8 +521,6 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
 
             return sources;
         }
-
-
     }
 
     public static class MediaTypeConverter {
@@ -540,6 +538,10 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
                         return PKMediaEntry.MediaEntryType.Live;
                     }
                 }
+            }
+
+            if (entry.getType() == null) {
+                return PKMediaEntry.MediaEntryType.Unknown;
             }
 
             switch (entry.getType()) {
