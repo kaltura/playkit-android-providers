@@ -163,7 +163,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         messageBus.addListener(this, PlayerEvent.ended, event -> {
             printReceivedEvent(event);
             resetTimer();
-            sendAnalyticsEvent(PhoenixActionType.FINISH);
+            if (!isMediaFinished) {
+                sendAnalyticsEvent(PhoenixActionType.FINISH);
+            }
             playEventWasFired = false;
             isMediaFinished = true;
             isFirstPlay = true;
@@ -328,9 +330,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         isFirstPlay = true;
         playEventWasFired = false;
         isMediaFinished = false;
-        currentMediaId = "UnKnown";
-        currentAssetType = APIDefines.KalturaAssetType.Media.value;
-        lastKnownPlayerPosition = 0;
         lastKnownPlayerDuration = 0;
     }
 
@@ -416,7 +415,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
-                if (lastKnownPlayerDuration > 0 && ((float) lastKnownPlayerPosition / lastKnownPlayerDuration > MEDIA_ENDED_THRESHOLD)) {
+                if (lastKnownPlayerDuration > 0 &&
+                        ((float) lastKnownPlayerPosition / lastKnownPlayerDuration > MEDIA_ENDED_THRESHOLD) &&
+                        !isMediaFinished) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                     playEventWasFired = false;
                     isMediaFinished = true;
