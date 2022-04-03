@@ -259,6 +259,12 @@ public class KalturaOvpProviderUtils {
         if (entry.hasThumbnail()) {
             metadata.put("thumbnailUrl", entry.getThumbnailUrl());
         }
+        if (entry.hasExternalSourceType()) {
+            metadata.put("externalSourceType", entry.getExternalSourceType());
+        }
+        if (entry.hasReferenceId()) {
+            metadata.put("referenceId", entry.getReferenceId());
+        }
     }
 
     static PKMediaEntry initPKMediaEntry(String tags) {

@@ -331,7 +331,8 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
                                 mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId, useApiCaptions,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
-                                if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
+                                boolean isYouTubeMedia = mediaEntry.getMetadata() != null && TextUtils.equals("YouTube", mediaEntry.getMetadata().get("externalSourceType"));
+                                if (mediaEntry.getSources().size() == 0 && !isYouTubeMedia) { // makes sure there are sources available for play or Youtube media
                                     error = KalturaOvpErrorHelper.getErrorElement("NoFilesFound");
                                 }
                             }
