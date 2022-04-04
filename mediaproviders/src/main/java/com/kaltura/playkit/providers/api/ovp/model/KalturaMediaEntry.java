@@ -34,6 +34,8 @@ public class KalturaMediaEntry extends BaseResult {
     private String description;
     private String thumbnailUrl;
     private String flavorParamsIds;
+    private String externalSourceType;
+    private String referenceId;
 
     /** indicate the media type: {@link KalturaEntryType} **/
     private KalturaEntryType type;
@@ -73,6 +75,14 @@ public class KalturaMediaEntry extends BaseResult {
 
     public String getFlavorParamsIds() {
         return flavorParamsIds;
+    }
+
+    public String getExternalSourceType() {
+        return externalSourceType;
+    }
+
+    public String getReferenceId() {
+        return referenceId;
     }
 
     public KalturaEntryType getType() {
@@ -117,5 +127,13 @@ public class KalturaMediaEntry extends BaseResult {
 
     public boolean hasMediaType() {
         return mediaType != null;
+    }
+
+    public boolean hasExternalSourceType() {
+        return externalSourceType != null;
+    }
+
+    public boolean hasReferenceId() {
+        return referenceId != null;
     }
 }
