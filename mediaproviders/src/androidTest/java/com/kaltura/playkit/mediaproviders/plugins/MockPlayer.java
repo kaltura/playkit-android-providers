@@ -138,11 +138,6 @@ public class MockPlayer implements Player {
             }
 
             @Override
-            public Settings allowChunklessPreparation(boolean allowChunklessPreparation) {
-                return this;
-            }
-
-            @Override
             public Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine) {
                 return this;
             }
