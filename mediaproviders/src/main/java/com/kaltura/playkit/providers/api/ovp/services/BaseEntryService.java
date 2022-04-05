@@ -68,7 +68,7 @@ public class BaseEntryService extends OvpService {
         } else if (!TextUtils.isEmpty(referenceId)) {
             baseEntryListParams.filter.referenceIdEqual = referenceId;
         }
-        baseEntryListParams.responseProfile.fields = "id,name,description,thumbnailUrl,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags,dvrStatus";
+        baseEntryListParams.responseProfile.fields = "id,name,description,thumbnailUrl,dataUrl,duration,msDuration,flavorParamsIds,mediaType,type,tags,dvrStatus,externalSourceType,referenceId";
         baseEntryListParams.responseProfile.type = APIDefines.ResponseProfileType.IncludeFields;
 
         return new Gson().toJsonTree(baseEntryListParams).getAsJsonObject();

@@ -30,6 +30,7 @@ import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.providers.api.ovp.model.FlavorAssetsFilter;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaBaseEntryListResponse;
 
+import com.kaltura.playkit.providers.api.ovp.model.KalturaExternalMediaSourceType;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaFlavorAsset;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMediaEntry;
 import com.kaltura.playkit.providers.api.ovp.model.KalturaMetadataListResponse;
@@ -331,7 +332,8 @@ public class KalturaOvpMediaProvider extends BEBaseProvider<PKMediaEntry> implem
                                 mediaEntry = ProviderParser.getMediaEntry(sessionProvider.baseUrl(), ks, sessionProvider.partnerId() + "", uiConfId, useApiCaptions,
                                         ((KalturaBaseEntryListResponse) responses.get(entryListResponseIdx)).objects.get(0), kalturaPlaybackContext, metadataList);
 
-                                if (mediaEntry.getSources().size() == 0) { // makes sure there are sources available for play
+                                boolean isYouTubeMedia = mediaEntry.getMetadata() != null && TextUtils.equals(KalturaExternalMediaSourceType.YOUTUBE.type, mediaEntry.getMetadata().get("externalSourceType"));
+                                if (mediaEntry.getSources().size() == 0 && !isYouTubeMedia) { // makes sure there are sources available for play or Youtube media
                                     error = KalturaOvpErrorHelper.getErrorElement("NoFilesFound");
                                 }
                             }
