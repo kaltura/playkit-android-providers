@@ -263,6 +263,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         messageBus.addListener(this, PlayerEvent.seeked, event -> {
             printReceivedEvent(event);
+            updateLastKnownPlayerPosition();
             isMediaFinished = false;
         });
 
@@ -279,7 +280,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         messageBus.addListener(this, AdEvent.contentResumeRequested, event -> {
             log.d("Ad Event = " + event.eventType().name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
             isAdPlaying = false;
-
         });
     }
 
@@ -348,12 +348,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onApplicationPaused() {
         log.d("PhoenixAnalyticsPlugin onApplicationPaused");
-        if (player != null) {
-            long playerPosOnPause = player.getCurrentPosition();
-            if (playerPosOnPause > 0 && !isAdPlaying) {
-                lastKnownPlayerPosition = playerPosOnPause / Consts.MILLISECONDS_MULTIPLIER;
-            }
-        }
+        updateLastKnownPlayerPosition();
         cancelTimer();
     }
 
@@ -392,6 +387,19 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             return mediaConfig.getMediaEntry();
         }
         return null;
+    }
+
+    /**
+     * Update `lastKnownPlayerPosition` by taking
+     * the player current position
+     */
+    private void updateLastKnownPlayerPosition() {
+        if (player != null) {
+            long currentPosition = player.getCurrentPosition();
+            if (currentPosition > 0 && !isAdPlaying) {
+                lastKnownPlayerPosition = currentPosition / Consts.MILLISECONDS_MULTIPLIER;
+            }
+        }
     }
 
     /**
