@@ -373,7 +373,7 @@ PhoenixAnalyticsConfig phoenixAnalyticsConfig = new PhoenixAnalyticsConfig(INT_P
 config.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalyticsConfig);
 ``` 
 
-Here `timerInterval` field is the frequency of "Hit" or "Ping" going to the server for tracking.
+Here `timerInterval` field is the frequency of "Hit" or "Ping" going to the server for tracking. Value should be passed in **'Seconds'**.
 
 > ##### Listen to the PhoenixAnalyticsEvents
 

@@ -163,7 +163,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         messageBus.addListener(this, PlayerEvent.ended, event -> {
             printReceivedEvent(event);
             resetTimer();
-            sendAnalyticsEvent(PhoenixActionType.FINISH);
+            if (!isMediaFinished) {
+                sendAnalyticsEvent(PhoenixActionType.FINISH);
+            }
             playEventWasFired = false;
             isMediaFinished = true;
             isFirstPlay = true;
@@ -261,6 +263,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
         messageBus.addListener(this, PlayerEvent.seeked, event -> {
             printReceivedEvent(event);
+            updateLastKnownPlayerPosition();
             isMediaFinished = false;
         });
 
@@ -277,7 +280,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         messageBus.addListener(this, AdEvent.contentResumeRequested, event -> {
             log.d("Ad Event = " + event.eventType().name() + ", lastKnownPlayerPosition = " + lastKnownPlayerPosition);
             isAdPlaying = false;
-
         });
     }
 
@@ -328,9 +330,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         isFirstPlay = true;
         playEventWasFired = false;
         isMediaFinished = false;
-        currentMediaId = "UnKnown";
-        currentAssetType = APIDefines.KalturaAssetType.Media.value;
-        lastKnownPlayerPosition = 0;
         lastKnownPlayerDuration = 0;
     }
 
@@ -349,12 +348,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     @Override
     protected void onApplicationPaused() {
         log.d("PhoenixAnalyticsPlugin onApplicationPaused");
-        if (player != null) {
-            long playerPosOnPause = player.getCurrentPosition();
-            if (playerPosOnPause > 0 && !isAdPlaying) {
-                lastKnownPlayerPosition = playerPosOnPause / Consts.MILLISECONDS_MULTIPLIER;
-            }
-        }
+        updateLastKnownPlayerPosition();
         cancelTimer();
     }
 
@@ -396,6 +390,19 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     /**
+     * Update `lastKnownPlayerPosition` by taking
+     * the player current position
+     */
+    private void updateLastKnownPlayerPosition() {
+        if (player != null) {
+            long currentPosition = player.getCurrentPosition();
+            if (currentPosition > 0 && !isAdPlaying) {
+                lastKnownPlayerPosition = currentPosition / Consts.MILLISECONDS_MULTIPLIER;
+            }
+        }
+    }
+
+    /**
      * Media Hit analytics event
      */
     private void startMediaHitInterval() {
@@ -416,7 +423,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             @Override
             public void run() {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
-                if (lastKnownPlayerDuration > 0 && ((float) lastKnownPlayerPosition / lastKnownPlayerDuration > MEDIA_ENDED_THRESHOLD)) {
+                if (lastKnownPlayerDuration > 0 &&
+                        ((float) lastKnownPlayerPosition / lastKnownPlayerDuration > MEDIA_ENDED_THRESHOLD) &&
+                        !isMediaFinished) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                     playEventWasFired = false;
                     isMediaFinished = true;

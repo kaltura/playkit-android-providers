@@ -33,7 +33,7 @@ public class PhoenixAnalyticsConfig {
     private int partnerId;
     private String baseUrl;
     private String ks;
-    private int timerInterval;
+    private int timerInterval; // In Seconds
     private boolean disableMediaHit;
     private boolean disableMediaMark;
     private String epgId;
