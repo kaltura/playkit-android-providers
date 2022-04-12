@@ -113,7 +113,7 @@ ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media
 
 For more details about the parameters, please check the APIs in the later part of the document.
 
-[MediaAsset Config Options] (https://github.com/kaltura/playkit-android-providers/blob/develop/mediaproviders/src/main/java/com/kaltura/playkit/providers/api/phoenix/APIDefines.java)
+[MediaAsset Config Options](https://github.com/kaltura/playkit-android-providers/blob/develop/mediaproviders/src/main/java/com/kaltura/playkit/providers/api/phoenix/APIDefines.java)
 
 
 And finally `OTTMediaOptions` should be passed to the Player for the playback in `loadMedia(@NonNull final OTTMediaOptions mediaOptions, @NonNull final KalturaPlayer.OnEntryLoadListener onEntryLoadListener)` API.
