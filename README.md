@@ -68,7 +68,53 @@ After creating `OTTMediaAsset`, this object needs to be passed to `OTTMediaOptio
 
         val ottMediaOptions = OTTMediaOptions(ottMediaAsset)
 ```
+
+####Phoenix Media Provider Playback Combinations:
+
+#####Vod/Live:
+
+```
+ottMediaAsset.contextType = APIDefines.PlaybackContextType.Playback
+ottMediaAsset.assetType = APIDefines.KalturaAssetType.Media
+ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media
+```
+
+#####Catchup:
+
+```
+ottMediaAsset.contextType = APIDefines.PlaybackContextType.Catchup
+ottMediaAsset.assetType = APIDefines.KalturaAssetType.Epg
+ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg //APIDefines.AssetReferenceType.ExternalEpg 
+```
+
+#####Start Over:
+
+```
+ottMediaAsset.contextType = APIDefines.PlaybackContextType.StartOver
+ottMediaAsset.assetType = APIDefines.KalturaAssetType.Epg
+ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg //APIDefines.AssetReferenceType.ExternalEpg 
+```
+
+#####Recording:
+
+```
+ottMediaAsset.contextType = APIDefines.PlaybackContextType.Playback
+ottMediaAsset.assetType = APIDefines.KalturaAssetType.Recording
+ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Npvr
+```
+
+#####Trailer:
+
+```
+ottMediaAsset.contextType = APIDefines.PlaybackContextType.Trailer
+ottMediaAsset.assetType = APIDefines.KalturaAssetType.Media
+ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media
+```
+
 For more details about the parameters, please check the APIs in the later part of the document.
+
+[MediaAsset Config Options] (https://github.com/kaltura/playkit-android-providers/blob/develop/mediaproviders/src/main/java/com/kaltura/playkit/providers/api/phoenix/APIDefines.java)
+
 
 And finally `OTTMediaOptions` should be passed to the Player for the playback in `loadMedia(@NonNull final OTTMediaOptions mediaOptions, @NonNull final KalturaPlayer.OnEntryLoadListener onEntryLoadListener)` API.
 
