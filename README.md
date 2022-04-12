@@ -69,9 +69,9 @@ After creating `OTTMediaAsset`, this object needs to be passed to `OTTMediaOptio
         val ottMediaOptions = OTTMediaOptions(ottMediaAsset)
 ```
 
-####Phoenix Media Provider Playback Combinations:
+#### Phoenix Media Provider Playback Combinations:
 
-#####Vod/Live:
+##### Vod/Live:
 
 ```
 ottMediaAsset.contextType = APIDefines.PlaybackContextType.Playback
@@ -79,7 +79,7 @@ ottMediaAsset.assetType = APIDefines.KalturaAssetType.Media
 ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Media
 ```
 
-#####Catchup:
+##### Catchup:
 
 ```
 ottMediaAsset.contextType = APIDefines.PlaybackContextType.Catchup
@@ -87,7 +87,7 @@ ottMediaAsset.assetType = APIDefines.KalturaAssetType.Epg
 ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg //APIDefines.AssetReferenceType.ExternalEpg 
 ```
 
-#####Start Over:
+##### Start Over:
 
 ```
 ottMediaAsset.contextType = APIDefines.PlaybackContextType.StartOver
@@ -95,7 +95,7 @@ ottMediaAsset.assetType = APIDefines.KalturaAssetType.Epg
 ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.InternalEpg //APIDefines.AssetReferenceType.ExternalEpg 
 ```
 
-#####Recording:
+##### Recording:
 
 ```
 ottMediaAsset.contextType = APIDefines.PlaybackContextType.Playback
@@ -103,7 +103,7 @@ ottMediaAsset.assetType = APIDefines.KalturaAssetType.Recording
 ottMediaAsset.assetReferenceType = APIDefines.AssetReferenceType.Npvr
 ```
 
-#####Trailer:
+##### Trailer:
 
 ```
 ottMediaAsset.contextType = APIDefines.PlaybackContextType.Trailer
