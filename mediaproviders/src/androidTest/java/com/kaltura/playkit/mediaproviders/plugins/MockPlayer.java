@@ -133,7 +133,7 @@ public class MockPlayer implements Player {
             }
 
             @Override
-            public Settings setSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+            public Settings setSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode) {
                 return this;
             }
 
@@ -421,7 +421,7 @@ public class MockPlayer implements Player {
     }
 
     @Override
-    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+    public void updateSurfaceAspectRatioResizeMode(@NonNull PKAspectRatioResizeMode resizeMode) {
 
     }
 
