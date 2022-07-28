@@ -179,6 +179,10 @@ public class PhoenixProviderUtils {
             metadata.put("assetType", ottMediaAsset.assetType.value);
         }
 
+        if (ottMediaAsset != null && ottMediaAsset.contextType != null) {
+            metadata.put("contextType", ottMediaAsset.contextType.value);
+        }
+
         metadata.put("assetIds", String.valueOf(kalturaMediaAsset.getId()));
 
         if (!TextUtils.isEmpty(kalturaMediaAsset.getEntryId())) {
