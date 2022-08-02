@@ -421,7 +421,11 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             return;
         }
 
-        if (disableMediaHit || (isLiveMedia() && !isExperimentalLiveMediaHit)) {
+        // Don't check isLiveMedia directly inside timer. It causes ExoPlayer's
+        // 'Not called on main thread' exception.
+        boolean isLiveMedia = isLiveMedia();
+
+        if (disableMediaHit || (isLiveMedia && !isExperimentalLiveMediaHit)) {
             return;
         }
 
@@ -436,7 +440,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                 sendAnalyticsEvent(PhoenixActionType.HIT);
                 if (lastKnownPlayerDuration > 0 &&
                         ((float) lastKnownPlayerPosition / lastKnownPlayerDuration > MEDIA_ENDED_THRESHOLD) &&
-                        !isMediaFinished) {
+                        !isMediaFinished &&
+                        !isLiveMedia) {
                     sendAnalyticsEvent(PhoenixActionType.FINISH);
                     playEventWasFired = false;
                     isMediaFinished = true;
