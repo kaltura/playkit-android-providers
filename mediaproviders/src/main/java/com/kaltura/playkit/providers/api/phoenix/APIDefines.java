@@ -83,6 +83,7 @@ public class APIDefines {
     }
 
     public enum PlaybackContextType {
+        Download("DOWNLOAD"),
         Trailer("TRAILER"),
         Catchup("CATCHUP"),
         StartOver("START_OVER"),

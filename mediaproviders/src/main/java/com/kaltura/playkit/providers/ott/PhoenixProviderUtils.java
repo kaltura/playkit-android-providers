@@ -137,6 +137,7 @@ public class PhoenixProviderUtils {
 
     @NonNull
     static Map<String, String> createOttMetadata(KalturaMediaAsset kalturaMediaAsset, OTTMediaAsset ottMediaAsset) {
+        String metadataEpgId = null;
         Map<String, String> metadata = new HashMap<>();
         if (kalturaMediaAsset == null) {
             return metadata;
@@ -175,10 +176,6 @@ public class PhoenixProviderUtils {
             }
         }
 
-        if (ottMediaAsset != null && ottMediaAsset.assetType != null) {
-            metadata.put("assetType", ottMediaAsset.assetType.value);
-        }
-
         metadata.put("assetIds", String.valueOf(kalturaMediaAsset.getId()));
 
         if (!TextUtils.isEmpty(kalturaMediaAsset.getEntryId())) {
@@ -193,11 +190,20 @@ public class PhoenixProviderUtils {
             metadata.put("description", kalturaMediaAsset.getDescription());
         }
 
-        String metadataEpgId = null;
-        if (isRecordingMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Recording) {
-            metadataEpgId = ((KalturaRecordingAsset) kalturaMediaAsset).getEpgId();
-        } else if (isProgramMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Epg) {
-            metadataEpgId = ((KalturaProgramAsset) kalturaMediaAsset).getEpgId();
+        if (ottMediaAsset != null) {
+            if (ottMediaAsset.assetType != null) {
+                metadata.put("assetType", ottMediaAsset.assetType.value);
+            }
+
+            if (ottMediaAsset.contextType != null) {
+                metadata.put("contextType", ottMediaAsset.contextType.value);
+            }
+
+            if (isRecordingMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Recording) {
+                metadataEpgId = ((KalturaRecordingAsset) kalturaMediaAsset).getEpgId();
+            } else if (isProgramMediaEntry(kalturaMediaAsset) && ottMediaAsset.assetType == APIDefines.KalturaAssetType.Epg) {
+                metadataEpgId = ((KalturaProgramAsset) kalturaMediaAsset).getEpgId();
+            }
         }
 
         if (!TextUtils.isEmpty(metadataEpgId)) {
