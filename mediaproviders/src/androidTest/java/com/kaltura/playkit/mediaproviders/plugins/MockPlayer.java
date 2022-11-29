@@ -143,6 +143,11 @@ public class MockPlayer implements Player {
             }
 
             @Override
+            public Settings constrainAudioChannelCountToDeviceCapabilities(boolean enabled) {
+                return this;
+            }
+
+            @Override
             public Settings forceSinglePlayerEngine(boolean forceSinglePlayerEngine) {
                 return this;
             }
@@ -438,6 +443,12 @@ public class MockPlayer implements Player {
     @Override
     public void resetABRSettings() {
 
+    }
+
+    @Nullable
+    @Override
+    public Object getCurrentMediaManifest() {
+        return null;
     }
 
     @Override
