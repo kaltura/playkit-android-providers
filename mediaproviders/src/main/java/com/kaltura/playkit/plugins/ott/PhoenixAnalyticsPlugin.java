@@ -253,7 +253,6 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             if (isFirstPlay) {
                 playEventWasFired = true;
                 sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
-                sendAnalyticsEvent(PhoenixActionType.PLAY);
                 sendAnalyticsEvent(PhoenixActionType.HIT);
             }
             if (!intervalOn) {
