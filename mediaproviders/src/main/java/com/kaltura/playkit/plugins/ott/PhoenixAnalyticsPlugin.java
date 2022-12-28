@@ -33,6 +33,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
+import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 import com.kaltura.playkit.providers.api.phoenix.services.BookmarkService;
 import com.kaltura.playkit.utils.Consts;
 
@@ -76,6 +77,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     private boolean disableMediaHit = false;
     private boolean disableMediaMark = false;
     private boolean isExperimentalLiveMediaHit = false;
+    private boolean forceConcurrencyOnUnpaidContent = false;
 
     enum PhoenixActionType {
         HIT,
@@ -253,6 +255,9 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             if (isFirstPlay) {
                 playEventWasFired = true;
                 sendAnalyticsEvent(PhoenixActionType.FIRST_PLAY);
+                if (forceConcurrencyOnUnpaidContent) {
+                    sendAnalyticsEvent(PhoenixActionType.PLAY);
+                }
                 sendAnalyticsEvent(PhoenixActionType.HIT);
             }
             if (!intervalOn) {
@@ -322,6 +327,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         this.disableMediaMark = pluginConfig.getDisableMediaMark();
         this.currentEpgId = pluginConfig.getEpgId();
         this.isExperimentalLiveMediaHit = pluginConfig.getExperimentalLiveMediaHit();
+        this.forceConcurrencyOnUnpaidContent = pluginConfig.isForceConcurrencyOnUnpaidContent();
     }
 
     /**
@@ -470,9 +476,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         }
         log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying + " position = " + lastKnownPlayerPosition);
 
-
-
-        RequestBuilder requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
+        RequestBuilder<PhoenixRequestBuilder> requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
                 currentAssetType, currentContextType, currentMediaId, currentEpgId, eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(response -> {
@@ -607,6 +611,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
             PhoenixAnalyticsConfig phoenixAnalyticsConfig = new PhoenixAnalyticsConfig(partnerId, baseUrl, ks, timerInterval, disableMediaHit, disableMediaMark, epgId);
             boolean experimentalLiveMediaHit = (params.has("experimentalLiveMediaHit") && !params.get("experimentalLiveMediaHit").isJsonNull()) && params.get("experimentalLiveMediaHit").getAsBoolean();
             phoenixAnalyticsConfig.setExperimentalLiveMediaHit(experimentalLiveMediaHit);
+            boolean forceConcurrencyOnUnpaidContent = (params.has("forceConcurrencyOnUnpaidContent") && !params.get("forceConcurrencyOnUnpaidContent").isJsonNull()) && params.get("forceConcurrencyOnUnpaidContent").getAsBoolean();
+            phoenixAnalyticsConfig.setForceConcurrencyOnUnpaidContent(forceConcurrencyOnUnpaidContent);
             return phoenixAnalyticsConfig;
         }
         return null;
