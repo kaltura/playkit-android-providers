@@ -29,7 +29,8 @@ public class PhoenixAnalyticsConfig {
     public static final String DISABLE_MEDIAMARK = "disableMediaMark";
     public static final String EPG_ID = "epgId";
     public static final String EXPERIMENTAL_MEDIA_HIT = "experimentalLiveMediaHit";
-    
+    public static final String FORCE_CONCURRENCY_ON_UNPAID_CONTENT = "forceConcurrencyOnUnpaidContent";
+
     private int partnerId;
     private String baseUrl;
     private String ks;
@@ -180,6 +181,7 @@ public class PhoenixAnalyticsConfig {
             jsonObject.addProperty(EPG_ID, epgId);
         }
         jsonObject.addProperty(EXPERIMENTAL_MEDIA_HIT, experimentalLiveMediaHit);
+        jsonObject.addProperty(FORCE_CONCURRENCY_ON_UNPAID_CONTENT, forceConcurrencyOnUnpaidContent);
         return jsonObject;
     }
 }
