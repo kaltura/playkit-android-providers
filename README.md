@@ -6,7 +6,7 @@
 
 # playkit-android-providers
 
-This plugin gives seemless access of your medias ingested in Kaltura backend with [Playkit](https://github.com/kaltura/playkit-android#kaltura-player-sdk) or [Kaltura-Player](https://github.com/kaltura/kaltura-player-android#kaltura-player-for-android).
+This plugin gives seamless access of your medias ingested in Kaltura backend with [Playkit](https://github.com/kaltura/playkit-android#kaltura-player-sdk) or [Kaltura-Player](https://github.com/kaltura/kaltura-player-android#kaltura-player-for-android).
 By using this plugin, developers don't need to care about Network calls, Thread Management etc. Simply pass the media Id and respective KS (Kaltura Session Token) and you are good to go for the playback.
 
 Providers are designed for Kaltura OVP or Kaltura OTT customers. One can have a question what is the difference between OVP and OTT !
@@ -420,6 +420,8 @@ config.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalytic
 ``` 
 
 Here `timerInterval` field is the frequency of "Hit" or "Ping" going to the server for tracking. Value should be passed in **'Seconds'**.
+
+There are other options in `PhoenixAnalyticsConfig` to set, can be found [here](https://github.com/kaltura/playkit-android-providers/blob/develop/mediaproviders/src/main/java/com/kaltura/playkit/plugins/ott/PhoenixAnalyticsConfig.java)
 
 > ##### Listen to the PhoenixAnalyticsEvents
 
