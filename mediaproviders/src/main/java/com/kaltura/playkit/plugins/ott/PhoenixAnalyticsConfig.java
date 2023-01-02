@@ -38,6 +38,7 @@ public class PhoenixAnalyticsConfig {
     private boolean disableMediaMark;
     private String epgId;
     private boolean experimentalLiveMediaHit;
+    private boolean forceConcurrencyOnUnpaidContent;
 
     public PhoenixAnalyticsConfig() {}
 
@@ -126,6 +127,11 @@ public class PhoenixAnalyticsConfig {
         return this;
     }
 
+    public PhoenixAnalyticsConfig setForceConcurrencyOnUnpaidContent(boolean forceConcurrencyOnUnpaidContent) {
+        this.forceConcurrencyOnUnpaidContent = forceConcurrencyOnUnpaidContent;
+        return this;
+    }
+
     public int getPartnerId() {
         return partnerId;
     }
@@ -156,6 +162,10 @@ public class PhoenixAnalyticsConfig {
 
     public boolean getExperimentalLiveMediaHit() {
         return experimentalLiveMediaHit;
+    }
+
+    public boolean isForceConcurrencyOnUnpaidContent() {
+        return forceConcurrencyOnUnpaidContent;
     }
 
     public JsonObject toJson() {
