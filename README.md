@@ -421,7 +421,7 @@ config.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalytic
 
 Here `timerInterval` field is the frequency of "Hit" or "Ping" going to the server for tracking. Value should be passed in **'Seconds'**.
 
-There are other options in `PhoenixAnalyticsConfig` to set, can be found [here](https://github.com/kaltura/playkit-android-providers/blob/develop/mediaproviders/src/main/java/com/kaltura/playkit/plugins/ott/PhoenixAnalyticsConfig.java)
+There are other options in `PhoenixAnalyticsConfig` to set, can be found [here](https://github.com/kaltura/playkit-android-providers/blob/develop/mediaproviders/src/main/java/com/kaltura/playkit/plugins/ott/PhoenixAnalyticsConfig.java).
 
 > ##### Listen to the PhoenixAnalyticsEvents
 
