@@ -194,9 +194,8 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
                 currentContextType = APIDefines.PlaybackContextType.Playback.value;
                 currentAssetType = APIDefines.KalturaAssetType.Media.value;
-
                 if (getMediaEntry().getMetadata() != null) {
-                    
+
                     if (getMediaEntry().getMetadata().containsKey("contextType")) {
                         String contextType = getMediaEntry().getMetadata().get("contextType");
                         if (!TextUtils.isEmpty(contextType)) {
@@ -217,13 +216,18 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
                             currentMediaId = recordingId;
                         }
                     }
-
-                    String epgId = getMediaEntry().getMetadata().get("epgId");
-                    if (!TextUtils.isEmpty(epgId)) {
-                        currentEpgId = epgId;
-                    }
-                    if (!isLiveMedia() && APIDefines.KalturaAssetType.Media.value.equals(currentAssetType)) {
-                        currentEpgId = null;
+                    if (APIDefines.KalturaAssetType.Recording.value.equals(currentAssetType) ||
+                        APIDefines.PlaybackContextType.Catchup.value.equals(currentContextType) ||
+                        APIDefines.PlaybackContextType.StartOver.value.equals(currentContextType)) {
+                        currentEpgId = currentMediaId;
+                    } else {
+                        String epgId = getMediaEntry().getMetadata().get("epgId");
+                        if (!TextUtils.isEmpty(epgId)) {
+                            currentEpgId = epgId;
+                        }
+                        if (!isLiveMedia() && APIDefines.KalturaAssetType.Media.value.equals(currentAssetType)) {
+                            currentEpgId = null;
+                        }
                     }
                 }
             }
