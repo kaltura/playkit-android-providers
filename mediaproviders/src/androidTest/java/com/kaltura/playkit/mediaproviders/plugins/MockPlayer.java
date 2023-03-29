@@ -198,16 +198,6 @@ public class MockPlayer implements Player {
             }
 
             @Override
-            public Settings setAllowDisableVideoTrack(boolean allowDisableVideoTrack) {
-                return this;
-            }
-
-            @Override
-            public Settings setAllowDisableAudioTrack(boolean allowDisableAudioTrack) {
-                return this;
-            }
-
-            @Override
             public Settings setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
                 return this;
             }
@@ -276,7 +266,7 @@ public class MockPlayer implements Player {
 
     @Override
     public void setDownloadCache(Cache downloadCache) {
-        
+
     }
 
     @Override
@@ -442,7 +432,7 @@ public class MockPlayer implements Player {
 
     @Override
     public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
-        
+
     }
 
     @Override
@@ -452,6 +442,26 @@ public class MockPlayer implements Player {
 
     @Override
     public void resetABRSettings() {
+
+    }
+
+    @Override
+    public void updateLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+
+    }
+
+    @Override
+    public void disableVideoTracks(boolean isDisabled) {
+
+    }
+
+    @Override
+    public void disableAudioTracks(boolean isDisabled) {
+
+    }
+
+    @Override
+    public void disableTextTracks(boolean isDisabled) {
 
     }
 
@@ -490,7 +500,7 @@ public class MockPlayer implements Player {
     public ThumbnailInfo getThumbnailInfo(long ... positionMS) {
         return null;
     }
-    
+
     public void setDuration(int duration) {
         this.duration = duration;
     }
