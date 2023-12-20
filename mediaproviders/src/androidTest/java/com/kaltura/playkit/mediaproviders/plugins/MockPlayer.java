@@ -3,7 +3,7 @@ package com.kaltura.playkit.mediaproviders.plugins;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.androidx.media3.datasource.cache.Cache;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
@@ -194,6 +194,11 @@ public class MockPlayer implements Player {
 
             @Override
             public Settings setHandleAudioFocus(boolean handleAudioFocus) {
+                return this;
+            }
+
+            @Override
+            public Settings setShutterStaysOnRenderedFirstFrame(boolean shutterStaysOnRenderedFirstFrame) {
                 return this;
             }
 
