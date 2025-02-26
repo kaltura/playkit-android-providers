@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.plugins.ott;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
@@ -119,7 +120,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
     }
 
     @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context, Activity playerActivity) {
         log.d("onLoad");
 
         this.requestsExecutor = APIOkRequestsExecutor.getSingleton();

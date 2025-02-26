@@ -12,6 +12,7 @@
 
 package com.kaltura.playkit.plugins.ott;
 
+import android.app.Activity;
 import android.content.Context;
 
 import com.google.gson.JsonObject;
@@ -55,7 +56,7 @@ public class TVPAPIAnalyticsPlugin extends PhoenixAnalyticsPlugin {
     };
 
     @Override
-    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context) {
+    protected void onLoad(Player player, Object config, final MessageBus messageBus, Context context, Activity playerActivity) {
         log.d("onLoad");
         setPluginMembers(config);
         this.player = player;
