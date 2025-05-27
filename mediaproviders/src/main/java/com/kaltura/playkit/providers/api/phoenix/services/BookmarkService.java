@@ -45,7 +45,9 @@ public class BookmarkService extends PhoenixService {
         JsonObject bookmark = new JsonObject();
         bookmark.addProperty("objectType", "KalturaBookmark");
         bookmark.addProperty("id", assetId);
-        bookmark.addProperty("vfastLiveAssetId", vfastLiveAssetId);
+        if (!TextUtils.isEmpty(vfastLiveAssetId)) {
+            bookmark.addProperty("vfastLiveAssetId", vfastLiveAssetId);
+        }
         if (!TextUtils.isEmpty(epgId)) {
             bookmark.addProperty("programId", epgId);
         }
