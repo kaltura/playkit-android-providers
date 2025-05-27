@@ -19,6 +19,8 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     String assetId;
 
+    String vfastLiveAssetId;
+
     KalturaAssetType assetType;
 
     AssetReferenceType assetReferenceType;
@@ -65,6 +67,11 @@ public class OTTMediaAsset extends BaseMediaAsset {
 
     public OTTMediaAsset setAssetId(String assetId) {
         this.assetId = assetId;
+        return this;
+    }
+
+    public OTTMediaAsset setVfastLiveAssetId(String vfastLiveAssetId) {
+        this.vfastLiveAssetId = vfastLiveAssetId;
         return this;
     }
 
@@ -127,7 +134,11 @@ public class OTTMediaAsset extends BaseMediaAsset {
     public String getAssetId() {
         return assetId;
     }
-    
+
+    public String getVfastLiveAssetId() {
+        return vfastLiveAssetId;
+    }
+
     public KalturaAssetType getAssetType() {
         return assetType;
     }

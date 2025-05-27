@@ -61,6 +61,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
     String fileId;
     String currentMediaId = "UnKnown";
+    String currentVfastLiveAssetId;
     String currentEpgId;
     String currentAssetType = APIDefines.KalturaAssetType.Media.value;
     String currentContextType = APIDefines.PlaybackContextType.Playback.value;
@@ -192,6 +193,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
 
             if (getMediaEntry() != null) {
                 currentMediaId = getMediaEntry().getId();
+                currentVfastLiveAssetId = getMediaEntry().getVfastAssetId();
 
                 currentContextType = APIDefines.PlaybackContextType.Playback.value;
                 currentAssetType = APIDefines.KalturaAssetType.Media.value;
@@ -482,7 +484,7 @@ public class PhoenixAnalyticsPlugin extends PKPlugin {
         log.d("PhoenixAnalyticsPlugin sendAnalyticsEvent " + eventType + " isAdPlaying " + isAdPlaying + " position = " + lastKnownPlayerPosition);
 
         RequestBuilder<PhoenixRequestBuilder> requestBuilder = BookmarkService.actionAdd(baseUrl, partnerId, ks,
-                currentAssetType, currentContextType, currentMediaId, currentEpgId, eventType.name(), lastKnownPlayerPosition, fileId);
+                currentAssetType, currentContextType, currentMediaId, currentVfastLiveAssetId, currentEpgId, eventType.name(), lastKnownPlayerPosition, fileId);
 
         requestBuilder.completion(response -> {
             log.d("onComplete send event: " + eventType);

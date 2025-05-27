@@ -548,7 +548,7 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
                             return;
                         }
 
-                        mediaEntry = ProviderParser.getMedia(mediaAsset.assetId,
+                        mediaEntry = ProviderParser.getMedia(mediaAsset.assetId, mediaAsset.vfastLiveAssetId,
                                 mediaAsset.formats != null ? mediaAsset.formats : mediaAsset.mediaFileIds,
                                 kalturaPlaybackContext.getSources(), is360Content, isMulticastContent);
                         mediaEntry.setMetadata(metadata);
@@ -616,13 +616,14 @@ public class PhoenixMediaProvider extends BEBaseProvider<PKMediaEntry> implement
 
     static class ProviderParser {
 
-        public static PKMediaEntry getMedia(String assetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources, boolean is360Content, boolean isMulticastContent) {
+        public static PKMediaEntry getMedia(String assetId, String vfastAssetId, final List<String> sourcesFilter, ArrayList<KalturaPlaybackSource> playbackSources, boolean is360Content, boolean isMulticastContent) {
             PKMediaEntry mediaEntry = new PKMediaEntry();
             if (is360Content) {
                 mediaEntry.setIsVRMediaType(true);
             }
 
             mediaEntry.setId("" + assetId);
+            mediaEntry.setVfastAssetId(vfastAssetId);
             mediaEntry.setName(null);
 
             // until the response will be delivered in the right order:
