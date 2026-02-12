@@ -3,7 +3,7 @@ apply from: 'version.gradle'
 
 android {
     namespace 'providers.playkit.kaltura.com.mediaproviders'
-    compileSdk 34
+    compileSdk 35
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -11,7 +11,7 @@ android {
     
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 1
         versionName libVersion
 
@@ -46,10 +46,10 @@ tasks.withType(Javadoc) {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    api 'com.kaltura.netkit:netkit-core:1.3.18'
+    api 'com.kaltura.netkit:netkit-core:1.3.19'
     //api project(":netkit")
 
-    implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
+    implementation 'com.github.kaltura:playkit-android:dev-SNAPSHOT'
     //implementation project(":playkit")
 
     testImplementation 'junit:junit:4.13.2'
